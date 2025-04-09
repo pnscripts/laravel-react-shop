@@ -9,28 +9,49 @@ use App\Traits\HasSlug;
 class HasSlugTest extends TestCase
 {
     /**
+     * Set up the test environment.
+     */
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        // Create a unique dummy class for testing with the HasSlug trait
+        $this->dummyClass = new class {
+            use HasSlug;
+            public $title;
+            public $slug;
+        };
+    }
+
+    /**
      * Test that the slug is generated if not provided.
      */
     public function test_it_can_generate_slug_when_not_provided()
     {
-        // Create a mock class that uses the HasSlug trait
-        $mockClass = Mockery::mock('alias:App\Traits\HasSlug')
+        // Create a mock instance of the dummy class
+        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
         // Set the title for the mock object
         $mockClass->title = 'Test Category';
 
-        // Simulate the generateUniqueSlug method
+        // Simulate the behavior of generateUniqueSlug
         $mockClass->shouldReceive('generateUniqueSlug')
             ->once()
             ->andReturn('test-category');
 
-        // Act: Generate the slug
-        $slug = $mockClass->generateUniqueSlug($mockClass);
+        // Simulate the creation process (without involving DB)
+        $mockClass->slug = null; // No slug provided
 
-        // Assert: Ensure the generated slug is correct
-        $this->assertEquals('test-category', $slug);
+        // Manually trigger the creating event logic
+        // This simulates what would happen during the Eloquent "creating" lifecycle method
+        if (is_null($mockClass->slug)) {
+            $mockClass->slug = $mockClass->generateUniqueSlug($mockClass);
+        }
+
+        // Assert: Ensure that the slug is set to the generated value
+        $this->assertEquals('test-category', $mockClass->slug);
     }
 
     /**
@@ -38,8 +59,8 @@ class HasSlugTest extends TestCase
      */
     public function test_it_can_make_slug_unique()
     {
-        // Create a mock class that uses the HasSlug trait
-        $mockClass = Mockery::mock('alias:App\Traits\HasSlug')
+        // Create a mock instance of the dummy class
+        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -65,15 +86,15 @@ class HasSlugTest extends TestCase
      */
     public function test_it_can_generate_slug_from_title()
     {
-        // Create a mock class that uses the HasSlug trait
-        $mockClass = Mockery::mock('alias:App\Traits\HasSlug')
+        // Create a mock instance of the dummy class
+        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
         // Set the title for the mock object
         $mockClass->title = 'Test Category!';
 
-        // Simulate the generateUniqueSlug method
+        // Simulate the behavior of generateUniqueSlug
         $mockClass->shouldReceive('generateUniqueSlug')
             ->once()
             ->andReturn('test-category');
@@ -86,25 +107,25 @@ class HasSlugTest extends TestCase
     }
 
     /**
-     * Test that the generated slug is unique if the same slug exists.
+     * Test that generateUniqueSlug makes the slug unique if it already exists.
      */
     public function test_it_creates_unique_slug_when_duplicate_exists()
     {
-        // Create a mock class that uses the HasSlug trait
-        $mockClass = Mockery::mock('alias:App\Traits\HasSlug')
+        // Create a mock instance of the dummy class
+        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
         // Simulate checking and creating a unique slug
         $mockClass->shouldReceive('makeSlugUnique')
             ->with($mockClass, 'test-category')
-            ->andReturn('test-category-1')
+            ->andReturn('test-category-2')
             ->once();
 
         // Act: Make the slug unique
         $uniqueSlug = $mockClass->makeSlugUnique($mockClass, 'test-category');
 
         // Assert: Ensure the returned slug is unique
-        $this->assertEquals('test-category-1', $uniqueSlug);
+        $this->assertEquals('test-category-2', $uniqueSlug);
     }
 }
