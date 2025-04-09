@@ -1,0 +1,105 @@
+<?php
+
+namespace App\Traits;
+
+use App\Models\Translation;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+
+trait HasTranslations
+{
+    /**
+     * Get the translated value for a specific field.
+     *
+     * @param string $field
+     * @param string $locale
+     * @return string|null
+     */
+    public function translate(string $field, string $locale): ?string
+    {
+        return $this->translations()
+            ->where('field', $field)
+            ->where('locale', $locale)
+            ->value('value');
+    }
+
+    /**
+     * Set the translation for a specific field.
+     *
+     * @param string $field
+     * @param string $locale
+     * @param string $value
+     */
+    public function setTranslation(string $field, string $locale, string $value): void
+    {
+        $this->translations()->updateOrCreate(
+            ['field' => $field, 'locale' => $locale],
+            ['value' => $value]
+        );
+    }
+
+    /**
+     * Get the translated attribute or fallback to the original field value.
+     *
+     * @param string $field
+     * @param string|null $locale
+     * @return string
+     */
+    public function getTranslatedAttribute(string $field, ?string $locale = null): string
+    {
+        // Use the application's default locale if no specific locale is provided
+        $locale = $locale ?? app()->getLocale();
+
+        // Check if the field is translatable
+        if (in_array($field, $this->getTranslatableFields())) {
+            // Attempt to fetch the translated value
+            $translatedValue = $this->translate($field, $locale);
+
+            // Fallback to the original field value if no translation exists
+            return $translatedValue ?? (string) $this->getOriginal($field) ?? ''; // Ensure a string is returned
+        }
+
+        // If not translatable, return the original value of the field
+        return (string) $this->getOriginal($field) ?? '';
+    }
+
+    /**
+     * Override the `getAttribute()` method to automatically return translated fields if available.
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function getAttribute($key)
+    {
+        // Dynamically fetch the translatable fields defined in the model
+        $translatableFields = $this->getTranslatableFields();
+
+        // Check if the field is translatable and return the translated value if so
+        if (in_array($key, $translatableFields)) {
+            return $this->getTranslatedAttribute($key);
+        }
+
+        // Fallback to the default attribute value if not translatable
+        return parent::getAttribute($key);
+    }
+
+    /**
+     * Get the translatable fields from the model.
+     *
+     * @return array
+     */
+    public function getTranslatableFields(): array
+    {
+        // Ensure the model has a `translatable` property; otherwise, return an empty array
+        return property_exists($this, 'translatable') ? $this->translatable : [];
+    }
+
+    /**
+     * Relationship to the translations.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     */
+    public function translations(): MorphMany
+    {
+        return $this->morphMany(Translation::class, 'translatable');
+    }
+}
