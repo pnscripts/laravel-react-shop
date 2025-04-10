@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class ProductCategory extends Model
 {
@@ -75,5 +76,14 @@ class ProductCategory extends Model
     public function scopeByTitle($query, $title): Builder
     {
         return $query->where('title', 'like', "%$title%");
+    }
+
+    /**
+     * The attributes that belong to the product category.
+     */
+    public function productAttributes(): BelongsToMany
+    {
+        return $this->belongsToMany(ProductAttribute::class)
+                    ->withTimestamps();
     }
 }
