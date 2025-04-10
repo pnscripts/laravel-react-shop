@@ -6,7 +6,9 @@ use App\Traits\HasSlug;
 use App\Traits\HasSortOrder;
 use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class ProductCategory extends Model
@@ -26,7 +28,7 @@ class ProductCategory extends Model
     /**
      * Relationship: Get all child categories (subcategories) of this category.
      */
-    public function children()
+    public function children(): HasMany
     {
         return $this->hasMany(self::class, 'parent_id');
     }
@@ -34,7 +36,7 @@ class ProductCategory extends Model
     /**
      * Relationship: Get the parent category.
      */
-    public function parent()
+    public function parent(): BlelongsTo
     {
         return $this->belongsTo(self::class, 'parent_id');
     }
@@ -46,7 +48,7 @@ class ProductCategory extends Model
      * @param bool $active
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function scopeWhereActive($query, bool $active = true)
+    public function scopeWhereActive($query, bool $active = true): Builder
     {
         return $query->where('is_active', $active);
     }
@@ -54,7 +56,7 @@ class ProductCategory extends Model
     /**
      * Scope: Filter categories by a specific parent category.
      */
-    public function scopeByParent($query, $parentId)
+    public function scopeByParent($query, $parentId): Builder
     {
         return $query->where('parent_id', $parentId);
     }
@@ -62,7 +64,7 @@ class ProductCategory extends Model
     /**
      * Scope: Filter categories by a specific slug.
      */
-    public function scopeBySlug($query, $slug)
+    public function scopeBySlug($query, $slug): Builder
     {
         return $query->where('slug', $slug);
     }
@@ -70,7 +72,7 @@ class ProductCategory extends Model
     /**
      * Scope: Filter categories by a specific title.
      */
-    public function scopeByTitle($query, $title)
+    public function scopeByTitle($query, $title): Builder
     {
         return $query->where('title', 'like', "%$title%");
     }
