@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\Product;
 use App\Traits\HasSlug;
 use App\Traits\HasSortOrder;
 use App\Traits\HasTranslations;
+use App\Models\ProductAttribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -86,5 +88,13 @@ class ProductCategory extends Model
     {
         return $this->belongsToMany(ProductAttribute::class)
                     ->withTimestamps();
+    }
+
+    /**
+     * The products that belong to the product category.
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
     }
 }
