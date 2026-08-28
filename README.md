@@ -1,6 +1,6 @@
 # Laravel React Shop
 
-An open-source **Laravel 12 + React/Inertia** e-commerce starter kit. It is a working shop MVP: catalog, product page, session cart, guest or authenticated checkout, order confirmation, and a small admin for products and orders.
+An open-source **Laravel 13 + React/Inertia** e-commerce starter kit. It is a working shop MVP: catalog, product page, session cart, guest or authenticated checkout, order confirmation, and a small admin for products and orders.
 
 This is **not** a full marketplace. There is no Stripe (or any card gateway), no roles/permissions package, and no public REST API yet.
 
@@ -37,7 +37,7 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), no
 
 ## Stack
 
-- Laravel 12, PHP 8.2+
+- Laravel 13, PHP 8.3+
 - Official Laravel React starter with Inertia 2 and TypeScript
 - Tailwind CSS 4, shadcn/Radix UI
 - Session cart (`ShoppingCartService`)
