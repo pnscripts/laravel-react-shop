@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\OrderStatus;
 use Illuminate\Database\Seeder;
 
 class OrderStatusSeeder extends Seeder
@@ -12,6 +12,8 @@ class OrderStatusSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        foreach (['pending', 'paid', 'shipped', 'cancelled'] as $name) {
+            OrderStatus::firstOrCreate(['name' => $name]);
+        }
     }
 }

@@ -152,6 +152,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 ))}
                             </div>
                         </div>
+                        {auth.user && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
@@ -167,6 +168,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                                 <UserMenuContent user={auth.user} />
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        )}
                     </div>
                 </div>
             </div>

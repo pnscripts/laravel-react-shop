@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\ShoppingCartService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -45,6 +46,11 @@ class HandleInertiaRequests extends Middleware
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
                 'user' => $request->user(),
+            ],
+            'cartCount' => fn () => app(ShoppingCartService::class)->getTotalQuantity(),
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),

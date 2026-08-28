@@ -165,5 +165,37 @@ class ShoppingCartService
     {
         return $this->getCart()->getTotalQuantity();
     }
+
+    /**
+     * Remove every item from the cart.
+     */
+    public function clearCart(): void
+    {
+        $this->request->session()->forget($this->sessionKey);
+    }
+
+    /**
+     * Cart payload for Inertia pages.
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'items' => $this->getCartItems()->map(fn ($item) => [
+                'product_id' => $item->product_id,
+                'title' => $item->title,
+                'price' => $item->price,
+                'discount_price' => $item->discount_price,
+                'image' => $item->image,
+                'stock' => $item->stock,
+                'quantity' => $item->quantity,
+                'line_total' => $item->getTotalPrice(),
+            ])->values()->all(),
+            'total_quantity' => $this->getTotalQuantity(),
+            'total_price' => $this->getTotalPrice(),
+            'final_price' => $this->getFinalPrice(),
+        ];
+    }
 }
 

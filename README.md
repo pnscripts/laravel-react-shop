@@ -1,275 +1,116 @@
+# Laravel React Shop
 
-# 🛒 Online Store Platform
+An open-source **Laravel 12 + React/Inertia** e-commerce starter kit. It is a working shop MVP: catalog, product page, session cart, guest or authenticated checkout, order confirmation, and a small admin for products and orders.
 
-A modern web application representing an online store, built using **Laravel 12** and a **React Starter Kit**. This project includes full backend support for managing products, categories, carts, and orders, along with roles and permissions, rich testing and multilingual support.
-
----
-
-## 🚀 Features
-
-### 🛍️ Products & Categories
-- Full **CRUD** for products and categories
-- Product attributes include:
-  - `name`, `description`, `price`, `slug` and more
-  - `size`, `color`, `model` and etc.
-- Products are organized into categories (e.g. Electronics, Apparel, Books)
-- Filter products by category
-- Product detail page support (via slug)
-- Pagination for product listings
-
-### 🧃 Cart
-- Add products to cart
-- View cart summary: quantity, subtotal, total
-- Remove products from cart
-- Checkout process
-
-### ✅ Orders
-- Users provide name, email, phone, and address on checkout
-- Orders are saved with status and payment method
-- Soft deletes enabled for safe removal
-- Includes **order status tracking** (e.g. pending, completed, shipped)
-- Payment method types like cash, Stripe, or PayPal supported
-- Order item model tracks quantity and product snapshot
-
-### 💳 Payment Methods & Order Statuses
-
-- Manageable via Admin panel or API
-- Used in admin workflows and checkout process
-
-### 👤 Users
-- User registration & login
-- Authenticated user order history
-- Role-based permissions
-
-### 🛠️ Admin Panel
-- Manage products, categories, orders and more
-- Control payment methods and order statuses
+This is **not** a full marketplace. There is no Stripe (or any card gateway), no roles/permissions package, and no public REST API yet.
 
 ---
 
-## 🧩 Technologies Used
+## What is implemented
 
-| Layer       | Tools                                   |
-|-------------|-----------------------------------------|
-| Backend     | Laravel 12 (PHP 8+)                     |
-| Frontend    | React (Starter Kit)                     |
-| ORM         | Laravel Eloquent                        |
-| Styling     | Tailwind CSS                            |
-| Routing     | RESTful APIs + Web routes               |
-| Slugs       | Automatically generated                 |
-| Translations| Dynamic via custom Trait                |
-| Database    | SQL (SQLite, MySQL, PostgreSQL, etc)    |
-| Testing     | PHPUnit                                 |
-| Factories   | Complete coverage for all models        |
+- Public storefront
+  - Home with featured/active products (`GET /`)
+  - Shop index with optional category filter and pagination (`GET /shop`)
+  - Product page by slug (`GET /shop/{slug}`)
+  - Session cart: add, update quantity, remove
+  - Checkout (guest or signed-in): name, email, phone, address, payment method
+  - Order confirmation (`GET /orders/{order}`) for the owner or the current session
+- Auth from the official Laravel React starter (register, login, password reset, profile)
+- Simple admin (`is_admin` on `users`, not a roles package)
+  - Products: list, create, edit, deactivate
+  - Orders: list, update status
+- Domain models already in the repo: `Product`, `ProductCategory`, `ProductAttribute*`, `Order`, `OrderItem`, `OrderStatus`, `PaymentMethod`, `Translation`, `ShoppingCartService`
+- Product titles use the existing `HasTranslations` accessor (`title`)
+- Manual payment methods only: cash on delivery and bank transfer
+- PHPUnit feature/unit tests for models, cart, shop flow, and admin access
 
----
+## What is not implemented
 
-## 🧪 Testing
-
-- Full test coverage using **PHPUnit**
-- Follows **AAA structure** with clear comments
-- Covers:
-  - All RESTful API endpoints
-  - Validation rules
-  - Model relationships
-  - Edge cases
-  - Web and API functionality
-
-> All tests are automatically reset with `RefreshDatabase`.
+- Stripe, PayPal, or any payment gateway
+- Spatie (or similar) roles/permissions — admin is a boolean `is_admin` column
+- REST API and Scramble API docs (the package is still in `composer.json` from earlier work, but there are no shop API routes)
+- Language switcher UI (the translation trait exists; the storefront is English)
+- Category admin, attribute filtering, media uploads, order history page for customers
+- Production-ready Telescope: it is disabled in `.env.example` (`TELESCOPE_ENABLED=false`)
 
 ---
 
-## 🌍 Localization
+## Stack
 
-Multilingual support is implemented using built-in using **Laravel's native localization system** and a **custom dynamic translation trait**, offering robust and scalable language handling:
-
-- Models such as Product, Category and more support dynamic translation of fields like name, description, etc.
-- Translations are stored in the database
-- Separate translation files for `bg`, `en`, etc. (for the static texts)
-- Slugs are language-dependent, allowing localized and SEO-friendly URLs per language
-- Language switching is fully supported and integrated with translated model attributes
-- Easily extendable to support additional languages via the database
+- Laravel 12, PHP 8.2+
+- Official Laravel React starter with Inertia 2 and TypeScript
+- Tailwind CSS 4, shadcn/Radix UI
+- Session cart (`ShoppingCartService`)
+- SQLite by default (MySQL/PostgreSQL work if you change `.env`)
 
 ---
 
-## 📦 Installation
-
-### 1. Clone and Install Dependencies
+## Install
 
 ```bash
-git clone https://github.com/Petar-V-Nikolov/Laravel-React-shop.git
-cd Laravel-React-shop
+git clone git@github.com:Petar-V-Nikolov/laravel-react-shop.git
+cd laravel-react-shop
 composer install
 cp .env.example .env
 php artisan key:generate
 ```
 
-> ✅ Make sure to update your `.env` file with the correct database configuration and environment settings.
+SQLite is the default. Create the database file if it does not exist:
 
-### 2. Compile Assets & Run Initial Setup
+```bash
+touch database/database.sqlite
+```
+
+Then:
+
+```bash
+php artisan migrate --seed
+npm install
+npm run dev
+```
+
+In another terminal:
+
+```bash
+php artisan serve
+```
+
+Or run the bundled Composer script (app server + Vite + queue + logs):
 
 ```bash
 composer run dev
 ```
 
-This will:
-- Run database migrations
-- Seed default data
-- Compile frontend assets
+Open `http://localhost:8000`.
 
-### 3. Seed Additional Data (Optional)
+### Demo credentials
 
-```bash
-php artisan db:seed
-```
+After `php artisan migrate --seed`:
 
-If you want to reseed the database:
+- Email: `test@example.com`
+- Password: `password`
+- This user is an admin (`is_admin = true`)
 
-```bash
-php artisan migrate:fresh --seed
-```
-
-> ⚠️ **Warning:** This will reset and repopulate the database with fresh seed data. All existing data will be lost.
+Seeded payment methods: **Cash on Delivery**, **Bank Transfer**.  
+Seeded order statuses: **pending**, **paid**, **shipped**, **cancelled**.  
+Product seeders create sample categories, attributes, and products.
 
 ---
 
-## 🧪 Run Tests
+## Tests
 
 ```bash
 php artisan test
 ```
 
-Or
+---
 
-```bash
-vendor/bin/phpunit
-```
+## Telescope
+
+`TELESCOPE_ENABLED=false` is set in `.env.example`. Do not enable Telescope in production without locking it down.
 
 ---
 
-## 📖 API Documentation
+## License
 
-This project uses [`dedoc/scramble`](https://github.com/dedoc/scramble) to **automatically generate Swagger-style API documentation**.
-
-To view the API docs:
-
-> Live preview available at `/docs/api` (recomended to configure it)
-
----
-
-## 🎯 Roadmap
-
-### 🧩 Core Features
-
-- [x] **Product Management**  
-  - [x] Product model and migration  
-  - [x] Attributes: name, description, price, slug, etc.  
-  - [x] Advanced attributes: size, color, model  
-  - [x] Category-based organization  
-  - [ ] Product controller and CRUD routes  
-  - [ ] Product UI/API integration  
-
-- [x] **Category Management**  
-  - [x] Category model and migration  
-  - [x] Language-specific slugs  
-  - [x] Nested category structure  
-  - [ ] Category controller and routes  
-
-- [x] **Attribute System**  
-  - [x] Attribute model and migration  
-  - [x] Relation to products based on categories
-  - [ ] Attribute-based filtering  
-
-### 🛒 Cart & Orders
-
-- [x] **Cart Functionality**  
-  - [x] Add/remove products from cart  
-  - [x] Quantity adjustment  
-  - [x] Cart total calculation  
-  - [x] Cart session or DB storage  
-  - [ ] Cart frontend integration  
-
-- [x] **Orders**  
-  - [x] Order model and migration  
-  - [x] Customer details capture (name, phone, address)  
-  - [x] Order items and snapshots  
-  - [x] Soft deletes  
-  - [x] Order statuses (pending, paid, shipped, etc.)  
-  - [ ] Admin order management interface  
-
-- [x] **Payment Methods & Statuses**  
-  - [x] Payment method model  
-  - [x] Order status model  
-  - [ ] Management via admin or API  
-  - [ ] Integration with Stripe / PayPal  
-
-### 🌐 Localization & SEO
-
-- [x] **Translations**  
-  - [x] Dynamic translation trait  
-  - [x] Database translation storage  
-  - [x] Static translations via lang files  
-  - [ ] Language switcher  
-
-- [x] **Localized Slugs**  
-  - [x] Language-dependent slugs  
-  - [x] SEO-friendly URLs  
-  - [x] Automatic slug generation per locale  
-
-### 🔐 Auth & User Roles
-
-- [x] **Users (from Starter Kit)**  
-  - [x] Authentication scaffolding  
-  - [x] Registration, login, logout  
-  - [x] Password reset and email verification  
-
-- [ ] **Roles & Permissions**  
-  - [ ] Role and permission models  
-  - [ ] Assign roles to users  
-  - [ ] Policies and gates integration  
-  - [ ] Admin-only access enforcement  
-
-### 🛠️ Admin Panel
-
-- [ ] **Admin Interfaces (planned)**  
-  - [ ] Product management  
-  - [ ] Category management  
-  - [ ] Orders and statuses  
-  - [ ] Payment method management  
-  - [ ] Role and permission assignment  
-
-### ⚙️ Dev Tools & API
-
-- [x] **API Documentation**  
-  - [x] `dedoc/scramble` integration  
-  - [x] Generate docs with artisan command  
-  - [x] Available at `/docs/api` after generation  
-
-- [x] **Testing Suite**  
-  - [x] Feature and unit test coverage  
-  - [x] Factories for all models  
-  - [x] PHPUnit configuration  
-  - [x] Uses RefreshDatabase trait  
-
-### 🎨 Frontend (React)
-
-- [ ] **React SPA Setup**  
-  - [ ] Product listing  
-  - [ ] Product detail pages  
-  - [ ] Cart UI  
-  - [ ] Order placement flow  
-  - [ ] Admin dashboard
-
-
----
-
-## 🧑‍💻 Author
-
-Created by Petar Nikolov for educational and personal development purposes.  
-Contributions are welcome!
-
----
-
-## 📜 License
-
-This project is open-source and licensed under the [MIT License](LICENSE).
+MIT © 2026 Petar Nikolov / PN Scripts

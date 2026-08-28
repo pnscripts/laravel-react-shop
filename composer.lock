@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41635a12dc3a3ca071746ccb11492998",
+    "content-hash": "ebd1b73e9c7e9e09546487ba6d5f75e2",
     "packages": [
         {
             "name": "brick/math",
@@ -6249,12 +6249,12 @@
             "version": "v3.15.3",
             "source": {
                 "type": "git",
-                "url": "https://github.com/barryvdh/laravel-debugbar.git",
+                "url": "https://github.com/fruitcake/laravel-debugbar.git",
                 "reference": "4ccab20844d18c5af08b68d310e7151a791c3037"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/barryvdh/laravel-debugbar/zipball/4ccab20844d18c5af08b68d310e7151a791c3037",
+                "url": "https://api.github.com/repos/fruitcake/laravel-debugbar/zipball/4ccab20844d18c5af08b68d310e7151a791c3037",
                 "reference": "4ccab20844d18c5af08b68d310e7151a791c3037",
                 "shasum": ""
             },

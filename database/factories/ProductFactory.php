@@ -41,4 +41,24 @@ class ProductFactory extends Factory
             'image' => $this->faker->imageUrl(600, 600, 'products', true),
         ];
     }
+
+    /**
+     * Indicate that the product is publicly visible.
+     */
+    public function active(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => true,
+        ]);
+    }
+
+    /**
+     * Indicate that the product is hidden from the storefront.
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
+    }
 }

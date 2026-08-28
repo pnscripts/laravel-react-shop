@@ -47,7 +47,16 @@ class Product extends Model
         'attribute_values' => 'array',
         'price' => 'decimal:2',
         'discount_price' => 'decimal:2',
+        'is_active' => 'boolean',
     ];
+
+    /**
+     * Scope: only products that are publicly visible.
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
 
     /**
      * Get the category this product belongs to.

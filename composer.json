@@ -1,11 +1,15 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravel/react-starter-kit",
+    "name": "petar-v-nikolov/laravel-react-shop",
     "type": "project",
-    "description": "The skeleton application for the Laravel framework.",
+    "description": "An open-source Laravel 12 + React/Inertia e-commerce starter kit with catalog, cart, checkout, and a simple admin.",
     "keywords": [
         "laravel",
-        "framework"
+        "react",
+        "inertia",
+        "ecommerce",
+        "shop",
+        "starter-kit"
     ],
     "license": "MIT",
     "require": {
