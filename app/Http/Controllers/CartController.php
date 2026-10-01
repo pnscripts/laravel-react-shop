@@ -36,7 +36,7 @@ class CartController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Added to cart.');
+        return back()->with('success', __('Added to cart.'));
     }
 
     public function update(UpdateCartRequest $request, Product $product): RedirectResponse
@@ -52,13 +52,13 @@ class CartController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Cart updated.');
+        return back()->with('success', __('Cart updated.'));
     }
 
     public function destroy(Product $product): RedirectResponse
     {
         $this->cart->removeItemFromCart($product->id);
 
-        return back()->with('success', 'Item removed from cart.');
+        return back()->with('success', __('Item removed from cart.'));
     }
 }

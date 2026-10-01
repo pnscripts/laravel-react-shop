@@ -27,9 +27,9 @@ class OrderController extends Controller
                 'email' => $order->email,
                 'phone' => $order->phone,
                 'address' => $order->address,
-                'status' => $order->orderStatus?->name,
+                'status' => $order->orderStatus ? __(ucfirst($order->orderStatus->name)) : null,
                 'payment_method' => $order->paymentMethod?->name,
-                'created_at' => $order->created_at?->toDayDateTimeString(),
+                'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LLL'),
                 'items' => $order->items->map(fn ($item) => [
                     'id' => $item->id,
                     'title' => $item->product_title ?? 'Product',

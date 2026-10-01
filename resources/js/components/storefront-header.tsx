@@ -4,12 +4,14 @@ import { Icon } from '@/components/icon';
 import LanguageSwitcher from '@/components/language-switcher';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import { LayoutDashboard, LogIn, Menu, ShoppingBag, Store } from 'lucide-react';
 
 export function StorefrontHeader() {
     const { auth, cartCount } = usePage<SharedData>().props;
+    const t = useTranslations();
 
     return (
         <header className="border-sidebar-border/80 bg-background/95 sticky top-0 z-40 border-b backdrop-blur">
@@ -22,33 +24,33 @@ export function StorefrontHeader() {
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" className="bg-sidebar w-64">
-                            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                            <SheetTitle className="sr-only">{t('Navigation Menu')}</SheetTitle>
                             <SheetHeader className="text-left">
                                 <AppLogo />
                             </SheetHeader>
                             <div className="flex flex-col gap-3 p-4 text-sm font-medium">
                                 <Link href={route('shop.index')} className="flex items-center gap-2">
                                     <Store className="h-4 w-4" />
-                                    Shop
+                                    {t('Shop')}
                                 </Link>
                                 <Link href={route('cart.index')} className="flex items-center gap-2">
                                     <ShoppingBag className="h-4 w-4" />
-                                    Cart ({cartCount})
+                                    {t('Cart (:count)', { count: cartCount })}
                                 </Link>
                                 {auth.user ? (
                                     <>
                                         <Link href={route('dashboard')} className="flex items-center gap-2">
                                             <LayoutDashboard className="h-4 w-4" />
-                                            Dashboard
+                                            {t('Dashboard')}
                                         </Link>
                                     </>
                                 ) : (
                                     <>
                                         <Link href={route('login')} className="flex items-center gap-2">
                                             <LogIn className="h-4 w-4" />
-                                            Log in
+                                            {t('Log in')}
                                         </Link>
-                                        <Link href={route('register')}>Register</Link>
+                                        <Link href={route('register')}>{t('Register')}</Link>
                                     </>
                                 )}
                             </div>
@@ -64,7 +66,7 @@ export function StorefrontHeader() {
                     <Button variant="ghost" asChild>
                         <Link href={route('shop.index')}>
                             <Icon iconNode={Store} className="h-4 w-4" />
-                            Shop
+                            {t('Shop')}
                         </Link>
                     </Button>
                 </nav>
@@ -73,7 +75,7 @@ export function StorefrontHeader() {
                     <Button variant="ghost" asChild>
                         <Link href={route('cart.index')} className="relative">
                             <ShoppingBag className="h-5 w-5" />
-                            <span className="hidden sm:inline">Cart</span>
+                            <span className="hidden sm:inline">{t('Cart')}</span>
                             {cartCount > 0 && (
                                 <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs">
                                     {cartCount}
@@ -85,15 +87,15 @@ export function StorefrontHeader() {
                     <AppearanceToggleDropdown />
                     {auth.user ? (
                         <Button variant="outline" asChild>
-                            <Link href={route('dashboard')}>Dashboard</Link>
+                            <Link href={route('dashboard')}>{t('Dashboard')}</Link>
                         </Button>
                     ) : (
                         <>
                             <Button variant="ghost" asChild>
-                                <Link href={route('login')}>Log in</Link>
+                                <Link href={route('login')}>{t('Log in')}</Link>
                             </Button>
                             <Button asChild>
-                                <Link href={route('register')}>Register</Link>
+                                <Link href={route('register')}>{t('Register')}</Link>
                             </Button>
                         </>
                     )}

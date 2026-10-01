@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { type Money } from '@/types';
 import { Head, Link } from '@inertiajs/react';
@@ -25,25 +26,27 @@ type OrderShow = {
 };
 
 export default function OrderShow({ order }: { order: OrderShow }) {
+    const t = useTranslations();
+
     return (
         <StorefrontLayout>
-            <Head title={`Order #${order.id}`} />
-            <h1 className="mb-2 text-3xl font-semibold tracking-tight">Order #{order.id}</h1>
-            <p className="text-muted-foreground mb-8">Thanks — we saved your order. Keep this page if you checked out as a guest.</p>
+            <Head title={t('Order #:id', { id: order.id })} />
+            <h1 className="mb-2 text-3xl font-semibold tracking-tight">{t('Order #:id', { id: order.id })}</h1>
+            <p className="text-muted-foreground mb-8">{t('Thanks — we saved your order. Keep this page if you checked out as a guest.')}</p>
 
             <div className="mb-8 grid gap-6 md:grid-cols-2">
                 <div className="rounded-xl border p-6">
-                    <h2 className="mb-3 font-semibold">Customer</h2>
+                    <h2 className="mb-3 font-semibold">{t('Customer')}</h2>
                     <p>{order.name}</p>
                     <p className="text-muted-foreground text-sm">{order.email}</p>
                     <p className="text-muted-foreground text-sm">{order.phone}</p>
                     <p className="mt-2 whitespace-pre-line">{order.address}</p>
                 </div>
                 <div className="rounded-xl border p-6">
-                    <h2 className="mb-3 font-semibold">Details</h2>
-                    <p>Status: {order.status ?? 'pending'}</p>
-                    <p>Payment: {order.payment_method ?? '—'}</p>
-                    {order.created_at && <p>Placed: {order.created_at}</p>}
+                    <h2 className="mb-3 font-semibold">{t('Details')}</h2>
+                    <p>{t('Status: :status', { status: order.status ?? t('pending') })}</p>
+                    <p>{t('Payment: :method', { method: order.payment_method ?? '—' })}</p>
+                    {order.created_at && <p>{t('Placed: :date', { date: order.created_at })}</p>}
                 </div>
             </div>
 
@@ -51,9 +54,9 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                 <table className="w-full text-sm">
                     <thead className="bg-muted/50 text-left">
                         <tr>
-                            <th className="px-4 py-3 font-medium">Item</th>
-                            <th className="px-4 py-3 font-medium">Qty</th>
-                            <th className="px-4 py-3 font-medium">Total</th>
+                            <th className="px-4 py-3 font-medium">{t('Item')}</th>
+                            <th className="px-4 py-3 font-medium">{t('Qty')}</th>
+                            <th className="px-4 py-3 font-medium">{t('Total')}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,9 +71,9 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                 </table>
             </div>
             <div className="mt-4 flex items-center justify-between">
-                <p className="font-semibold">Total {order.total.formatted}</p>
+                <p className="font-semibold">{t('Total :amount', { amount: order.total.formatted })}</p>
                 <Button asChild>
-                    <Link href={route('shop.index')}>Continue shopping</Link>
+                    <Link href={route('shop.index')}>{t('Continue shopping')}</Link>
                 </Button>
             </div>
         </StorefrontLayout>

@@ -58,6 +58,9 @@ class LocalizationServiceProvider extends ModuleServiceProvider
         ));
 
         Inertia::share('localization', fn () => $this->sharedProps(request()));
+
+        // Interface text for the current language, sent once per full page load.
+        Inertia::share('translations', Inertia::once(fn () => $this->interfaceTranslations(app()->getLocale())));
     }
 
     /**
@@ -80,5 +83,21 @@ class LocalizationServiceProvider extends ModuleServiceProvider
                 'active' => $language->code === $locale,
             ])->values()->all(),
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function interfaceTranslations(string $locale): array
+    {
+        $path = lang_path("{$locale}.json");
+
+        if ($locale === 'en' || ! is_file($path)) {
+            return [];
+        }
+
+        $translations = json_decode((string) file_get_contents($path), true);
+
+        return is_array($translations) ? $translations : [];
     }
 }

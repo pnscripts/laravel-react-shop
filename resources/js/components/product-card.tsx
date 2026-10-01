@@ -1,9 +1,11 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useTranslations } from '@/hooks/use-translations';
 import { type ProductCard as ProductCardType } from '@/types';
 import { Link } from '@inertiajs/react';
 
 export function ProductCard({ product }: { product: ProductCardType }) {
+    const t = useTranslations();
     const hasDiscount = product.discount_price !== null && product.discount_price.minor > 0;
 
     return (
@@ -13,7 +15,7 @@ export function ProductCard({ product }: { product: ProductCardType }) {
                     {product.image ? (
                         <img src={product.image} alt={product.title} className="size-full object-cover" />
                     ) : (
-                        <div className="text-muted-foreground flex size-full items-center justify-center text-sm">No image</div>
+                        <div className="text-muted-foreground flex size-full items-center justify-center text-sm">{t('No image')}</div>
                     )}
                 </div>
                 <CardHeader className="gap-2 px-4 pt-4">
@@ -31,7 +33,9 @@ export function ProductCard({ product }: { product: ProductCardType }) {
                     </div>
                 </CardContent>
                 <CardFooter className="px-4 pb-4">
-                    <span className="text-muted-foreground text-sm">{product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}</span>
+                    <span className="text-muted-foreground text-sm">
+                        {product.stock > 0 ? t(':count in stock', { count: product.stock }) : t('Out of stock')}
+                    </span>
                 </CardFooter>
             </Link>
         </Card>

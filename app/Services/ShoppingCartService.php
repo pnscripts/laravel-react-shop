@@ -42,7 +42,7 @@ class ShoppingCartService
         $lines = $this->getLines();
 
         if (! isset($lines[$productId])) {
-            throw new CartException('Item not found in the cart.');
+            throw new CartException(__('Item not found in the cart.'));
         }
 
         $this->assertQuantityAvailable($productId, $quantity);
@@ -151,17 +151,17 @@ class ShoppingCartService
     private function assertQuantityAvailable(int $productId, int $quantity): void
     {
         if ($quantity <= 0) {
-            throw new CartException('Quantity must be greater than 0.');
+            throw new CartException(__('Quantity must be greater than 0.'));
         }
 
         $product = Product::query()->active()->find($productId);
 
         if (! $product) {
-            throw new CartException('This product is not available.');
+            throw new CartException(__('This product is not available.'));
         }
 
         if ($quantity > $product->stock) {
-            throw new CartException("Only {$product->stock} of {$product->title} available.");
+            throw new CartException(__('Only :stock of :product available.', ['stock' => $product->stock, 'product' => $product->title]));
         }
     }
 

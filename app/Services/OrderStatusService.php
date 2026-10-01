@@ -41,7 +41,7 @@ class OrderStatusService
                         ->decrement('stock', $item->quantity);
 
                     if ($taken === 0) {
-                        throw new CheckoutException("Not enough stock to reopen this order ({$item->product_title}).");
+                        throw new CheckoutException(__('Not enough stock to reopen this order (:product).', ['product' => (string) $item->product_title]));
                     }
                 }
             }

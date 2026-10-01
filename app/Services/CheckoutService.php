@@ -29,7 +29,7 @@ class CheckoutService
         $lines = $this->cart->getLines();
 
         if ($lines === []) {
-            throw new CheckoutException('Your cart is empty.');
+            throw new CheckoutException(__('Your cart is empty.'));
         }
 
         // Lock rows in a stable order so concurrent checkouts cannot deadlock.
@@ -61,7 +61,7 @@ class CheckoutService
                 $product = $products->get($productId);
 
                 if (! $product || ! $product->is_active) {
-                    throw new CheckoutException('A product in your cart is no longer available. Please review your cart.');
+                    throw new CheckoutException(__('A product in your cart is no longer available. Please review your cart.'));
                 }
 
                 // Conditional decrement: never lets stock go below zero, even without row locks (SQLite).
@@ -71,7 +71,7 @@ class CheckoutService
                     ->decrement('stock', $quantity);
 
                 if ($decremented === 0) {
-                    throw new CheckoutException("Not enough stock for {$product->title}. Available: {$product->stock}.");
+                    throw new CheckoutException(__('Not enough stock for :product. Available: :stock.', ['product' => $product->title, 'stock' => $product->stock]));
                 }
 
                 OrderItem::create([

@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { type Money } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -23,6 +24,7 @@ type ProductShow = {
 };
 
 export default function ShopShow({ product }: { product: ProductShow }) {
+    const t = useTranslations();
     const hasDiscount = product.discount_price !== null && product.discount_price.minor > 0;
     const { data, setData, post, processing, errors } = useForm({
         product_id: product.id,
@@ -39,7 +41,7 @@ export default function ShopShow({ product }: { product: ProductShow }) {
             <Head title={product.title} />
             <div className="mb-6 text-sm">
                 <Link href={route('shop.index')} className="text-muted-foreground hover:text-foreground">
-                    Shop
+                    {t('Shop')}
                 </Link>
                 {product.category && (
                     <>
@@ -56,7 +58,7 @@ export default function ShopShow({ product }: { product: ProductShow }) {
                     {product.image ? (
                         <img src={product.image} alt={product.title} className="aspect-square w-full object-cover" />
                     ) : (
-                        <div className="text-muted-foreground flex aspect-square items-center justify-center">No image</div>
+                        <div className="text-muted-foreground flex aspect-square items-center justify-center">{t('No image')}</div>
                     )}
                 </div>
 
@@ -68,7 +70,7 @@ export default function ShopShow({ product }: { product: ProductShow }) {
                         {hasDiscount && <span className="text-muted-foreground line-through">{product.price.formatted}</span>}
                     </div>
                     {product.description && <p className="text-muted-foreground mb-6 whitespace-pre-line">{product.description}</p>}
-                    {product.sku && <p className="text-muted-foreground mb-4 text-sm">SKU: {product.sku}</p>}
+                    {product.sku && <p className="text-muted-foreground mb-4 text-sm">{t('SKU: :sku', { sku: product.sku })}</p>}
 
                     {product.attributes.length > 0 && (
                         <dl className="mb-6 grid gap-2 text-sm">
@@ -83,7 +85,7 @@ export default function ShopShow({ product }: { product: ProductShow }) {
 
                     <form onSubmit={submit} className="grid max-w-sm gap-4">
                         <div className="grid gap-2">
-                            <Label htmlFor="quantity">Quantity</Label>
+                            <Label htmlFor="quantity">{t('Quantity')}</Label>
                             <Input
                                 id="quantity"
                                 type="number"
@@ -96,7 +98,7 @@ export default function ShopShow({ product }: { product: ProductShow }) {
                             <InputError message={errors.quantity ?? errors.product_id} />
                         </div>
                         <Button type="submit" disabled={processing || product.stock < 1}>
-                            {product.stock < 1 ? 'Out of stock' : 'Add to cart'}
+                            {product.stock < 1 ? t('Out of stock') : t('Add to cart')}
                         </Button>
                     </form>
                 </div>

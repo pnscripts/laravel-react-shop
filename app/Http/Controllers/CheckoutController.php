@@ -22,7 +22,7 @@ class CheckoutController extends Controller
     public function create(Request $request): Response|RedirectResponse
     {
         if ($this->cart->getCartItems()->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+            return redirect()->route('cart.index')->with('error', __('Your cart is empty.'));
         }
 
         $user = $request->user();
@@ -58,6 +58,6 @@ class CheckoutController extends Controller
 
         return redirect()
             ->route('orders.show', $order)
-            ->with('success', 'Thank you! Your order has been placed.');
+            ->with('success', __('Thank you! Your order has been placed.'));
     }
 }

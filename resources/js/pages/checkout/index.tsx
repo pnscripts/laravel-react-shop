@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { type CartSummary } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
@@ -24,6 +25,7 @@ export default function Checkout({
     paymentMethods: PaymentMethod[];
     defaults: { name: string; email: string };
 }) {
+    const t = useTranslations();
     const { data, setData, post, processing, errors } = useForm({
         name: defaults.name,
         email: defaults.email,
@@ -39,33 +41,33 @@ export default function Checkout({
 
     return (
         <StorefrontLayout>
-            <Head title="Checkout" />
-            <h1 className="mb-6 text-3xl font-semibold tracking-tight">Checkout</h1>
+            <Head title={t('Checkout')} />
+            <h1 className="mb-6 text-3xl font-semibold tracking-tight">{t('Checkout')}</h1>
 
             <form onSubmit={submit} className="grid gap-8 lg:grid-cols-3">
                 <div className="grid gap-4 lg:col-span-2">
                     <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+                        <Label htmlFor="name">{t('Name')}</Label>
                         <Input id="name" value={data.name} onChange={(event) => setData('name', event.target.value)} required />
                         <InputError message={errors.name} />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email">{t('Email')}</Label>
                         <Input id="email" type="email" value={data.email} onChange={(event) => setData('email', event.target.value)} required />
                         <InputError message={errors.email} />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="phone">Phone</Label>
+                        <Label htmlFor="phone">{t('Phone')}</Label>
                         <Input id="phone" value={data.phone} onChange={(event) => setData('phone', event.target.value)} required />
                         <InputError message={errors.phone} />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="address">Address</Label>
+                        <Label htmlFor="address">{t('Address')}</Label>
                         <Textarea id="address" value={data.address} onChange={(event) => setData('address', event.target.value)} required />
                         <InputError message={errors.address} />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="payment_method_id">Payment method</Label>
+                        <Label htmlFor="payment_method_id">{t('Payment method')}</Label>
                         <select
                             id="payment_method_id"
                             className="border-input h-9 rounded-md border bg-transparent px-3 text-sm"
@@ -89,7 +91,7 @@ export default function Checkout({
                 </div>
 
                 <aside className="h-fit rounded-xl border p-6">
-                    <h2 className="mb-4 font-semibold">Order summary</h2>
+                    <h2 className="mb-4 font-semibold">{t('Order summary')}</h2>
                     <ul className="mb-4 space-y-2 text-sm">
                         {cart.items.map((item) => (
                             <li key={item.product_id} className="flex justify-between gap-4">
@@ -101,17 +103,17 @@ export default function Checkout({
                         ))}
                     </ul>
                     <div className="mb-6 flex justify-between font-semibold">
-                        <span>Total</span>
+                        <span>{t('Total')}</span>
                         <span>{cart.final_price.formatted}</span>
                     </div>
                     <Button type="submit" className="w-full" disabled={processing}>
-                        Place order
+                        {t('Place order')}
                     </Button>
                     <Button variant="ghost" className="mt-2 w-full" asChild>
-                        <Link href={route('cart.index')}>Back to cart</Link>
+                        <Link href={route('cart.index')}>{t('Back to cart')}</Link>
                     </Button>
                     <p className="text-muted-foreground mt-4 text-xs">
-                        No card payments. This starter only records cash on delivery or bank transfer.
+                        {t('No card payments. This starter only records cash on delivery or bank transfer.')}
                     </p>
                 </aside>
             </form>

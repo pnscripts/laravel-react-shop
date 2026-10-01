@@ -1,20 +1,23 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { type CartSummary } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
 export default function CartIndex({ cart }: { cart: CartSummary }) {
+    const t = useTranslations();
+
     return (
         <StorefrontLayout>
-            <Head title="Cart" />
-            <h1 className="mb-6 text-3xl font-semibold tracking-tight">Cart</h1>
+            <Head title={t('Cart')} />
+            <h1 className="mb-6 text-3xl font-semibold tracking-tight">{t('Cart')}</h1>
 
             {cart.items.length === 0 ? (
                 <div className="rounded-xl border px-6 py-10 text-center">
-                    <p className="text-muted-foreground mb-4">Your cart is empty.</p>
+                    <p className="text-muted-foreground mb-4">{t('Your cart is empty.')}</p>
                     <Button asChild>
-                        <Link href={route('shop.index')}>Continue shopping</Link>
+                        <Link href={route('shop.index')}>{t('Continue shopping')}</Link>
                     </Button>
                 </div>
             ) : (
@@ -24,9 +27,9 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                             <table className="w-full text-sm">
                                 <thead className="bg-muted/50 text-left">
                                     <tr>
-                                        <th className="px-4 py-3 font-medium">Product</th>
-                                        <th className="px-4 py-3 font-medium">Qty</th>
-                                        <th className="px-4 py-3 font-medium">Total</th>
+                                        <th className="px-4 py-3 font-medium">{t('Product')}</th>
+                                        <th className="px-4 py-3 font-medium">{t('Qty')}</th>
+                                        <th className="px-4 py-3 font-medium">{t('Total')}</th>
                                         <th className="px-4 py-3" />
                                     </tr>
                                 </thead>
@@ -59,7 +62,7 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                                                     size="sm"
                                                     onClick={() => router.delete(route('cart.destroy', item.product_id))}
                                                 >
-                                                    Remove
+                                                    {t('Remove')}
                                                 </Button>
                                             </td>
                                         </tr>
@@ -69,17 +72,17 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                         </div>
                     </div>
                     <aside className="h-fit rounded-xl border p-6">
-                        <h2 className="mb-4 font-semibold">Summary</h2>
+                        <h2 className="mb-4 font-semibold">{t('Summary')}</h2>
                         <div className="mb-2 flex justify-between text-sm">
-                            <span>Items</span>
+                            <span>{t('Items')}</span>
                             <span>{cart.total_quantity}</span>
                         </div>
                         <div className="mb-6 flex justify-between font-semibold">
-                            <span>Total</span>
+                            <span>{t('Total')}</span>
                             <span>{cart.final_price.formatted}</span>
                         </div>
                         <Button className="w-full" asChild>
-                            <Link href={route('checkout.create')}>Checkout</Link>
+                            <Link href={route('checkout.create')}>{t('Checkout')}</Link>
                         </Button>
                     </aside>
                 </div>

@@ -39,6 +39,7 @@ export interface SharedData {
     };
     ziggy: Config & { location: string };
     localization: Localization;
+    translations: Record<string, string>;
     sidebarOpen: boolean;
     [key: string]: unknown;
 }
