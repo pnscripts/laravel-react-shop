@@ -87,6 +87,18 @@ php artisan pnshop:plugin:sign extensions/acme/store-notice --key-id=acme-2026 -
 - **What is checked:** a signed plugin is verified on install, update and enable. Any changed file breaks the signature.
 - **Requiring signatures:** `PNSHOP_REQUIRE_SIGNATURES=true` refuses unsigned plugins.
 
+## Reference plugin
+
+`extensions/pnshop/handling-fee` ships with PN Shop. It is available but not installed. It adds a handling fee to small orders and shows every part of a plugin:
+
+- a manifest with a permission and settings;
+- a migration;
+- an admin screen;
+- a `cart.totals` stage;
+- translations.
+
+Read its README, then install it from Admin → Extensions to try it.
+
 ## Writing a plugin
 
 ```php
