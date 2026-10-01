@@ -44,12 +44,14 @@ class ProductFactory extends Factory
     }
 
     /**
-     * Indicate that the product is publicly visible.
+     * Indicate that the product is publicly visible (and in stock, so it can be bought;
+     * tests that need an empty shelf pass 'stock' => 0).
      */
     public function active(): static
     {
         return $this->state(fn (array $attributes) => [
             'is_active' => true,
+            'stock' => max(1, (int) ($attributes['stock'] ?? 1)),
         ]);
     }
 

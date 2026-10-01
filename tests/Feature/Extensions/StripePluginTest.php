@@ -184,7 +184,7 @@ class StripePluginTest extends AdminTestCase
         DB::table('settings')->where('namespace', 'plugin.pnshop_stripe')->delete();
         app(Settings::class)->flush();
         PaymentMethod::factory()->create(['gateway' => 'stripe', 'name' => 'Card']);
-        $this->post(route('cart.store'), ['product_id' => Product::factory()->active()->create()->id, 'quantity' => 1]);
+        $this->post(route('cart.store'), ['product_id' => Product::factory()->active()->create(['stock' => 5])->id, 'quantity' => 1]);
 
         $this->get(route('checkout.create'))->assertInertia(fn ($page) => $page->where('paymentMethods', []));
     }
