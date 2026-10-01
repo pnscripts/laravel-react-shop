@@ -11,6 +11,7 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Presenters\ProductCardPresenter;
 use PnShop\Catalog\ProductType;
 
 class CartController extends Controller
@@ -19,8 +20,19 @@ class CartController extends Controller
 
     public function index(): Response
     {
+        $inCart = $this->cart->getCartItems()->pluck('product_id')->unique()->values()->all();
+
+        $suggestions = $inCart === [] ? collect() : Product::query()
+            ->active()
+            ->whereKeyNot($inCart)
+            ->whereHas('crossSellsOf', fn ($query) => $query->whereKey($inCart))
+            ->with(ProductCardPresenter::RELATIONS)
+            ->limit(4)
+            ->get();
+
         return Inertia::render('cart/index', [
             'cart' => $this->cart->toArray(),
+            'suggestions' => $suggestions->map(fn (Product $product) => ProductCardPresenter::present($product))->values(),
         ]);
     }
 

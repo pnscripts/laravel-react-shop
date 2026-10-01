@@ -1,11 +1,12 @@
 import InputError from '@/components/input-error';
+import { ProductCard } from '@/components/product-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { type Money, type ProductImage } from '@/types';
+import { type Money, type ProductCard as ProductCardType, type ProductImage } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler, useState } from 'react';
 
@@ -38,7 +39,7 @@ type ProductShow = {
     attributes: { attribute: string | null; value: string | null }[];
 };
 
-export default function ShopShow({ product }: { product: ProductShow }) {
+export default function ShopShow({ product, related }: { product: ProductShow; related: ProductCardType[] }) {
     const t = useTranslations();
     const [shownIndex, setShownIndex] = useState(0);
     const shownImage = product.gallery[shownIndex] ?? product.image;
@@ -199,6 +200,16 @@ export default function ShopShow({ product }: { product: ProductShow }) {
                     </form>
                 </div>
             </div>
+            {related.length > 0 && (
+                <section className="mt-16">
+                    <h2 className="mb-6 text-xl font-semibold">{t('You may also like')}</h2>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        {related.map((item) => (
+                            <ProductCard key={item.id} product={item} />
+                        ))}
+                    </div>
+                </section>
+            )}
         </StorefrontLayout>
     );
 }

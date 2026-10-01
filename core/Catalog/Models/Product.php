@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use PnShop\Catalog\Factories\ProductFactory;
+use PnShop\Catalog\ProductRelationType;
 use PnShop\Catalog\ProductType;
 use PnShop\Foundation\Concerns\HasSlug;
 use PnShop\Inventory\InventoryService;
@@ -143,6 +144,52 @@ class Product extends Model implements TranslatableModel
     public function options(): BelongsToMany
     {
         return $this->belongsToMany(Option::class)->withPivot('position')->orderByPivot('position');
+    }
+
+    /**
+     * @return BelongsToMany<Product, $this>
+     */
+    public function relatedProducts(): BelongsToMany
+    {
+        return $this->linkedProducts(ProductRelationType::Related);
+    }
+
+    /**
+     * @return BelongsToMany<Product, $this>
+     */
+    public function upsellProducts(): BelongsToMany
+    {
+        return $this->linkedProducts(ProductRelationType::Upsell);
+    }
+
+    /**
+     * @return BelongsToMany<Product, $this>
+     */
+    public function crossSellProducts(): BelongsToMany
+    {
+        return $this->linkedProducts(ProductRelationType::CrossSell);
+    }
+
+    /**
+     * Products that list this one as a cross-sell (inverse of crossSellProducts).
+     *
+     * @return BelongsToMany<Product, $this>
+     */
+    public function crossSellsOf(): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'product_relations', 'related_product_id', 'product_id')
+            ->wherePivot('type', ProductRelationType::CrossSell->value);
+    }
+
+    /**
+     * @return BelongsToMany<Product, $this>
+     */
+    private function linkedProducts(ProductRelationType $type): BelongsToMany
+    {
+        return $this->belongsToMany(self::class, 'product_relations', 'product_id', 'related_product_id')
+            ->withPivotValue('type', $type->value)
+            ->withPivot('position')
+            ->orderByPivot('position');
     }
 
     /**

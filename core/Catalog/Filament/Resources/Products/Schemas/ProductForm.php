@@ -17,6 +17,7 @@ use Illuminate\Validation\Rules\Unique;
 use PnShop\Catalog\Filament\Resources\Categories\CategoryResource;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductAttribute;
+use PnShop\Catalog\ProductRelationType;
 use PnShop\Catalog\ProductType;
 use PnShop\Localization\Filament\TranslationsSection;
 use PnShop\Media\MediaLibrary;
@@ -152,6 +153,19 @@ class ProductForm
                             ->multiple()
                             ->preload(),
                     ]),
+                Section::make('Related products')
+                    ->columnSpanFull()
+                    ->columns(3)
+                    ->collapsible()
+                    ->schema(array_map(fn (ProductRelationType $type) => Select::make($type->relationName())
+                        ->label($type->label())
+                        ->relationship($type->relationName(), 'title', fn ($query, ?Product $record) => $query->whereKeyNot($record->id ?? 0))
+                        ->multiple()
+                        ->searchable()
+                        // Keep the chosen order as the display order.
+                        ->saveRelationshipsUsing(fn (Product $record, ?array $state) => $record->{$type->relationName()}()->sync(
+                            collect($state ?? [])->values()->mapWithKeys(fn (mixed $id, int $position) => [(int) $id => ['position' => $position]])->all(),
+                        )), ProductRelationType::cases())),
                 TranslationsSection::make([
                     'title' => fn (string $name) => TextInput::make($name)->label('Title')->maxLength(255),
                     'slug' => fn (string $name) => TextInput::make($name)->label('URL slug')->maxLength(255)

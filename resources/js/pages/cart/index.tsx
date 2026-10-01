@@ -1,11 +1,12 @@
+import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { type CartSummary } from '@/types';
+import { type CartSummary, type ProductCard as ProductCardType } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
-export default function CartIndex({ cart }: { cart: CartSummary }) {
+export default function CartIndex({ cart, suggestions }: { cart: CartSummary; suggestions: ProductCardType[] }) {
     const t = useTranslations();
 
     return (
@@ -87,6 +88,16 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                         </Button>
                     </aside>
                 </div>
+            )}
+            {suggestions.length > 0 && (
+                <section className="mt-16">
+                    <h2 className="mb-6 text-xl font-semibold">{t('Customers also bought')}</h2>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        {suggestions.map((item) => (
+                            <ProductCard key={item.id} product={item} />
+                        ))}
+                    </div>
+                </section>
             )}
         </StorefrontLayout>
     );

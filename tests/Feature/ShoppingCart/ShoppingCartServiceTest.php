@@ -137,6 +137,6 @@ class ShoppingCartServiceTest extends TestCase
         $request->setLaravelSession($this->app['session.store']);
         $this->app->instance('request', $request);
 
-        return app(ShoppingCartService::class, ['request' => $request]);
+        return app(ShoppingCartService::class);
     }
 }

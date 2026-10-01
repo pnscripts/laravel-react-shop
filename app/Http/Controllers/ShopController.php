@@ -136,6 +136,7 @@ class ShopController extends Controller
                 ])->values(),
                 'default_variant_id' => $product->defaultVariant()?->id,
             ],
+            'related' => $this->relatedProducts($product),
         ]);
     }
 
@@ -160,6 +161,26 @@ class ShopController extends Controller
                 'label' => $attribute->label,
                 'values' => $attribute->values->map(fn (ProductAttributeValue $value) => ['id' => $value->id, 'value' => $value->value])->values()->all(),
             ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Upsells first, then related products; only purchasable ones.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function relatedProducts(Product $product): array
+    {
+        $load = fn ($query) => $query->active()->with(ProductCardPresenter::RELATIONS);
+
+        $product->load(['upsellProducts' => $load, 'relatedProducts' => $load]);
+
+        return $product->upsellProducts
+            ->concat($product->relatedProducts)
+            ->unique('id')
+            ->take(8)
+            ->map(fn (Product $related) => ProductCardPresenter::present($related))
             ->values()
             ->all();
     }

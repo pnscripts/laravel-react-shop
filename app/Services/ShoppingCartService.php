@@ -16,6 +16,10 @@ use PnShop\Money\MoneyPresenter;
 /**
  * Session cart. The session holds only variant ids and quantities; every read
  * resolves current prices, titles and stock from the database.
+ *
+ * Safe to keep across requests (controllers are cached on routes, and long-lived
+ * workers reuse instances): it always reads the current request's session, and its
+ * memoized items are tied to the cart contents they were built from.
  */
 class ShoppingCartService
 {
@@ -27,7 +31,10 @@ class ShoppingCartService
     /** @var Collection<int, CartItemDTO>|null */
     private ?Collection $items = null;
 
-    public function __construct(private Request $request, private InventoryService $inventory) {}
+    /** Cart contents the memoized $items were built from. */
+    private ?string $itemsFor = null;
+
+    public function __construct(private InventoryService $inventory) {}
 
     public function addItemToCart(int $variantId, int $quantity): void
     {
@@ -67,11 +74,14 @@ class ShoppingCartService
      */
     public function getCartItems(): Collection
     {
-        if ($this->items !== null) {
+        $lines = $this->getLines();
+        $signature = json_encode($lines);
+
+        if ($this->items !== null && $this->itemsFor === $signature) {
             return $this->items;
         }
 
-        $lines = $this->getLines();
+        $this->itemsFor = $signature;
 
         $variants = $this->purchasableVariants()
             ->whereKey(array_keys($lines))
@@ -92,7 +102,7 @@ class ShoppingCartService
      */
     public function getLines(): array
     {
-        $session = $this->request->session();
+        $session = $this->request()->session();
 
         foreach (self::LEGACY_SESSION_KEYS as $key) {
             if ($session->has($key)) {
@@ -125,7 +135,7 @@ class ShoppingCartService
 
     public function clearCart(): void
     {
-        $this->request->session()->forget(self::SESSION_KEY);
+        $this->request()->session()->forget(self::SESSION_KEY);
         $this->items = null;
     }
 
@@ -190,7 +200,12 @@ class ShoppingCartService
      */
     private function saveLines(array $lines): void
     {
-        $this->request->session()->put(self::SESSION_KEY, $lines);
+        $this->request()->session()->put(self::SESSION_KEY, $lines);
         $this->items = null;
+    }
+
+    private function request(): Request
+    {
+        return app('request');
     }
 }
