@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\ShoppingCart;
 
-use App\Services\ShoppingCartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use PnShop\Cart\ShoppingCartService;
 use PnShop\Catalog\Models\Product;
 use Tests\TestCase;
 

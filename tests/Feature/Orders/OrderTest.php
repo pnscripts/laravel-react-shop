@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Orders;
 
-use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class OrderTest extends TestCase

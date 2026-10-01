@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Sales\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Sales\Factories\OrderStatusFactory;
 
 class OrderStatus extends Model
 {
+    /** @use HasFactory<OrderStatusFactory> */
     use HasFactory, SoftDeletes;
 
     /**
@@ -28,5 +30,10 @@ class OrderStatus extends Model
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    protected static function newFactory(): OrderStatusFactory
+    {
+        return OrderStatusFactory::new();
     }
 }

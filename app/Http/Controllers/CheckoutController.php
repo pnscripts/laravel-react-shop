@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\CheckoutException;
 use App\Http\Controllers\Account\AddressesController;
 use App\Http\Requests\Checkout\StoreCheckoutRequest;
-use App\Models\PaymentMethod;
-use App\Services\CheckoutService;
-use App\Services\ShoppingCartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Cart\ShoppingCartService;
 use PnShop\Customer\Models\CustomerAddress;
 use PnShop\Customer\PostalAddress;
+use PnShop\Sales\Checkout\CheckoutService;
+use PnShop\Sales\Exceptions\CheckoutException;
+use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Security\BotTrap;
 
 class CheckoutController extends Controller

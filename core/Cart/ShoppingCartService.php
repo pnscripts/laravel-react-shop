@@ -1,14 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace PnShop\Cart;
 
-use App\DTOs\CartItemDTO;
-use App\Exceptions\CartException;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use PnShop\Cart\CartRepository;
+use PnShop\Cart\Exceptions\CartException;
 use PnShop\Cart\Totals\CartCalculator;
 use PnShop\Cart\Totals\CartTotals;
 use PnShop\Catalog\Models\ProductVariant;
@@ -76,7 +74,7 @@ class ShoppingCartService
     public function getCartItems(): Collection
     {
         $lines = $this->getLines();
-        $signature = json_encode($lines);
+        $signature = (string) json_encode($lines);
 
         if ($this->items !== null && $this->itemsFor === $signature) {
             return $this->items;

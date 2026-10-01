@@ -2,14 +2,14 @@
 
 namespace PnShop\Sales\Filament\Actions;
 
-use App\Exceptions\CheckoutException;
-use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Services\OrderStatusService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
+use PnShop\Sales\Exceptions\CheckoutException;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\OrderStatusService;
 
 class ChangeOrderStatusAction
 {

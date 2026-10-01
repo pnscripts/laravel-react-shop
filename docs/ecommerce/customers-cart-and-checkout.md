@@ -1,6 +1,6 @@
 # Customers, cart and checkout
 
-Customer code lives in `core/Customer`, `core/Cart` and `core/Security`. Checkout still lives in `app/Services/CheckoutService` and moves into the Sales module with the orders redesign (Phase 6).
+Customer code lives in `core/Customer`, the cart in `core/Cart` (`ShoppingCartService`), checkout in `core/Sales/Checkout` and form protection in `core/Security`.
 
 ## Customers
 

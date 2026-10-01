@@ -2,10 +2,10 @@
 
 namespace App\Http\Middleware;
 
-use App\Services\ShoppingCartService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use PnShop\Cart\ShoppingCartService;
 use PnShop\Settings\Settings;
 use Tighten\Ziggy\Ziggy;
 

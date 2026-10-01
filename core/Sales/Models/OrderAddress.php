@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Sales\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

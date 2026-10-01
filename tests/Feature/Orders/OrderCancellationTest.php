@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Orders;
 
-use App\Exceptions\CheckoutException;
-use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
-use App\Services\OrderStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PnShop\Catalog\Models\Product;
+use PnShop\Sales\Exceptions\CheckoutException;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\Models\PaymentMethod;
+use PnShop\Sales\OrderStatusService;
 use Tests\TestCase;
 
 class OrderCancellationTest extends TestCase

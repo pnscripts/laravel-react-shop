@@ -11,6 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PnShop\Customer\Models\CustomerAddress;
 use PnShop\Customer\Models\CustomerGroup;
+use PnShop\Sales\Models\Order;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 

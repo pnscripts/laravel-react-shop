@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Money\MoneyPresenter;
+use PnShop\Sales\Models\Order;
 
 class OrderController extends Controller
 {

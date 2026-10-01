@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Orders;
 
-use App\Models\OrderStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Sales\Models\OrderStatus;
 use Tests\TestCase;
 
 class OrderStatusTest extends TestCase

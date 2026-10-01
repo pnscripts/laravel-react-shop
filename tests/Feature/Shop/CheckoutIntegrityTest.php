@@ -2,14 +2,14 @@
 
 namespace Tests\Feature\Shop;
 
-use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Cart\Models\CartLine;
 use PnShop\Catalog\Models\Product;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class CheckoutIntegrityTest extends TestCase

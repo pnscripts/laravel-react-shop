@@ -2,8 +2,8 @@
 
 namespace PnShop\Sales\Policies;
 
-use App\Models\Order;
 use PnShop\Acl\Models\AdminUser;
+use PnShop\Sales\Models\Order;
 
 class OrderPolicy
 {

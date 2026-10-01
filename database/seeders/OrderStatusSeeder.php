@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\OrderStatus;
 use Illuminate\Database\Seeder;
+use PnShop\Sales\Models\OrderStatus;
 
 class OrderStatusSeeder extends Seeder
 {

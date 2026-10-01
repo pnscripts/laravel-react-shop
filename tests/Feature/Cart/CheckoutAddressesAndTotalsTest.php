@@ -2,9 +2,6 @@
 
 namespace Tests\Feature\Cart;
 
-use App\Models\Order;
-use App\Models\OrderAddress;
-use App\Models\PaymentMethod;
 use App\Models\User;
 use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -13,6 +10,9 @@ use PnShop\Cart\Totals\CartTotals;
 use PnShop\Cart\Totals\TotalLine;
 use PnShop\Catalog\Models\Product;
 use PnShop\Foundation\Extension\PipelineRegistry;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderAddress;
+use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class CheckoutAddressesAndTotalsTest extends TestCase

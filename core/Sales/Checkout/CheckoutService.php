@@ -1,15 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace PnShop\Sales\Checkout;
 
-use App\DTOs\CartItemDTO;
-use App\Exceptions\CheckoutException;
-use App\Models\Order;
-use App\Models\OrderAddress;
-use App\Models\OrderItem;
-use App\Models\OrderStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use PnShop\Cart\CartItemDTO;
+use PnShop\Cart\ShoppingCartService;
 use PnShop\Cart\Totals\CartCalculator;
 use PnShop\Cart\Totals\TotalLine;
 use PnShop\Catalog\Models\ProductVariant;
@@ -19,6 +15,11 @@ use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Localization\Localization;
+use PnShop\Sales\Exceptions\CheckoutException;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderAddress;
+use PnShop\Sales\Models\OrderItem;
+use PnShop\Sales\Models\OrderStatus;
 
 class CheckoutService
 {

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Customers;
 
-use App\Models\Order;
-use App\Models\OrderStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Customer\Models\CustomerAddress;
 use PnShop\Customer\Models\CustomerGroup;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderStatus;
 use PnShop\Security\BotTrap;
 use Tests\TestCase;
 

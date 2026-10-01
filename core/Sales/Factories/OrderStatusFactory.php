@@ -1,10 +1,10 @@
 <?php
 
-namespace Database\Factories;
+namespace PnShop\Sales\Factories;
 
-use App\Models\OrderStatus;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
+use PnShop\Sales\Models\OrderStatus;
 
 /**
  * @extends Factory<OrderStatus>

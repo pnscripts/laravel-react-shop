@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Sales\Models;
 
+use App\Models\User;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Money\MoneyCast;
 use PnShop\Money\MoneyPresenter;
+use PnShop\Sales\Factories\OrderFactory;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -25,6 +27,7 @@ use Spatie\Activitylog\Support\LogOptions;
  */
 class Order extends Model
 {
+    /** @use HasFactory<OrderFactory> */
     use HasFactory, LogsActivity, SoftDeletes;
 
     /**
@@ -176,5 +179,10 @@ class Order extends Model
             fn (Money $total, OrderItem $item) => $total->plus($item->lineTotal()),
             Money::zero($this->currency),
         );
+    }
+
+    protected static function newFactory(): OrderFactory
+    {
+        return OrderFactory::new();
     }
 }

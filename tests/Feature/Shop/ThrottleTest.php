@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Shop;
 
-use App\Models\PaymentMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class ThrottleTest extends TestCase

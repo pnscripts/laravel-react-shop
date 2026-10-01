@@ -2,12 +2,12 @@
 
 namespace PnShop\Customer\Filament\Resources\Customers\RelationManagers;
 
-use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use PnShop\Sales\Filament\Resources\Orders\OrderResource;
+use PnShop\Sales\Models\Order;
 
 class OrdersRelationManager extends RelationManager
 {

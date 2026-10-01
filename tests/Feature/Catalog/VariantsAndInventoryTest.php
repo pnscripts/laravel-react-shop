@@ -2,10 +2,6 @@
 
 namespace Tests\Feature\Catalog;
 
-use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
-use App\Services\OrderStatusService;
 use Inertia\Testing\AssertableInertia as Assert;
 use Livewire\Livewire;
 use PnShop\Catalog\Filament\Resources\Options\Pages\CreateOption;
@@ -21,6 +17,10 @@ use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\Models\StockMovement;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Inventory\StockMovementReason;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\Models\PaymentMethod;
+use PnShop\Sales\OrderStatusService;
 use Tests\Feature\Admin\AdminTestCase;
 
 class VariantsAndInventoryTest extends AdminTestCase

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\CartException;
 use App\Http\Requests\Cart\AddToCartRequest;
 use App\Http\Requests\Cart\UpdateCartRequest;
-use App\Services\ShoppingCartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Cart\Exceptions\CartException;
+use PnShop\Cart\ShoppingCartService;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Presenters\ProductCardPresenter;
 use PnShop\Catalog\ProductType;

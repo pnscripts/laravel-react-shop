@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace PnShop\Sales\Exceptions;
 
 use RuntimeException;
 

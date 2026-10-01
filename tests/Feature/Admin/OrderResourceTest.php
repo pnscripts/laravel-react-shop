@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\Order;
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
 use Livewire\Livewire;
 use PnShop\Catalog\Models\Product;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ListOrders;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ViewOrder;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\Models\PaymentMethod;
 
 class OrderResourceTest extends AdminTestCase
 {

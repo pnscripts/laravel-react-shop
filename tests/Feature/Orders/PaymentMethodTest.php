@@ -2,8 +2,8 @@
 
 namespace Tests\Feature\Orders;
 
-use App\Models\PaymentMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class PaymentMethodTest extends TestCase

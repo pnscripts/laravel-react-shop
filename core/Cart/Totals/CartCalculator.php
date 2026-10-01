@@ -2,9 +2,9 @@
 
 namespace PnShop\Cart\Totals;
 
-use App\DTOs\CartItemDTO;
 use Brick\Money\Money;
 use Illuminate\Support\Collection;
+use PnShop\Cart\CartItemDTO;
 use PnShop\Foundation\Extension\PipelineRegistry;
 
 /**

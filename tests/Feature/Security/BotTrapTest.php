@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\Order;
-use App\Models\PaymentMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PnShop\Catalog\Models\Product;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Security\BotTrap;
 use PnShop\Security\Captcha\CaptchaVerifier;
 use Tests\TestCase;

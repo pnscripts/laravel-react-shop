@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTOs;
+namespace PnShop\Cart;
 
 use Brick\Money\Money;
 use PnShop\Catalog\Models\ProductVariant;

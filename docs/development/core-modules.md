@@ -1,6 +1,6 @@
 # Core modules and the extension kernel
 
-PN Shop's platform code lives in `core/` under the `PnShop\` namespace. `app/` remains the merchant's application space; order, cart and checkout code still sits in `app/Models` and `app/Services` and moves into the Sales module with the orders redesign.
+PN Shop's platform code lives in `core/` under the `PnShop\` namespace. `app/` remains the merchant's application space: HTTP controllers, the customer `User` model and the starter-kit auth screens.
 
 ## Layout
 
@@ -19,7 +19,7 @@ core/
 ├── Customer/                customer groups, address books, PostalAddress + admin
 ├── Cart/                    database carts, guest merge, CartCalculator (cart.totals pipeline)
 ├── Security/                bot-trap middleware (honeypot, time trap), CaptchaVerifier
-├── Sales/                   order permissions, policy, admin resource, dashboard widgets
+├── Sales/                   orders, checkout, payment methods, admin resources, dashboard widgets
 └── Admin/                   the Filament panel (/admin)
 ```
 

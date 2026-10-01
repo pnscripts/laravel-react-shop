@@ -2,7 +2,6 @@
 
 namespace PnShop\Sales\Filament\Resources\Orders;
 
-use App\Models\Order;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -12,6 +11,7 @@ use PnShop\Sales\Filament\Resources\Orders\Pages\ListOrders;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ViewOrder;
 use PnShop\Sales\Filament\Resources\Orders\Schemas\OrderInfolist;
 use PnShop\Sales\Filament\Resources\Orders\Tables\OrdersTable;
+use PnShop\Sales\Models\Order;
 use UnitEnum;
 
 class OrderResource extends Resource

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Core;
 
-use App\Models\OrderItem;
 use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use PnShop\Catalog\Models\Product;
 use PnShop\Money\MoneyPresenter;
+use PnShop\Sales\Models\OrderItem;
 use Tests\TestCase;
 
 class MoneyTest extends TestCase

@@ -2,12 +2,12 @@
 
 namespace PnShop\Sales\Filament\Widgets;
 
-use App\Models\Order;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use PnShop\Sales\Filament\Resources\Orders\OrderResource;
+use PnShop\Sales\Models\Order;
 
 class LatestOrders extends TableWidget
 {

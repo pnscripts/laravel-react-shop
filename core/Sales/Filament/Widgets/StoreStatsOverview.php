@@ -2,10 +2,10 @@
 
 namespace PnShop\Sales\Filament\Widgets;
 
-use App\Models\Order;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use PnShop\Catalog\Models\Product;
+use PnShop\Sales\Models\Order;
 
 class StoreStatsOverview extends StatsOverviewWidget
 {

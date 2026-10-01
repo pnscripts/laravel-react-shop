@@ -2,12 +2,12 @@
 
 namespace PnShop\Sales\Filament\Resources\Orders\Schemas;
 
-use App\Models\Order;
-use App\Models\OrderItem;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderItem;
 
 class OrderInfolist
 {

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
-use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Money\MoneyPresenter;
+use PnShop\Sales\Models\Order;
 
 class OrdersController extends Controller
 {

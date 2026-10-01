@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Exceptions;
+namespace PnShop\Cart\Exceptions;
 
 use RuntimeException;
 

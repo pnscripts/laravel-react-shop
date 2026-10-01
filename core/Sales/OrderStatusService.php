@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Services;
+namespace PnShop\Sales;
 
-use App\Exceptions\CheckoutException;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\OrderStatus;
 use Illuminate\Support\Facades\DB;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Inventory\StockMovementReason;
+use PnShop\Sales\Exceptions\CheckoutException;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderItem;
+use PnShop\Sales\Models\OrderStatus;
 
 /**
  * Changes an order's status and moves its stock to match:

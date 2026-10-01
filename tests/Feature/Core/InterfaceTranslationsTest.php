@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Core;
 
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Product;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Security\BotTrap;
 use Tests\TestCase;
 

@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Sales\Models;
 
 use Brick\Money\Money;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -23,7 +22,7 @@ use PnShop\Money\MoneyCast;
  */
 class OrderItem extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
     /**
      * The attributes that are mass assignable.

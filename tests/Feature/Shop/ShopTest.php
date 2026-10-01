@@ -2,16 +2,16 @@
 
 namespace Tests\Feature\Shop;
 
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\OrderStatus;
-use App\Models\PaymentMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductAttribute;
 use PnShop\Catalog\Models\ProductVariant;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderItem;
+use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class ShopTest extends TestCase
