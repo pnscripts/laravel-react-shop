@@ -27,7 +27,9 @@ export default function AdminProducts({ products }: { products: Paginated<AdminP
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Admin products" />
             <div className="flex flex-col gap-4 p-4">
-                {flash.success && <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{flash.success}</div>}
+                {flash.success && (
+                    <div className="rounded-md border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{flash.success}</div>
+                )}
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold">Products</h1>
                     <Button asChild>
@@ -54,14 +56,20 @@ export default function AdminProducts({ products }: { products: Paginated<AdminP
                                     <td className="px-4 py-3">{product.price}</td>
                                     <td className="px-4 py-3">{product.stock}</td>
                                     <td className="px-4 py-3">
-                                        <Badge variant={product.is_active ? 'default' : 'secondary'}>{product.is_active ? 'Active' : 'Inactive'}</Badge>
+                                        <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                                            {product.is_active ? 'Active' : 'Inactive'}
+                                        </Badge>
                                     </td>
                                     <td className="px-4 py-3 text-right">
                                         <Button variant="ghost" size="sm" asChild>
                                             <Link href={route('admin.products.edit', product.id)}>Edit</Link>
                                         </Button>
                                         {product.is_active && (
-                                            <Button variant="ghost" size="sm" onClick={() => router.patch(route('admin.products.deactivate', product.id))}>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => router.patch(route('admin.products.deactivate', product.id))}
+                                            >
                                                 Deactivate
                                             </Button>
                                         )}

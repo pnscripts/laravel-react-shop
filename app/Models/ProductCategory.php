@@ -2,22 +2,20 @@
 
 namespace App\Models;
 
-use App\Models\Product;
 use App\Traits\HasSlug;
 use App\Traits\HasSortOrder;
 use App\Traits\HasTranslations;
-use App\Models\ProductAttribute;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductCategory extends Model
 {
-    use HasFactory, SoftDeletes, HasTranslations, HasSlug, HasSortOrder;
+    use HasFactory, HasSlug, HasSortOrder, HasTranslations, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -48,9 +46,7 @@ class ProductCategory extends Model
     /**
      * Scope: Filter categories by active status.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param bool $active
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
      */
     public function scopeWhereActive($query, bool $active = true): Builder
     {
@@ -87,7 +83,7 @@ class ProductCategory extends Model
     public function productAttributes(): BelongsToMany
     {
         return $this->belongsToMany(ProductAttribute::class)
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**

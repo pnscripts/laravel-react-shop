@@ -4,16 +4,16 @@ namespace App\Models;
 
 use App\Traits\HasSlug;
 use App\Traits\HasTranslations;
-use Illuminate\Support\Collection;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 class Product extends Model
 {
-    use HasFactory, SoftDeletes, HasSlug, HasTranslations;
+    use HasFactory, HasSlug, HasTranslations, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -79,8 +79,6 @@ class Product extends Model
      * Get the attributes with their values for this product.
      * This method retrieves the attributes defined in the product's category and their corresponding values.
      * It also checks which values have been selected for this product.
-     *
-     * @return \Illuminate\Support\Collection
      */
     public function getProductAttributesWithValues(): Collection
     {
@@ -92,7 +90,7 @@ class Product extends Model
         $selectedValueIds = $this->selectedAttributeValues->pluck('id')->toArray();
 
         return $categoryAttributes->map(function ($attribute) use ($selectedValueIds) {
-            $selectedValue = $attribute->values->firstWhere(fn($value) => in_array($value->id, $selectedValueIds));
+            $selectedValue = $attribute->values->firstWhere(fn ($value) => in_array($value->id, $selectedValueIds));
 
             return [
                 'attribute' => $attribute->label, // label should be translatable
@@ -100,5 +98,4 @@ class Product extends Model
             ];
         });
     }
-
 }

@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProductCategory;
-use Illuminate\Database\Seeder;
 use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\ProductCategory;
+use Illuminate\Database\Seeder;
 
 class ProductAttributeSeeder extends Seeder
 {
@@ -21,6 +20,7 @@ class ProductAttributeSeeder extends Seeder
         if ($categories->isEmpty()) {
             // If no categories exist, print a message and return
             $this->command->info('No product categories found. Skipping Product Attribute creation.');
+
             return;
         }
 

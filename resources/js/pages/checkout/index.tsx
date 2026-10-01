@@ -111,7 +111,9 @@ export default function Checkout({
                     <Button variant="ghost" className="mt-2 w-full" asChild>
                         <Link href={route('cart.index')}>Back to cart</Link>
                     </Button>
-                    <p className="text-muted-foreground mt-4 text-xs">No card payments. This starter only records cash on delivery or bank transfer.</p>
+                    <p className="text-muted-foreground mt-4 text-xs">
+                        No card payments. This starter only records cash on delivery or bank transfer.
+                    </p>
                 </aside>
             </form>
         </StorefrontLayout>

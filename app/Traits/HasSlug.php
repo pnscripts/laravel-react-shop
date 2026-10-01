@@ -2,8 +2,8 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 trait HasSlug
 {
@@ -57,7 +57,7 @@ trait HasSlug
                 ->when($model->exists, fn ($q) => $q->where('id', '!=', $model->id))
                 ->exists()
         ) {
-            $slug = $base . '-' . $i++; // Add counter to make slug unique
+            $slug = $base.'-'.$i++; // Add counter to make slug unique
         }
 
         return $slug;

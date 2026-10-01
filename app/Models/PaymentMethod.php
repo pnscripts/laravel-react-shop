@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PaymentMethod extends Model
 {
@@ -25,7 +26,7 @@ class PaymentMethod extends Model
     /**
      * Get the orders that use this payment method.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<Order>
+     * @return HasMany<Order>
      */
     public function orders()
     {

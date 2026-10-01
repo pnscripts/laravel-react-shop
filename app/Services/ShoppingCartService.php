@@ -4,23 +4,18 @@ namespace App\Services;
 
 use App\DTOs\ShoppingCartDTO;
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Exception;
 
 class ShoppingCartService
 {
     private string $sessionKey = 'shopping_cart';
 
-    /**
-     * @var Request
-     */
     private Request $request;
 
     /**
      * ShoppingCartService constructor.
-     *
-     * @param Request $request
      */
     public function __construct(Request $request)
     {
@@ -29,19 +24,14 @@ class ShoppingCartService
 
     /**
      * Get the shopping cart from the session.
-     *
-     * @return ShoppingCartDTO
      */
     private function getCart(): ShoppingCartDTO
     {
-        return $this->request->session()->get($this->sessionKey, new ShoppingCartDTO());
+        return $this->request->session()->get($this->sessionKey, new ShoppingCartDTO);
     }
 
     /**
      * Save the shopping cart to the session.
-     *
-     * @param ShoppingCartDTO $cart
-     * @return void
      */
     private function saveCart(ShoppingCartDTO $cart): void
     {
@@ -51,17 +41,14 @@ class ShoppingCartService
     /**
      * Add an item to the cart.
      *
-     * @param int $productId
-     * @param int $quantity
-     * @return void
      * @throws Exception
      */
     public function addItemToCart(int $productId, int $quantity): void
     {
         $product = Product::find($productId);
 
-        if (!$product) {
-            throw new Exception("Product not found.");
+        if (! $product) {
+            throw new Exception('Product not found.');
         }
 
         if ($quantity > $product->stock) {
@@ -81,17 +68,14 @@ class ShoppingCartService
     /**
      * Update an item's quantity in the cart.
      *
-     * @param int $productId
-     * @param int $quantity
-     * @return void
      * @throws Exception
      */
     public function updateItemQuantityInCart(int $productId, int $quantity): void
     {
         $product = Product::find($productId);
 
-        if (!$product) {
-            throw new Exception("Product not found.");
+        if (! $product) {
+            throw new Exception('Product not found.');
         }
 
         if ($quantity > $product->stock) {
@@ -110,9 +94,6 @@ class ShoppingCartService
 
     /**
      * Remove an item from the cart.
-     *
-     * @param int $productId
-     * @return void
      */
     public function removeItemFromCart(int $productId): void
     {
@@ -128,8 +109,6 @@ class ShoppingCartService
 
     /**
      * Get all items in the cart.
-     *
-     * @return Collection
      */
     public function getCartItems(): Collection
     {
@@ -138,8 +117,6 @@ class ShoppingCartService
 
     /**
      * Get the total price of the cart.
-     *
-     * @return float
      */
     public function getTotalPrice(): float
     {
@@ -148,8 +125,6 @@ class ShoppingCartService
 
     /**
      * Get the final price after applying any discounts.
-     *
-     * @return float
      */
     public function getFinalPrice(): float
     {
@@ -158,8 +133,6 @@ class ShoppingCartService
 
     /**
      * Get the total quantity of all items in the cart.
-     *
-     * @return int
      */
     public function getTotalQuantity(): int
     {
@@ -198,4 +171,3 @@ class ShoppingCartService
         ];
     }
 }
-

@@ -2,15 +2,13 @@
 
 namespace App\DTOs;
 
-use Illuminate\Support\Collection;
 use App\Models\Product;
+use Illuminate\Support\Collection;
 
 class ShoppingCartDTO
 {
     /**
      * The items in the shopping cart.
-     *
-     * @var Collection
      */
     public Collection $items;
 
@@ -23,16 +21,13 @@ class ShoppingCartDTO
     /**
      * Add an item to the shopping cart.
      *
-     * @param Product $product
-     * @param int $quantity
-     * @return void
      * @throws \Exception
      */
     public function addItem(Product $product, int $quantity): void
     {
         // Validate the quantity
         if ($quantity <= 0) {
-            throw new \Exception("Quantity must be greater than 0.");
+            throw new \Exception('Quantity must be greater than 0.');
         }
 
         // Check if the requested quantity exceeds the available stock
@@ -64,16 +59,13 @@ class ShoppingCartDTO
     /**
      * Update the quantity of an item in the cart.
      *
-     * @param Product $product
-     * @param int $quantity
-     * @return void
      * @throws \Exception
      */
     public function updateItemQuantity(Product $product, int $quantity): void
     {
         // Validate the quantity
         if ($quantity <= 0) {
-            throw new \Exception("Quantity must be greater than 0.");
+            throw new \Exception('Quantity must be greater than 0.');
         }
 
         // Find the item in the cart
@@ -88,15 +80,12 @@ class ShoppingCartDTO
             // Update the quantity of the existing item
             $item->quantity = $quantity;
         } else {
-            throw new \Exception("Item not found in the cart.");
+            throw new \Exception('Item not found in the cart.');
         }
     }
 
     /**
      * Remove an item from the cart.
-     *
-     * @param int $productId
-     * @return void
      */
     public function removeItem(int $productId): void
     {
@@ -106,8 +95,6 @@ class ShoppingCartDTO
 
     /**
      * Get all items in the cart.
-     *
-     * @return Collection
      */
     public function getItems(): Collection
     {
@@ -116,8 +103,6 @@ class ShoppingCartDTO
 
     /**
      * Get the total price of all items in the cart.
-     *
-     * @return float
      */
     public function getTotalPrice(): float
     {
@@ -127,8 +112,6 @@ class ShoppingCartDTO
 
     /**
      * Get the total quantity of all items in the cart.
-     *
-     * @return int
      */
     public function getTotalQuantity(): int
     {
@@ -138,8 +121,6 @@ class ShoppingCartDTO
 
     /**
      * Get the final price after any applicable discounts.
-     *
-     * @return float
      */
     public function getFinalPrice(): float
     {
@@ -151,7 +132,6 @@ class ShoppingCartDTO
     /**
      * Validate the cart items.
      *
-     * @return void
      * @throws \Exception
      */
     public function validateCart(): void

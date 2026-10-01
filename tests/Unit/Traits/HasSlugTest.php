@@ -2,23 +2,26 @@
 
 namespace Tests\Unit\Traits;
 
+use App\Traits\HasSlug;
 use Mockery;
 use Tests\TestCase;
-use App\Traits\HasSlug;
 
 class HasSlugTest extends TestCase
 {
     /**
      * Set up the test environment.
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
         // Create a unique dummy class for testing with the HasSlug trait
-        $this->dummyClass = new class {
+        $this->dummyClass = new class
+        {
             use HasSlug;
+
             public $title;
+
             public $slug;
         };
     }
@@ -29,7 +32,7 @@ class HasSlugTest extends TestCase
     public function test_it_can_generate_slug_when_not_provided()
     {
         // Create a mock instance of the dummy class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -60,7 +63,7 @@ class HasSlugTest extends TestCase
     public function test_it_can_make_slug_unique()
     {
         // Create a mock instance of the dummy class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -87,7 +90,7 @@ class HasSlugTest extends TestCase
     public function test_it_can_generate_slug_from_title()
     {
         // Create a mock instance of the dummy class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -112,7 +115,7 @@ class HasSlugTest extends TestCase
     public function test_it_creates_unique_slug_when_duplicate_exists()
     {
         // Create a mock instance of the dummy class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 

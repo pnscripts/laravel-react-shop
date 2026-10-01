@@ -1,5 +1,5 @@
-import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import AppLogo from '@/components/app-logo';
+import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { Icon } from '@/components/icon';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';

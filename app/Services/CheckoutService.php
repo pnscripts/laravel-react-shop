@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class CheckoutService
 {
-    public function __construct(private ShoppingCartService $cart)
-    {
-    }
+    public function __construct(private ShoppingCartService $cart) {}
 
     /**
      * Create an order from the current cart, decrement stock, and clear the cart.

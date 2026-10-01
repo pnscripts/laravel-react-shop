@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\ProductCategory;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -90,7 +91,7 @@ class ProductController extends Controller
     }
 
     /**
-     * @return \Illuminate\Support\Collection<int, array{id: int, title: string}>
+     * @return Collection<int, array{id: int, title: string}>
      */
     private function categories()
     {

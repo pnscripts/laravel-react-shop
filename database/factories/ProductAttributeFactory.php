@@ -4,17 +4,17 @@ namespace Database\Factories;
 
 use App\Models\ProductAttribute;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductAttribute>
+ * @extends Factory<ProductAttribute>
  */
 class ProductAttributeFactory extends Factory
 {
-
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<\Illuminate\Database\Eloquent\Model>
+     * @var class-string<Model>
      */
     protected $model = ProductAttribute::class;
 

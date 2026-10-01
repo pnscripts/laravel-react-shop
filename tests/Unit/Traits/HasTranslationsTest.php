@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Traits;
 
+use App\Traits\HasTranslations;
 use Mockery;
 use Tests\TestCase;
-use App\Traits\HasTranslations;
 
 // Create a Dummy Model that uses the HasTranslations trait (we can mock this directly in the tests).
 class TestModel
@@ -93,7 +93,7 @@ class HasTranslationsTest extends TestCase
             ->with('title')
             ->andReturn([
                 'en' => 'Test Category',
-                'bg' => 'Тест Категория'
+                'bg' => 'Тест Категория',
             ])
             ->once();
 
@@ -105,7 +105,7 @@ class HasTranslationsTest extends TestCase
         // Assert: Ensure all translations are returned correctly
         $this->assertEquals([
             'en' => 'Test Category',
-            'bg' => 'Тест Категория'
+            'bg' => 'Тест Категория',
         ], $translations);
     }
 

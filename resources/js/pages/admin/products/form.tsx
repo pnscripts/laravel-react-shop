@@ -91,7 +91,15 @@ export default function AdminProductForm({ product, categories }: { product: Pro
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                         <Label htmlFor="price">Price</Label>
-                        <Input id="price" type="number" step="0.01" min="0" value={data.price} onChange={(event) => setData('price', event.target.value)} required />
+                        <Input
+                            id="price"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={data.price}
+                            onChange={(event) => setData('price', event.target.value)}
+                            required
+                        />
                         <InputError message={errors.price} />
                     </div>
                     <div className="grid gap-2">
@@ -110,7 +118,14 @@ export default function AdminProductForm({ product, categories }: { product: Pro
                 <div className="grid gap-4 sm:grid-cols-2">
                     <div className="grid gap-2">
                         <Label htmlFor="stock">Stock</Label>
-                        <Input id="stock" type="number" min="0" value={data.stock} onChange={(event) => setData('stock', Number(event.target.value))} required />
+                        <Input
+                            id="stock"
+                            type="number"
+                            min="0"
+                            value={data.stock}
+                            onChange={(event) => setData('stock', Number(event.target.value))}
+                            required
+                        />
                         <InputError message={errors.stock} />
                     </div>
                     <div className="grid gap-2">

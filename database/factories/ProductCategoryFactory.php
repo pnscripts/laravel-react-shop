@@ -4,17 +4,17 @@ namespace Database\Factories;
 
 use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ProductCategory>
+ * @extends Factory<ProductCategory>
  */
 class ProductCategoryFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<\Illuminate\Database\Eloquent\Model>
+     * @var class-string<Model>
      */
     protected $model = ProductCategory::class;
 
@@ -33,7 +33,7 @@ class ProductCategoryFactory extends Factory
     /**
      * Indicate that the category should have a parent category.
      *
-     * @return \Illuminate\Database\Eloquent\Factories\Factory
+     * @return Factory
      */
     public function withParent()
     {

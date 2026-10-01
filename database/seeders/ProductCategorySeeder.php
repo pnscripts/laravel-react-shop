@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\ProductCategory;
 use Illuminate\Database\Seeder;
-//use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class ProductCategorySeeder extends Seeder
 {

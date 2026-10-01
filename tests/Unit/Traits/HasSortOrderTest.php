@@ -2,22 +2,24 @@
 
 namespace Tests\Unit\Traits;
 
+use App\Traits\HasSortOrder;
 use Mockery;
 use Tests\TestCase;
-use App\Traits\HasSortOrder;
 
 class HasSortOrderTest extends TestCase
 {
     /**
      * Set up the test environment.
      */
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
         // Create a unique dummy class for testing with the trait
-        $this->dummyClass = new class {
+        $this->dummyClass = new class
+        {
             use HasSortOrder;
+
             public $sort_order;
 
             // Simulate the max() method to return a value for the next sort order
@@ -34,7 +36,7 @@ class HasSortOrderTest extends TestCase
     public function test_it_sets_sort_order_when_not_provided_on_create()
     {
         // Create a mock instance of the dummy class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[creating]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[creating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -62,7 +64,7 @@ class HasSortOrderTest extends TestCase
     public function test_it_sets_sort_order_when_not_provided_on_update()
     {
         // Create a mock instance of the dummy class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[updating]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[updating]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -90,7 +92,7 @@ class HasSortOrderTest extends TestCase
     public function test_it_can_get_next_sort_order()
     {
         // Create the mock class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[getNextSortOrder]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[getNextSortOrder]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -115,7 +117,7 @@ class HasSortOrderTest extends TestCase
         $mockQuery = Mockery::mock('Illuminate\Database\Eloquent\Builder');
 
         // Create the mock class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[scopeSortByOrder]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[scopeSortByOrder]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 
@@ -141,7 +143,7 @@ class HasSortOrderTest extends TestCase
         $mockQuery = Mockery::mock('Illuminate\Database\Eloquent\Builder');
 
         // Create the mock class
-        $mockClass = Mockery::mock(get_class($this->dummyClass) . '[scopeSortByOrder]')
+        $mockClass = Mockery::mock(get_class($this->dummyClass).'[scopeSortByOrder]')
             ->makePartial()
             ->shouldAllowMockingProtectedMethods();
 

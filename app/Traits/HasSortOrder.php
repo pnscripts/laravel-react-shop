@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
+
 trait HasSortOrder
 {
     /**
@@ -27,8 +29,6 @@ trait HasSortOrder
     /**
      * Get the next available sort_order.
      * This is based on the highest sort_order in the table.
-     *
-     * @return int
      */
     protected static function getNextSortOrder(): int
     {
@@ -38,13 +38,13 @@ trait HasSortOrder
     /**
      * Scope: Order categories by sort order, with optional direction and secondary order.
      *
-     * @param \Illuminate\Database\Eloquent\Builder $query
-     * @param string $direction 'asc' or 'desc'
-     * @param string|null $secondary 'created_at' or any other column
-     * @param string $secondaryDirection 'asc' or 'desc'
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder  $query
+     * @param  string  $direction  'asc' or 'desc'
+     * @param  string|null  $secondary  'created_at' or any other column
+     * @param  string  $secondaryDirection  'asc' or 'desc'
+     * @return Builder
      */
-    public function scopeSortByOrder($query, string $direction = 'asc', string $secondary = null, string $secondaryDirection = 'asc')
+    public function scopeSortByOrder($query, string $direction = 'asc', ?string $secondary = null, string $secondaryDirection = 'asc')
     {
         $query->orderBy('sort_order', $direction);
 

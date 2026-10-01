@@ -9,10 +9,6 @@ trait HasTranslations
 {
     /**
      * Get the translated value for a specific field.
-     *
-     * @param string $field
-     * @param string $locale
-     * @return string|null
      */
     public function translate(string $field, string $locale): ?string
     {
@@ -24,10 +20,6 @@ trait HasTranslations
 
     /**
      * Set the translation for a specific field.
-     *
-     * @param string $field
-     * @param string $locale
-     * @param string $value
      */
     public function setTranslation(string $field, string $locale, string $value): void
     {
@@ -39,10 +31,6 @@ trait HasTranslations
 
     /**
      * Get the translated attribute or fallback to the original field value.
-     *
-     * @param string $field
-     * @param string|null $locale
-     * @return string
      */
     public function getTranslatedAttribute(string $field, ?string $locale = null): string
     {
@@ -65,7 +53,7 @@ trait HasTranslations
     /**
      * Override the `getAttribute()` method to automatically return translated fields if available.
      *
-     * @param string $key
+     * @param  string  $key
      * @return mixed
      */
     public function getAttribute($key)
@@ -84,8 +72,6 @@ trait HasTranslations
 
     /**
      * Get the translatable fields from the model.
-     *
-     * @return array
      */
     public function getTranslatableFields(): array
     {
@@ -95,8 +81,6 @@ trait HasTranslations
 
     /**
      * Relationship to the translations.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
     public function translations(): MorphMany
     {

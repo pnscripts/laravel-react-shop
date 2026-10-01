@@ -5,11 +5,17 @@ namespace App\DTOs;
 class CartItemDTO
 {
     public int $product_id;
+
     public string $title;
+
     public float $price;
+
     public ?float $discount_price;
+
     public ?string $image;
+
     public int $stock;
+
     public int $quantity;
 
     public function __construct(int $product_id, string $title, float $price, ?float $discount_price, ?string $image, int $stock, int $quantity)
@@ -25,13 +31,11 @@ class CartItemDTO
 
     /**
      * Get the total price of this item (use discount_price if available, otherwise use price).
-     *
-     * @return float
      */
     public function getTotalPrice(): float
     {
         $itemPrice = $this->discount_price ?: $this->price; // Use discount_price if available
+
         return $itemPrice * $this->quantity;
     }
 }
-

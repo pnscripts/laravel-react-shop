@@ -50,7 +50,7 @@ class ProductCategoryTest extends TestCase
         $uniqueSlug = $category2->slug;
 
         // Assert
-        $this->assertEquals(Str::slug('Test Category') . '-1', $uniqueSlug);
+        $this->assertEquals(Str::slug('Test Category').'-1', $uniqueSlug);
     }
 
     /**

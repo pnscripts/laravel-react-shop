@@ -16,8 +16,7 @@ class CheckoutController extends Controller
     public function __construct(
         private ShoppingCartService $cart,
         private CheckoutService $checkout,
-    ) {
-    }
+    ) {}
 
     public function create(): Response|RedirectResponse
     {
