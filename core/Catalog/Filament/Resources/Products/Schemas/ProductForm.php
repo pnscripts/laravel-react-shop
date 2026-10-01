@@ -8,6 +8,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use PnShop\Catalog\Filament\Resources\Categories\CategoryResource;
+use PnShop\Catalog\Models\Product;
 use PnShop\Localization\Filament\TranslationsSection;
 
 class ProductForm
@@ -24,11 +26,26 @@ class ProductForm
                             ->required()
                             ->maxLength(255),
                         Select::make('product_category_id')
-                            ->label('Category')
-                            ->relationship('category', 'title')
+                            ->label('Primary category')
+                            ->helperText('Used for breadcrumbs and the product\'s main URL.')
+                            ->options(fn () => CategoryResource::parentOptions(null))
                             ->searchable()
-                            ->preload()
                             ->required(),
+                        Select::make('categories')
+                            ->label('Also show in')
+                            ->multiple()
+                            ->relationship('categories', 'title')
+                            ->options(fn () => CategoryResource::parentOptions(null))
+                            ->searchable()
+                            // The primary category always stays among the product's categories.
+                            ->saveRelationshipsUsing(fn (Product $record, ?array $state) => $record->categories()->sync(
+                                array_values(array_unique([...array_map('intval', $state ?? []), (int) $record->product_category_id])),
+                            )),
+                        Select::make('brand_id')
+                            ->label('Brand')
+                            ->relationship('brand', 'name')
+                            ->searchable()
+                            ->preload(),
                         Textarea::make('description')
                             ->rows(6),
                         TextInput::make('image')

@@ -5,57 +5,63 @@ namespace PnShop\Catalog\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Kalnoy\Nestedset\NodeTrait;
+use Kalnoy\Nestedset\QueryBuilder;
 use PnShop\Catalog\Factories\CategoryFactory;
 use PnShop\Foundation\Concerns\HasSlug;
-use PnShop\Foundation\Concerns\HasSortOrder;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
 
+/**
+ * A node in the category tree (nested set: `_lft`, `_rgt`, `parent_id`).
+ *
+ * @property int $id
+ * @property string $title
+ * @property string $slug
+ * @property string|null $description
+ * @property int|null $parent_id
+ * @property bool $is_active
+ *
+ * @method static int fixTree()
+ */
 class Category extends Model implements TranslatableModel
 {
     /** @use HasFactory<CategoryFactory> */
-    use HasFactory, HasSlug, HasSortOrder, SoftDeletes, Translatable;
+    use HasFactory, HasSlug, NodeTrait, SoftDeletes, Translatable;
 
-    /**
-     * The attributes that are mass assignable.
-     */
-    protected $fillable = ['title', 'slug', 'parent_id', 'sort_order', 'is_active'];
-
-    /**
-     * The attributes that support translations.
-     */
     protected $table = 'product_categories';
+
+    /** @var list<string> */
+    protected $fillable = ['title', 'slug', 'description', 'parent_id', 'is_active'];
+
+    /** @var list<string> */
+    protected array $translatable = ['title', 'slug', 'description'];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
+
+    /**
+     * @param  \Illuminate\Database\Query\Builder  $query
+     * @return QueryBuilder<self>
+     */
+    public function newEloquentBuilder($query): QueryBuilder
+    {
+        /** @var QueryBuilder<self> $builder */
+        $builder = new QueryBuilder($query);
+
+        return $builder;
+    }
 
     protected function translationForeignKey(): string
     {
         return 'product_category_id';
-    }
-
-    /** @var list<string> */
-    protected array $translatable = ['title', 'slug'];
-
-    /**
-     * Relationship: Get all child categories (subcategories) of this category.
-     *
-     * @return HasMany<Category, $this>
-     */
-    public function children(): HasMany
-    {
-        return $this->hasMany(self::class, 'parent_id');
-    }
-
-    /**
-     * Relationship: Get the parent category.
-     *
-     * @return BelongsTo<Category, $this>
-     */
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'parent_id');
     }
 
     /**
@@ -67,7 +73,18 @@ class Category extends Model implements TranslatableModel
     }
 
     /**
-     * The attributes that belong to the product category.
+     * Products in this category (as primary or additional category).
+     *
+     * @return BelongsToMany<Product, $this>
+     */
+    public function products(): BelongsToMany
+    {
+        return $this->belongsToMany(Product::class, 'category_product', 'product_category_id', 'product_id')
+            ->withPivot('position');
+    }
+
+    /**
+     * Spec attributes offered for products in this category.
      *
      * @return BelongsToMany<ProductAttribute, $this>
      */
@@ -78,13 +95,17 @@ class Category extends Model implements TranslatableModel
     }
 
     /**
-     * The products that belong to the product category.
+     * IDs of this category and all categories below it.
      *
-     * @return HasMany<Product, $this>
+     * @return list<int>
      */
-    public function products(): HasMany
+    public function subtreeIds(): array
     {
-        return $this->hasMany(Product::class, 'product_category_id');
+        return array_values(array_map('intval', static::query()
+            ->withoutGlobalScope('translations')
+            ->whereDescendantOrSelf($this)
+            ->pluck('id')
+            ->all()));
     }
 
     protected static function newFactory(): CategoryFactory

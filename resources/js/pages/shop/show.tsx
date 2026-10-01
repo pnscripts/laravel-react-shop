@@ -20,6 +20,8 @@ type ProductShow = {
     stock: number;
     sku: string | null;
     category: { id: number; title: string; slug: string } | null;
+    brand: { name: string; slug: string } | null;
+    breadcrumbs: { title: string; slug: string }[];
     attributes: { attribute: string | null; value: string | null }[];
 };
 
@@ -43,14 +45,14 @@ export default function ShopShow({ product }: { product: ProductShow }) {
                 <Link href={route('shop.index')} className="text-muted-foreground hover:text-foreground">
                     {t('Shop')}
                 </Link>
-                {product.category && (
-                    <>
+                {product.breadcrumbs.map((crumb) => (
+                    <span key={crumb.slug}>
                         <span className="text-muted-foreground"> / </span>
-                        <Link href={route('shop.index', { category: product.category.slug })} className="text-muted-foreground hover:text-foreground">
-                            {product.category.title}
+                        <Link href={route('shop.index', { category: crumb.slug })} className="text-muted-foreground hover:text-foreground">
+                            {crumb.title}
                         </Link>
-                    </>
-                )}
+                    </span>
+                ))}
             </div>
 
             <div className="grid gap-10 lg:grid-cols-2">
@@ -63,7 +65,14 @@ export default function ShopShow({ product }: { product: ProductShow }) {
                 </div>
 
                 <div>
-                    {product.category && <Badge variant="secondary">{product.category.title}</Badge>}
+                    <div className="flex flex-wrap gap-2">
+                        {product.category && <Badge variant="secondary">{product.category.title}</Badge>}
+                        {product.brand && (
+                            <Badge variant="outline" asChild>
+                                <Link href={route('shop.index', { brand: product.brand.slug })}>{product.brand.name}</Link>
+                            </Badge>
+                        )}
+                    </div>
                     <h1 className="mt-3 mb-4 text-3xl font-semibold tracking-tight">{product.title}</h1>
                     <div className="mb-6 flex items-baseline gap-3">
                         <span className="text-2xl font-semibold">{(hasDiscount ? product.discount_price : product.price)?.formatted}</span>

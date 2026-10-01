@@ -54,3 +54,74 @@ jobs:
 
       - name: Tests
         run: ./vendor/bin/phpunit
+
+  databases:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - db: mysql
+            port: 3306
+          - db: pgsql
+            port: 5432
+
+    name: tests (${{ matrix.db }})
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_DATABASE: pnshop
+          MYSQL_ROOT_PASSWORD: password
+        ports: ['3306:3306']
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=5s --health-retries=10
+      pgsql:
+        image: postgres:17
+        env:
+          POSTGRES_DB: pnshop
+          POSTGRES_USER: pnshop
+          POSTGRES_PASSWORD: password
+        ports: ['5432:5432']
+        options: --health-cmd=pg_isready --health-interval=5s --health-timeout=5s --health-retries=10
+
+    env:
+      DB_CONNECTION: ${{ matrix.db }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: ${{ matrix.port }}
+      DB_DATABASE: pnshop
+      DB_USERNAME: ${{ matrix.db == 'mysql' && 'root' || 'pnshop' }}
+      DB_PASSWORD: password
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          extensions: pdo_mysql, pdo_pgsql
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          npm run build
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare Environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Tests
+        run: ./vendor/bin/phpunit

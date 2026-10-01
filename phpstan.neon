@@ -2,6 +2,8 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
+    stubFiles:
+        - stubs/phpstan/kalnoy-nestedset.stub
     paths:
         - app/
         - database/

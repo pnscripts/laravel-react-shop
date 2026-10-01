@@ -1,0 +1,32 @@
+<?php
+
+namespace Kalnoy\Nestedset;
+
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Types for the nested-set query methods PN Shop uses (the package ships no generics).
+ *
+ * @template TModel of Model
+ *
+ * @extends Builder<TModel>
+ */
+class QueryBuilder extends Builder
+{
+    /** @return $this */
+    public function withDepth(string $as = 'depth') {}
+
+    /** @return $this */
+    public function defaultOrder(string $dir = 'asc') {}
+
+    /** @return $this */
+    public function whereDescendantOrSelf(mixed $id, string $boolean = 'and', bool $not = false) {}
+
+    /** @return $this */
+    public function whereAncestorOf(mixed $id, bool $andSelf = false, string $boolean = 'and') {}
+
+    /** @return int */
+    public function fixTree(?Model $root = null) {}
+}
+

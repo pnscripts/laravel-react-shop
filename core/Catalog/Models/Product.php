@@ -29,6 +29,7 @@ class Product extends Model implements TranslatableModel
      */
     protected $fillable = [
         'product_category_id',
+        'brand_id',
         'title',
         'slug',
         'description',
@@ -81,6 +82,25 @@ class Product extends Model implements TranslatableModel
     }
 
     /**
+     * Every category the product appears in, including the primary one.
+     *
+     * @return BelongsToMany<Category, $this>
+     */
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'category_product', 'product_id', 'product_category_id')
+            ->withPivot('position');
+    }
+
+    /**
+     * @return BelongsTo<Brand, $this>
+     */
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    /**
      * Get the attributes associated with this product.
      * This is a many-to-many relationship, where each product can have multiple attributes and each attribute can belong to multiple products.
      *
@@ -114,6 +134,18 @@ class Product extends Model implements TranslatableModel
                 'attribute' => $attribute->label,
                 'value' => $selectedValue?->value,
             ];
+        });
+    }
+
+    protected static function booted(): void
+    {
+        // The primary category is always one of the product's categories.
+        static::saved(function (Product $product): void {
+            $primaryChanged = $product->wasRecentlyCreated || $product->wasChanged('product_category_id');
+
+            if ($primaryChanged) {
+                $product->categories()->syncWithoutDetaching([$product->product_category_id]);
+            }
         });
     }
 

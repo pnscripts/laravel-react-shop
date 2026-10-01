@@ -47,7 +47,8 @@ class CategoryTest extends TestCase
         $child1 = Category::create(['title' => 'Child Category 1', 'parent_id' => $parent->id]);
         $child2 = Category::create(['title' => 'Child Category 2', 'parent_id' => $parent->id]);
 
-        // Act
+        // Act (nested sets: reload the parent after inserting children)
+        $parent->refresh();
         $children = $parent->children();
 
         // Assert
