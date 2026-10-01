@@ -158,6 +158,28 @@ class ShopTest extends TestCase
             );
     }
 
+    public function test_admin_cannot_set_a_discount_above_the_price(): void
+    {
+        $product = Product::factory()->active()->create();
+
+        $this->actingAs(User::factory()->admin()->create())
+            ->put(route('admin.products.update', $product), [
+                'product_category_id' => $product->product_category_id,
+                'title' => $product->title,
+                'price' => 100,
+                'discount_price' => 120,
+                'stock' => 5,
+            ])
+            ->assertSessionHasErrors('discount_price');
+    }
+
+    public function test_factory_discounts_are_below_the_price(): void
+    {
+        Product::factory()->count(50)->create();
+
+        $this->assertSame(0, Product::query()->whereColumn('discount_price', '>=', 'price')->count());
+    }
+
     public function test_guest_cannot_access_admin(): void
     {
         $this->get(route('admin.products.index'))->assertRedirect(route('login'));

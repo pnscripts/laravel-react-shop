@@ -26,13 +26,15 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
+        $price = $this->faker->randomFloat(2, 10, 5000);
+
         return [
             'product_category_id' => ProductCategory::query()->inRandomOrder()->value('id') ?? ProductCategory::factory(),
             'title' => $this->faker->words(3, true),
             'slug' => $this->faker->slug(),
             'description' => $this->faker->paragraph(),
-            'price' => $this->faker->randomFloat(2, 10, 5000),
-            'discount_price' => $this->faker->optional()->randomFloat(2, 5, 4999),
+            'price' => $price,
+            'discount_price' => $this->faker->optional()->passthrough(round($price * $this->faker->randomFloat(2, 0.5, 0.95), 2)),
             'stock' => $this->faker->numberBetween(0, 100),
             'is_active' => $this->faker->boolean(90),
             'sku' => strtoupper($this->faker->bothify('SKU-####-???')),
