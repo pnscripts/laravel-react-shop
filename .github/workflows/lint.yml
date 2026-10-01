@@ -47,3 +47,9 @@ jobs:
 
       - name: TypeScript
         run: npm run types
+
+      - name: Composer audit
+        run: composer audit
+
+      - name: npm audit
+        run: npm audit --omit=dev --audit-level=high
