@@ -40,6 +40,23 @@ Every order has one or more **payments** (attempts to pay). Each payment has **t
 
 The order page shows the gateway's payment instructions while the payment is pending.
 
+## Refunds
+
+*Refund* on the order page (for paid or partly refunded orders) returns money through the gateway of the payment that took it. For the manual gateways, staff return the money themselves and the refund is recorded.
+
+- **What can be refunded:** units of each line (at the price charged) plus an optional additional amount (shipping, goodwill). The total can't exceed what is left on one payment.
+- **Net prices:** with tax added on top, a line's tax is refunded with it.
+- **Stock:**
+  - refunded units that had **not shipped** are cancelled: their reservation is released and they never ship;
+  - refunded units that **had shipped** are returns, put back on the shelf (movement `return`) when *Put returned items back in stock* is on.
+- **States:** the payment and the order become *partially refunded* or *refunded*. Every refund, including a gateway's refusal, is kept on the order's *Refunds* tab.
+- **Customer view:** customers see completed refunds under the order totals.
+- **Staff overrides:** *Update payment → Refunded* only changes the state and moves no money. Use *Refund* to return money.
+
+```php
+app(PnShop\Payment\RefundService::class)->refund($order, [$orderItemId => 1], Money::of('5.00', 'EUR'), restock: true, reason: 'Damaged', actor: $admin);
+```
+
 ## Writing a gateway
 
 ```php

@@ -14,6 +14,8 @@ use PnShop\Money\MoneyCast;
  * @property int $id
  * @property int $quantity
  * @property int $quantity_fulfilled units already shipped
+ * @property int $quantity_refunded units refunded
+ * @property int $quantity_cancelled units refunded before they shipped; they never ship
  * @property Money $price
  * @property Money|null $sale_price
  * @property Money $tax_amount tax included in or added to the line total
@@ -41,6 +43,8 @@ class OrderItem extends Model
         'variant_label',
         'quantity',
         'quantity_fulfilled',
+        'quantity_refunded',
+        'quantity_cancelled',
         'currency',
         'price',
         'sale_price',
@@ -55,10 +59,24 @@ class OrderItem extends Model
     protected $casts = [
         'quantity' => 'integer',
         'quantity_fulfilled' => 'integer',
+        'quantity_refunded' => 'integer',
+        'quantity_cancelled' => 'integer',
         'price' => MoneyCast::class.':currency',
         'sale_price' => MoneyCast::class.':currency',
         'tax_amount' => MoneyCast::class.':currency',
     ];
+
+    /** Units that still have to ship. */
+    public function quantityToShip(): int
+    {
+        return max(0, $this->quantity - $this->quantity_fulfilled - $this->quantity_cancelled);
+    }
+
+    /** Units that are part of the order (not cancelled by a refund). */
+    public function quantityKept(): int
+    {
+        return max(0, $this->quantity - $this->quantity_cancelled);
+    }
 
     /**
      * Get the order this item belongs to.

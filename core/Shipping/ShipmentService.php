@@ -81,7 +81,7 @@ class ShipmentService
         });
 
         $order->refresh()->load('items');
-        $complete = $order->items->every(fn (OrderItem $item) => $item->quantity_fulfilled >= $item->quantity);
+        $complete = $order->items->every(fn (OrderItem $item) => $item->quantityToShip() === 0);
 
         $note = $shipment->tracking_number === null ? null : __('Tracking number: :number', ['number' => $shipment->tracking_number]);
 
@@ -99,7 +99,7 @@ class ShipmentService
         $lines = [];
 
         foreach ($order->items as $item) {
-            $left = $item->quantity - $item->quantity_fulfilled;
+            $left = $item->quantityToShip();
             $quantity = $quantities === [] ? $left : (int) ($quantities[$item->id] ?? 0);
 
             if ($quantity > $left) {

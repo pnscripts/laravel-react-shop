@@ -143,8 +143,9 @@ class OrderWorkflow
             return;
         }
 
-        $shipped = min($item->quantity_fulfilled, $item->quantity);
-        $held = $item->quantity - $shipped;
+        $shipped = min($item->quantity_fulfilled, $item->quantityKept());
+        $held = $item->quantityToShip();
+        $kept = $item->quantityKept();
 
         try {
             switch ([$from, $to]) {
@@ -152,7 +153,7 @@ class OrderWorkflow
                     if ($held > 0) {
                         $this->inventory->commit($variant, $held, StockMovementReason::OrderFulfilled, $order);
                     }
-                    $item->quantity_fulfilled = $item->quantity;
+                    $item->quantity_fulfilled = $kept;
                     break;
                 case [OrderStockStatus::Reserved, OrderStockStatus::Released]:
                     $this->inventory->release($variant, $held);
@@ -162,15 +163,21 @@ class OrderWorkflow
                     $item->quantity_fulfilled = 0;
                     break;
                 case [OrderStockStatus::Fulfilled, OrderStockStatus::Released]:
-                    $this->inventory->adjust($variant, $item->quantity, StockMovementReason::OrderCancelled, $order);
+                    if ($shipped > 0) {
+                        $this->inventory->adjust($variant, $shipped, StockMovementReason::OrderCancelled, $order);
+                    }
                     $item->quantity_fulfilled = 0;
                     break;
                 case [OrderStockStatus::Released, OrderStockStatus::Reserved]:
-                    $this->inventory->reserve($variant, $item->quantity);
+                    if ($kept > 0) {
+                        $this->inventory->reserve($variant, $kept);
+                    }
                     break;
                 case [OrderStockStatus::Released, OrderStockStatus::Fulfilled]:
-                    $this->inventory->adjust($variant, -$item->quantity, StockMovementReason::OrderReopened, $order);
-                    $item->quantity_fulfilled = $item->quantity;
+                    if ($kept > 0) {
+                        $this->inventory->adjust($variant, -$kept, StockMovementReason::OrderReopened, $order);
+                    }
+                    $item->quantity_fulfilled = $kept;
                     break;
             }
         } catch (InsufficientStock) {

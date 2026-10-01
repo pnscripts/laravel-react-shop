@@ -27,7 +27,7 @@ Tax lives in `core/Tax`. Staff set it up in Admin → Store → *Tax classes* an
 - **Pipeline stage:** the `cart.totals` stage `ApplyTax` (priority 400) taxes every cart line by its product's class and the shipping by the method's class. It adds one total line per rate.
 - **Included vs added:** with tax-inclusive prices the lines are marked *included* and don't change the total. Otherwise they are added.
 - **Orders:** each order keeps the tax lines in its totals and the tax on each line (`order_items.tax_amount`), so invoices can show them later.
-- **Discounts:** the discount stage (Phase 11) runs before tax and is spread over the lines it applies to.
+- **Not yet covered:** order-level discounts (Phase 11) will have to reduce the taxed amounts. Until then, tax is calculated on the full line prices.
 
 ## Replacing the calculation
 

@@ -15,6 +15,7 @@ type OrderShow = OrderStates & {
     payment_method: string | null;
     payment_instructions: string | null;
     shipping_method: string | null;
+    refunds: { id: number; amount: Money; date: string | null }[];
     shipments: {
         id: number;
         carrier: string | null;
@@ -137,6 +138,12 @@ export default function OrderShow({ order }: { order: OrderShow }) {
             <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_20rem]">
                 <div className="sm:col-start-2">
                     <TotalsBreakdown totals={order.totals} />
+                    {order.refunds.map((refund) => (
+                        <p key={refund.id} className="text-muted-foreground -mt-4 mb-6 flex justify-between text-sm">
+                            <span>{t('Refunded :date', { date: refund.date ?? '' })}</span>
+                            <span>−{refund.amount.formatted}</span>
+                        </p>
+                    ))}
                 </div>
             </div>
             <div className="flex justify-end">

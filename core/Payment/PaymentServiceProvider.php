@@ -12,6 +12,7 @@ use PnShop\Payment\Gateways\CashOnDelivery;
 use PnShop\Payment\Listeners\SyncPaymentsWithOrder;
 use PnShop\Payment\Models\Payment;
 use PnShop\Payment\Models\PaymentMethod;
+use PnShop\Payment\Models\Refund;
 use PnShop\Payment\Policies\PaymentMethodPolicy;
 use PnShop\Sales\Events\OrderStateChanged;
 
@@ -33,6 +34,7 @@ class PaymentServiceProvider extends ModuleServiceProvider
         Relation::morphMap([
             'payment_method' => PaymentMethod::class,
             'payment' => Payment::class,
+            'refund' => Refund::class,
         ]);
     }
 

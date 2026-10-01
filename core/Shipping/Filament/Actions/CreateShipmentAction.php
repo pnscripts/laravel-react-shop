@@ -21,7 +21,7 @@ class CreateShipmentAction
 {
     public static function make(): Action
     {
-        $remaining = fn (Order $record) => $record->items->filter(fn (OrderItem $item) => $item->quantity_fulfilled < $item->quantity);
+        $remaining = fn (Order $record) => $record->items->filter(fn (OrderItem $item) => $item->quantityToShip() > 0);
 
         return Action::make('createShipment')
             ->label('Create shipment')
@@ -29,17 +29,17 @@ class CreateShipmentAction
             ->authorize(fn (Order $record) => auth('admin')->user()?->can('update', $record) ?? false)
             ->visible(fn (Order $record) => $record->status !== OrderStatus::Cancelled && $remaining($record)->isNotEmpty())
             ->fillForm(fn (Order $record) => [
-                'quantities' => $remaining($record)->mapWithKeys(fn (OrderItem $item) => [$item->id => $item->quantity - $item->quantity_fulfilled])->all(),
+                'quantities' => $remaining($record)->mapWithKeys(fn (OrderItem $item) => [$item->id => $item->quantityToShip()])->all(),
             ])
             ->schema(fn (Order $record) => [
                 Section::make('Items')
                     ->statePath('quantities')
                     ->schema($remaining($record)->map(fn (OrderItem $item) => TextInput::make((string) $item->id)
                         ->label(trim($item->product_title.($item->variant_label ? " ({$item->variant_label})" : '')))
-                        ->helperText(($item->quantity - $item->quantity_fulfilled).' of '.$item->quantity.' left to ship')
+                        ->helperText($item->quantityToShip().' of '.$item->quantity.' left to ship')
                         ->integer()
                         ->minValue(0)
-                        ->maxValue($item->quantity - $item->quantity_fulfilled))
+                        ->maxValue($item->quantityToShip()))
                         ->values()
                         ->all()),
                 TextInput::make('tracking_number')->maxLength(100),

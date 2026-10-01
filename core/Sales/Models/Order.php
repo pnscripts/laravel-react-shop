@@ -15,6 +15,7 @@ use PnShop\Money\MoneyCast;
 use PnShop\Money\MoneyPresenter;
 use PnShop\Payment\Models\Payment;
 use PnShop\Payment\Models\PaymentMethod;
+use PnShop\Payment\Models\Refund;
 use PnShop\Sales\Factories\OrderFactory;
 use PnShop\Sales\OrderNumber;
 use PnShop\Sales\States\FulfillmentStatus;
@@ -189,6 +190,14 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class)->orderBy('id');
+    }
+
+    /**
+     * @return HasMany<Refund, $this>
+     */
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(Refund::class)->orderBy('id');
     }
 
     /**
