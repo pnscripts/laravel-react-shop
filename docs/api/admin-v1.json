@@ -6906,6 +6906,1468 @@
                 }
             }
         },
+        "/promotions": {
+            "get": {
+                "operationId": "admin.promotions.index",
+                "summary": "List promotions",
+                "tags": [
+                    "Promotion"
+                ],
+                "parameters": [
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page, 1 to 100 (default 20).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "description": "The next_cursor or prev_cursor of a previous page.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "next",
+                                                "prev"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "next_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "per_page",
+                                                "next_cursor",
+                                                "prev_cursor"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            },
+            "post": {
+                "operationId": "admin.promotions.store",
+                "summary": "Create a promotion",
+                "tags": [
+                    "Promotion"
+                ],
+                "parameters": [
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "name": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "label": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "description": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "is_active": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "requires_coupon": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "position": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "stop_further": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "usage_limit": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "usage_limit_per_customer": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "times_used": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "starts_at": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "ends_at": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "conditions": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "actions": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "label",
+                                                "description",
+                                                "is_active",
+                                                "requires_coupon",
+                                                "position",
+                                                "stop_further",
+                                                "usage_limit",
+                                                "usage_limit_per_customer",
+                                                "times_used",
+                                                "starts_at",
+                                                "ends_at",
+                                                "conditions",
+                                                "actions",
+                                                "updated_at"
+                                            ],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        },
+        "/promotions/{promotion}": {
+            "get": {
+                "operationId": "admin.promotions.show",
+                "description": "With its coupons.",
+                "summary": "Show a promotion",
+                "tags": [
+                    "Promotion"
+                ],
+                "parameters": [
+                    {
+                        "name": "promotion",
+                        "in": "path",
+                        "required": true,
+                        "description": "The promotion ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "name": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "label": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "description": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "is_active": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "requires_coupon": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "position": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "stop_further": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "usage_limit": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "usage_limit_per_customer": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "times_used": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "starts_at": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "ends_at": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "conditions": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "actions": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "label",
+                                                "description",
+                                                "is_active",
+                                                "requires_coupon",
+                                                "position",
+                                                "stop_further",
+                                                "usage_limit",
+                                                "usage_limit_per_customer",
+                                                "times_used",
+                                                "starts_at",
+                                                "ends_at",
+                                                "conditions",
+                                                "actions",
+                                                "updated_at"
+                                            ],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            },
+            "put": {
+                "operationId": "admin.promotions.update",
+                "summary": "Update a promotion",
+                "tags": [
+                    "Promotion"
+                ],
+                "parameters": [
+                    {
+                        "name": "promotion",
+                        "in": "path",
+                        "required": true,
+                        "description": "The promotion ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "name": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "string"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "label": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "description": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "is_active": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "requires_coupon": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "position": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "stop_further": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "boolean"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "usage_limit": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "usage_limit_per_customer": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "integer",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "times_used": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "integer"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "starts_at": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "ends_at": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "conditions": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "actions": {
+                                                    "anyOf": [
+                                                        {
+                                                            "type": "array"
+                                                        },
+                                                        {}
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "label",
+                                                "description",
+                                                "is_active",
+                                                "requires_coupon",
+                                                "position",
+                                                "stop_further",
+                                                "usage_limit",
+                                                "usage_limit_per_customer",
+                                                "times_used",
+                                                "starts_at",
+                                                "ends_at",
+                                                "conditions",
+                                                "actions",
+                                                "updated_at"
+                                            ],
+                                            "additionalProperties": {}
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "admin.promotions.destroy",
+                "summary": "Delete a promotion",
+                "tags": [
+                    "Promotion"
+                ],
+                "parameters": [
+                    {
+                        "name": "promotion",
+                        "in": "path",
+                        "required": true,
+                        "description": "The promotion ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/promotions/{promotion}/coupons": {
+            "post": {
+                "operationId": "admin.promotions.coupons.store",
+                "description": "Unique random codes (with an optional prefix), e.g. one-use codes for a newsletter.",
+                "summary": "Generate coupon codes",
+                "tags": [
+                    "Promotion"
+                ],
+                "parameters": [
+                    {
+                        "name": "promotion",
+                        "in": "path",
+                        "required": true,
+                        "description": "The promotion ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "count": {
+                                        "type": "integer",
+                                        "minimum": 1,
+                                        "maximum": 1000
+                                    },
+                                    "prefix": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "pattern": "^[A-Za-z0-9_-]*$",
+                                        "maxLength": 20
+                                    },
+                                    "usage_limit": {
+                                        "type": [
+                                            "integer",
+                                            "null"
+                                        ],
+                                        "minimum": 1
+                                    }
+                                },
+                                "required": [
+                                    "count"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "codes": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                }
+                                            },
+                                            "required": [
+                                                "codes"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/returns": {
+            "get": {
+                "operationId": "admin.returns.index",
+                "description": "Newest first. Filters: `filter[status]`, `filter[order_id]`, `filter[updated_since]`.",
+                "summary": "List return requests",
+                "tags": [
+                    "Return"
+                ],
+                "parameters": [
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Items per page, 1 to 100 (default 20).",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "in": "query",
+                        "description": "The next_cursor or prev_cursor of a previous page.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {}
+                                        },
+                                        "links": {
+                                            "type": "object",
+                                            "properties": {
+                                                "next": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "next",
+                                                "prev"
+                                            ]
+                                        },
+                                        "meta": {
+                                            "type": "object",
+                                            "properties": {
+                                                "per_page": {
+                                                    "type": "integer"
+                                                },
+                                                "next_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "prev_cursor": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "per_page",
+                                                "next_cursor",
+                                                "prev_cursor"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data",
+                                        "links",
+                                        "meta"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    }
+                }
+            }
+        },
+        "/returns/{return}": {
+            "get": {
+                "operationId": "admin.returns.show",
+                "summary": "Show a return request",
+                "tags": [
+                    "Return"
+                ],
+                "parameters": [
+                    {
+                        "name": "return",
+                        "in": "path",
+                        "required": true,
+                        "description": "The return ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "number": {
+                                                    "type": "string"
+                                                },
+                                                "order_id": {
+                                                    "type": "integer"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "status_label": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Requested",
+                                                        "Approved",
+                                                        "Rejected",
+                                                        "Received",
+                                                        "Refunded",
+                                                        "Closed"
+                                                    ]
+                                                },
+                                                "reason": {
+                                                    "type": "string"
+                                                },
+                                                "reason_label": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Arrived damaged or faulty",
+                                                        "Wrong item sent",
+                                                        "Not as described",
+                                                        "No longer needed",
+                                                        "Other"
+                                                    ]
+                                                },
+                                                "customer_note": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "staff_note": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "restocked": {
+                                                    "type": "boolean"
+                                                },
+                                                "lines": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "order_item_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "title": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "variant_label": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "quantity": {
+                                                                "type": "integer"
+                                                            },
+                                                            "quantity_received": {
+                                                                "type": "integer"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "order_item_id",
+                                                            "title",
+                                                            "variant_label",
+                                                            "quantity",
+                                                            "quantity_received"
+                                                        ]
+                                                    }
+                                                },
+                                                "refunded": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "minor": {
+                                                            "type": "integer"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "minor",
+                                                        "currency",
+                                                        "formatted"
+                                                    ]
+                                                },
+                                                "transitions": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "number",
+                                                "order_id",
+                                                "status",
+                                                "status_label",
+                                                "reason",
+                                                "reason_label",
+                                                "customer_note",
+                                                "staff_note",
+                                                "restocked",
+                                                "lines",
+                                                "refunded",
+                                                "transitions",
+                                                "created_at",
+                                                "updated_at"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/returns/{return}/transitions": {
+            "post": {
+                "operationId": "admin.returns.transition",
+                "description": "`action`: approve, reject (needs `note`), receive (`received`: line id => units,\ndefault all; `restock`, default true), refund (the received units) or close. `note`\nis shown to the customer.",
+                "summary": "Move a return request on",
+                "tags": [
+                    "Return"
+                ],
+                "parameters": [
+                    {
+                        "name": "return",
+                        "in": "path",
+                        "required": true,
+                        "description": "The return ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "description": "Unique key (e.g. a UUID) that makes retries safe: a repeat within 24 hours returns the first response.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "enum": [
+                                            "approve",
+                                            "reject",
+                                            "receive",
+                                            "refund",
+                                            "close"
+                                        ]
+                                    },
+                                    "note": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 2000
+                                    },
+                                    "received": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    },
+                                    "restock": {
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": [
+                                    "action"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "number": {
+                                                    "type": "string"
+                                                },
+                                                "order_id": {
+                                                    "type": "integer"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "status_label": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Requested",
+                                                        "Approved",
+                                                        "Rejected",
+                                                        "Received",
+                                                        "Refunded",
+                                                        "Closed"
+                                                    ]
+                                                },
+                                                "reason": {
+                                                    "type": "string"
+                                                },
+                                                "reason_label": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Arrived damaged or faulty",
+                                                        "Wrong item sent",
+                                                        "Not as described",
+                                                        "No longer needed",
+                                                        "Other"
+                                                    ]
+                                                },
+                                                "customer_note": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "staff_note": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "restocked": {
+                                                    "type": "boolean"
+                                                },
+                                                "lines": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "order_item_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "title": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "variant_label": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "quantity": {
+                                                                "type": "integer"
+                                                            },
+                                                            "quantity_received": {
+                                                                "type": "integer"
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "id",
+                                                            "order_item_id",
+                                                            "title",
+                                                            "variant_label",
+                                                            "quantity",
+                                                            "quantity_received"
+                                                        ]
+                                                    }
+                                                },
+                                                "refunded": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "minor": {
+                                                            "type": "integer"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "minor",
+                                                        "currency",
+                                                        "formatted"
+                                                    ]
+                                                },
+                                                "transitions": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "number",
+                                                "order_id",
+                                                "status",
+                                                "status_label",
+                                                "reason",
+                                                "reason_label",
+                                                "customer_note",
+                                                "staff_note",
+                                                "restocked",
+                                                "lines",
+                                                "refunded",
+                                                "transitions",
+                                                "created_at",
+                                                "updated_at"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
         "/settings": {
             "get": {
                 "operationId": "admin.settings.index",

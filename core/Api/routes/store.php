@@ -40,6 +40,7 @@ Route::post('checkout/quote', [CheckoutController::class, 'quote'])->middleware(
 Route::post('checkout', [CheckoutController::class, 'store'])->middleware(['throttle:checkout', 'pnshop.idempotent'])->name('checkout.store');
 
 Route::get('orders/{order}', [OrderController::class, 'show'])->whereNumber('order')->name('orders.show');
+Route::post('orders/{order}/returns', [OrderController::class, 'requestReturn'])->whereNumber('order')->middleware('throttle:10,1')->name('orders.returns.store');
 
 Route::middleware('throttle:auth-forms')->group(function () {
     Route::post('auth/register', [AuthController::class, 'register'])->name('auth.register');

@@ -14,6 +14,8 @@ use PnShop\Catalog\Models\Option;
 use PnShop\Catalog\Models\Product;
 use PnShop\Cms\Blocks\Types\HtmlBlock;
 use PnShop\Cms\Models\Page;
+use PnShop\Returns\ReturnReason;
+use PnShop\Returns\ReturnService;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\States\OrderStatus;
 use PnShop\Settings\Settings;
@@ -284,5 +286,25 @@ class AdminApiTest extends TestCase
         $this->assertCount(3, $codes);
         $this->withHeaders($headers)->getJson(self::API."/promotions/{$id}")->assertOk()->assertJsonCount(3, 'data.coupons');
         $this->withHeaders($headers)->patchJson(self::API."/promotions/{$id}", ['is_active' => false])->assertOk()->assertJsonPath('data.is_active', false);
+    }
+
+    public function test_returns_move_through_the_workflow(): void
+    {
+        $order = Order::factory()->create(['fulfillment_status' => 'fulfilled', 'payment_status' => 'paid', 'currency' => 'USD']);
+        $item = $order->items()->create(['product_title' => 'Mug', 'quantity' => 2, 'quantity_fulfilled' => 2, 'currency' => 'USD', 'price' => '10.00']);
+        $return = app(ReturnService::class)->request($order, [$item->id => 1], ReturnReason::Damaged);
+
+        $headers = $this->token(['sales.returns.manage'], ['sales.returns.manage']);
+
+        $this->withHeaders($headers)->getJson(self::API.'/returns?filter[status]=requested')->assertOk()->assertJsonPath('data.0.number', $return->number);
+        $this->withHeaders($headers)->postJson(self::API."/returns/{$return->id}/transitions", ['action' => 'reject'])->assertStatus(422);
+        $this->withHeaders($headers)->postJson(self::API."/returns/{$return->id}/transitions", ['action' => 'refund'])->assertStatus(422);
+        $this->withHeaders($headers)->postJson(self::API."/returns/{$return->id}/transitions", ['action' => 'approve', 'note' => 'Use the prepaid label.'])
+            ->assertOk()
+            ->assertJsonPath('data.status', 'approved')
+            ->assertJsonPath('data.transitions', ['received', 'closed']);
+        $this->withHeaders($headers)->postJson(self::API."/returns/{$return->id}/transitions", ['action' => 'receive', 'restock' => false])
+            ->assertOk()
+            ->assertJsonPath('data.lines.0.quantity_received', 1);
     }
 }

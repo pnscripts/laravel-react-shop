@@ -30,6 +30,8 @@ This is **not** a full marketplace. Card payments come through the included Stri
   - SEO: meta tags, hreflang, JSON-LD, sitemaps, generated robots.txt, automatic 301 redirects
   - Plugins: install / enable / update / disable / uninstall from the admin or CLI, safe mode, signatures; storefront slots and blocks for plugins; Stripe and a handling-fee reference plugin included
   - Themes: prebuilt storefront bundles, child themes that override files by path, theme settings as CSS variables; the Aurora example theme
+  - Promotions built from conditions and discounts (percent, fixed, buy X get Y, free shipping), coupons with bulk codes and usage limits
+  - Return requests (RMA): customers request returns from the order page; staff approve, receive (with restocking) and refund
   - Payment methods (cash on delivery, bank transfer) with a payment ledger; shipping zones and methods (flat, free, pickup, by weight, by subtotal) with partial shipments and tracking; refunds with restocking; numbered invoices; order emails in the customer's language; tax classes, zones and rates (inclusive or exclusive prices)
   - Admin users, roles, store settings, activity log
 - JSON APIs ([docs/api](docs/api/README.md)), both with problem+json errors, cursor pagination and OpenAPI documents:
@@ -42,7 +44,7 @@ This is **not** a full marketplace. Card payments come through the included Stri
 
 ## What is not implemented
 
-- Promotions and coupons (Phase 11)
+- Web installer and updater (Phase 12)
 
 ---
 

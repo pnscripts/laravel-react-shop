@@ -9,6 +9,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
 use PnShop\Seo\Http\RobotsController;
@@ -42,6 +43,7 @@ Route::post('/checkout', [CheckoutController::class, 'store'])
     ->name('checkout.store');
 
 Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+Route::post('/orders/{order}/returns', [ReturnController::class, 'store'])->middleware('throttle:10,1')->name('orders.returns.store');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('account/orders', [OrdersController::class, 'index'])->name('account.orders');

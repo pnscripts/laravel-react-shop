@@ -13,6 +13,9 @@ use PnShop\Cms\Models\Page;
 use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Promotion\Models\Promotion;
 use PnShop\Sales\Models\Order;
+use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\PaymentStatus;
+use PnShop\Shipping\ShipmentService;
 use Tests\TestCase;
 
 class StoreApiTest extends TestCase
@@ -263,5 +266,40 @@ class StoreApiTest extends TestCase
             ->assertJsonPath('data.totals.total.amount', '18.00');
 
         $this->withHeader('X-Cart-Token', $token)->deleteJson(self::API.'/cart/coupon')->assertOk()->assertJsonPath('data.coupon', null);
+    }
+
+    public function test_customers_request_returns_of_shipped_orders(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('app', ['store'])->plainTextToken;
+        $product = Product::factory()->active()->create(['price' => '10.00', 'sale_price' => null, 'stock' => 5]);
+        $method = PaymentMethod::factory()->create(['gateway' => 'bank_transfer']);
+
+        $auth = ['Authorization' => 'Bearer '.$token];
+        $this->withHeaders($auth)->postJson(self::API.'/cart/items', ['product_id' => $product->id, 'quantity' => 2])->assertCreated();
+        $orderId = $this->withHeaders($auth)->postJson(self::API.'/checkout', Arr::except($this->checkoutData($method->id), ['website', 'form_started_at']))->assertCreated()->json('data.id');
+
+        $order = Order::query()->findOrFail($orderId);
+        $this->withHeaders($auth)->getJson(self::API."/orders/{$orderId}")->assertJsonPath('data.returnable.allowed', false);
+
+        app(OrderWorkflow::class)->transition($order, PaymentStatus::Paid);
+        app(ShipmentService::class)->ship($order);
+        $itemId = $order->items()->sole()->id;
+
+        $this->withHeaders($auth)->getJson(self::API."/orders/{$orderId}")
+            ->assertJsonPath('data.returnable.allowed', true)
+            ->assertJsonPath("data.returnable.items.{$itemId}", 2);
+
+        $this->withHeaders($auth)->postJson(self::API."/orders/{$orderId}/returns", ['items' => [$itemId => 3], 'reason' => 'damaged'])
+            ->assertStatus(422)
+            ->assertJsonPath('code', 'validation_failed');
+
+        $this->withHeaders($auth)->postJson(self::API."/orders/{$orderId}/returns", ['items' => [$itemId => 1], 'reason' => 'damaged'])
+            ->assertCreated()
+            ->assertJsonPath('data.status', 'requested')
+            ->assertJsonPath('data.lines.0.quantity', 1);
+
+        $stranger = User::factory()->create()->createToken('app', ['store'])->plainTextToken;
+        $this->withHeader('Authorization', 'Bearer '.$stranger)->postJson(self::API."/orders/{$orderId}/returns", ['items' => [$itemId => 1], 'reason' => 'other'])->assertNotFound();
     }
 }

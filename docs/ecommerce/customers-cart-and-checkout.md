@@ -40,7 +40,6 @@ app(PipelineRegistry::class)->stage(CartCalculator::PIPELINE, function (CartTota
 - **Built-in priorities:** promotions 100, shipping 200, free-shipping promotions 250, fees 300, tax 400.
 - **Discounts per line:** a stage that discounts a line records it with `$totals->discount('item:<variant id>' | 'shipping', $amount)` and adds the negative `TotalLine`. Tax uses `discountOn()` to tax what is actually paid. See [promotions](../marketing/promotions.md).
 - **Context:** the context always holds `coupon_code` and `user` (the cart fills them in), and at checkout also the addresses, `shipping_method` and `email`.
-- **Context:** `$totals->context` carries what checkout knows: `shipping_address` and `billing_address` (`PostalAddress`) and `user`.
 
 Cart, checkout, the order page and the admin all show the same breakdown. The order stores it (`orders.subtotal`, `total`, `totals`), so later rule changes never alter a placed order.
 

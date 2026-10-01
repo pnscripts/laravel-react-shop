@@ -1,3 +1,4 @@
+import { OrderReturns, type OrderReturn, type Returnable } from '@/components/order-returns';
 import { Slot } from '@/components/slot';
 import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
@@ -50,7 +51,7 @@ const AddressLines = ({ lines }: { lines: string[] }) => (
     </address>
 );
 
-export default function OrderShow({ order }: { order: OrderShow }) {
+export default function OrderShow({ order, returns, returnable }: { order: OrderShow; returns: OrderReturn[]; returnable: Returnable }) {
     const t = useTranslations();
 
     return (
@@ -156,7 +157,8 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                     ))}
                 </div>
             </div>
-            <div className="flex justify-end">
+            <OrderReturns orderId={order.id} returns={returns} returnable={returnable} />
+            <div className="mt-8 flex justify-end">
                 <Button asChild>
                     <Link href={route('shop.index')}>{t('Continue shopping')}</Link>
                 </Button>

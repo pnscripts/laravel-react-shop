@@ -10,6 +10,7 @@ use PnShop\Api\Http\Controllers\Admin\OrderController;
 use PnShop\Api\Http\Controllers\Admin\PageController;
 use PnShop\Api\Http\Controllers\Admin\ProductController;
 use PnShop\Api\Http\Controllers\Admin\PromotionController;
+use PnShop\Api\Http\Controllers\Admin\ReturnController;
 use PnShop\Api\Http\Controllers\Admin\SettingsController;
 use PnShop\Api\Http\Controllers\Admin\SystemController;
 use PnShop\Api\Http\Controllers\Admin\VariantController;
@@ -37,6 +38,10 @@ Route::get('orders/{order}', [OrderController::class, 'show'])->whereNumber('ord
 Route::post('orders/{order}/transitions', [OrderController::class, 'transition'])->whereNumber('order')->middleware('pnshop.idempotent')->name('orders.transition');
 Route::post('orders/{order}/notes', [OrderController::class, 'note'])->whereNumber('order')->middleware('pnshop.idempotent')->name('orders.notes.store');
 Route::post('orders/{order}/shipments', [OrderController::class, 'ship'])->whereNumber('order')->middleware('pnshop.idempotent')->name('orders.shipments.store');
+
+Route::get('returns', [ReturnController::class, 'index'])->name('returns.index');
+Route::get('returns/{return}', [ReturnController::class, 'show'])->whereNumber('return')->name('returns.show');
+Route::post('returns/{return}/transitions', [ReturnController::class, 'transition'])->whereNumber('return')->middleware('pnshop.idempotent')->name('returns.transition');
 
 Route::get('customers', [CustomerController::class, 'index'])->name('customers.index');
 Route::get('customers/{customer}', [CustomerController::class, 'show'])->whereNumber('customer')->name('customers.show');

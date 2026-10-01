@@ -55,7 +55,8 @@ The default React storefront does not use these APIs. It shares the same service
 | `GET /checkout/payment-methods`, `POST /checkout/quote`, `POST /checkout` | Payment methods, shipping options and totals, placing the order |
 | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` | Customer tokens |
 | `GET`/`PATCH /account`, `GET /account/orders`, `/account/addresses` (CRUD) | The signed-in customer |
-| `GET /orders/{id}` | An order, for its customer or through the signed `links.order` URL |
+| `GET /orders/{id}` | An order, for its customer or through the signed `links.order` URL, with `returns` and `returnable` |
+| `POST /orders/{id}/returns` | Request a return of shipped items |
 
 ### A guest checkout
 
@@ -113,6 +114,7 @@ php artisan pnshop:api-token ops@example.com --name="ERP" --ability=catalog.prod
 | `POST /orders/{id}/transitions`, `/notes`, `/shipments` | `sales.orders.update` |
 | `GET /customers`, `GET /customers/{id}`, `PATCH /customers/{id}` | `customers.view` / `customers.manage` |
 | `/pages` (CRUD, blocks per language) | `content.pages.manage` (+ `cms.html_block` for HTML blocks) |
+| `GET /returns`, `GET /returns/{id}`, `POST /returns/{id}/transitions` | `sales.returns.manage` |
 | `/promotions` (CRUD), `POST /promotions/{id}/coupons` (generate codes) | `marketing.promotions.manage` |
 | `GET /settings`, `GET/PATCH /settings/{namespace}` | `system.settings.manage` |
 | `GET /extensions`, `GET /themes` | `system.extensions.manage`, `appearance.themes.manage` |

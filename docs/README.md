@@ -1,6 +1,6 @@
 # PN Shop documentation
 
-Architecture approved 2026-10-01. Phases 0–10 are implemented; the documents below record the plan, research and what has shipped.
+Architecture approved 2026-10-01. Phases 0–11 are implemented; the documents below record the plan, research and what has shipped.
 
 | Document | Purpose |
 |---|---|
@@ -18,6 +18,7 @@ Architecture approved 2026-10-01. Phases 0–10 are implemented; the documents b
 | [upgrades/2026-10-phase-8.md](upgrades/2026-10-phase-8.md) | Upgrade notes for the extension system (Phase 8) |
 | [upgrades/2026-10-phase-9.md](upgrades/2026-10-phase-9.md) | Upgrade notes for themes and plugin storefront code (Phase 9) |
 | [upgrades/2026-10-phase-10.md](upgrades/2026-10-phase-10.md) | Upgrade notes for the Store and Admin APIs (Phase 10) |
+| [upgrades/2026-10-phase-11.md](upgrades/2026-10-phase-11.md) | Upgrade notes for promotions, coupons and returns (Phase 11) |
 | [ecommerce/catalog-and-inventory.md](ecommerce/catalog-and-inventory.md) | Products, variants, options, categories, brands, attributes, images, inventory |
 | [upgrades/2026-10-phase-5.md](upgrades/2026-10-phase-5.md) | Upgrade notes for customers, database carts, structured checkout and stock reservations (Phase 5) |
 | [ecommerce/customers-cart-and-checkout.md](ecommerce/customers-cart-and-checkout.md) | Customer groups, address books, carts, the totals pipeline, checkout, reservations, spam protection |
@@ -25,6 +26,8 @@ Architecture approved 2026-10-01. Phases 0–10 are implemented; the documents b
 | [ecommerce/orders.md](ecommerce/orders.md) | Order numbers, status/payment/fulfillment states, history, invoices, emails, OrderWorkflow |
 | [ecommerce/payments.md](ecommerce/payments.md) | Payment methods, gateways, payments and transactions, writing a gateway |
 | [ecommerce/shipping.md](ecommerce/shipping.md) | Shipping zones, methods and carriers, checkout delivery, shipments, writing a carrier |
+| [ecommerce/returns.md](ecommerce/returns.md) | Return requests (RMA): customer form, staff workflow, restocking and refunds |
+| [marketing/promotions.md](marketing/promotions.md) | Promotions (conditions and discounts), coupons, usage limits, adding rule types |
 | [ecommerce/tax.md](ecommerce/tax.md) | Tax classes, zones and rates, inclusive or exclusive prices, replacing the TaxProvider |
 | [cms/pages-and-blocks.md](cms/pages-and-blocks.md) | CMS pages, scheduling, revisions, the homepage, content blocks and adding block types |
 | [cms/menus.md](cms/menus.md) | Header and footer menus, item types, translations, caching |

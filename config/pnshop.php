@@ -13,6 +13,7 @@ use PnShop\Localization\LocalizationServiceProvider;
 use PnShop\Media\MediaServiceProvider;
 use PnShop\Payment\PaymentServiceProvider;
 use PnShop\Promotion\PromotionServiceProvider;
+use PnShop\Returns\ReturnsServiceProvider;
 use PnShop\Sales\SalesServiceProvider;
 use PnShop\Security\SecurityServiceProvider;
 use PnShop\Seo\SeoServiceProvider;
@@ -51,6 +52,7 @@ return [
         ShippingServiceProvider::class,
         TaxServiceProvider::class,
         PromotionServiceProvider::class,
+        ReturnsServiceProvider::class,
         CmsServiceProvider::class,
         ExtensionServiceProvider::class,
         ThemeServiceProvider::class,

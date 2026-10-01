@@ -8,24 +8,17 @@ use Inertia\Response;
 use PnShop\Money\MoneyPresenter;
 use PnShop\Payment\Models\Refund;
 use PnShop\Payment\PaymentService;
+use PnShop\Returns\Models\ReturnRequest;
+use PnShop\Returns\ReturnReason;
+use PnShop\Returns\ReturnService;
 use PnShop\Sales\Models\Order;
 use PnShop\Shipping\Models\Shipment;
 
 class OrderController extends Controller
 {
-    public function show(Request $request, Order $order): Response
+    public function show(Request $request, Order $order, ReturnService $returns): Response
     {
-        $recentIds = collect($request->session()->get('recent_order_ids', []));
-        $isOwner = $request->user() && (int) $order->user_id === (int) $request->user()->id;
-        $isRecent = $recentIds->contains($order->id);
-
-        // A signed link from an order email: remember the order for this browser (invoice link, refresh).
-        if (! $isOwner && ! $isRecent && $request->hasValidSignature()) {
-            $request->session()->put('recent_order_ids', $recentIds->push($order->id)->unique()->values()->all());
-            $isRecent = true;
-        }
-
-        abort_unless($isOwner || $isRecent, 403);
+        abort_unless(self::canView($request, $order), 403);
 
         $order->load(['items', 'paymentMethod', 'shippingAddress', 'billingAddress', 'shipments.lines', 'refunds', 'invoice']);
 
@@ -69,6 +62,56 @@ class OrderController extends Controller
                 ]),
                 'totals' => $order->presentTotals(),
             ],
+            'returns' => ReturnRequest::query()->where('order_id', $order->id)->with('lines')->latest('id')->get()->map(fn (ReturnRequest $return) => [
+                'id' => $return->id,
+                'number' => $return->number,
+                'status' => $return->status->value,
+                'status_label' => __($return->status->label()),
+                'reason' => __($return->reason->label()),
+                'staff_note' => $return->staff_note,
+                'items' => (int) $return->lines->sum('quantity'),
+                'created_at' => $return->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LL'),
+            ]),
+            'returnable' => $this->returnable($order, $returns),
         ]);
+    }
+
+    /**
+     * The customer who placed it, or this browser right after checkout or via the email link.
+     */
+    public static function canView(Request $request, Order $order): bool
+    {
+        $recentIds = collect($request->session()->get('recent_order_ids', []));
+        $isOwner = $request->user() && (int) $order->user_id === (int) $request->user()->id;
+        $isRecent = $recentIds->contains($order->id);
+
+        // A signed link from an order email: remember the order for this browser (invoice link, refresh).
+        if (! $isOwner && ! $isRecent && $request->hasValidSignature()) {
+            $request->session()->put('recent_order_ids', $recentIds->push($order->id)->unique()->values()->all());
+            $isRecent = true;
+        }
+
+        return $isOwner || $isRecent;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function returnable(Order $order, ReturnService $returns): array
+    {
+        $eligibility = $returns->eligibility($order);
+
+        return [
+            'allowed' => $eligibility['allowed'],
+            'reason' => $eligibility['reason'],
+            'deadline' => $eligibility['deadline']?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LL'),
+            'items' => $order->items->filter(fn ($item) => isset($eligibility['items'][$item->id]))->map(fn ($item) => [
+                'id' => $item->id,
+                'title' => $item->product_title,
+                'variant_label' => $item->variant_label,
+                'max' => $eligibility['items'][$item->id],
+            ])->values(),
+            'reasons' => ReturnReason::options(),
+        ];
     }
 }

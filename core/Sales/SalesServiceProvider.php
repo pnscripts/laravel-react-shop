@@ -74,6 +74,7 @@ class SalesServiceProvider extends ModuleServiceProvider
             new SettingDefinition('shipping_updates', SettingType::Boolean, 'Shipping updates to the customer', default: true),
             new SettingDefinition('cancellations', SettingType::Boolean, 'Cancellations to the customer', default: true),
             new SettingDefinition('refunds', SettingType::Boolean, 'Refunds to the customer', default: true),
+            new SettingDefinition('returns', SettingType::Boolean, 'Return request updates to the customer', default: true),
             new SettingDefinition('staff_new_order', SettingType::Boolean, 'New order alert to the store', default: true),
             new SettingDefinition('staff_email', SettingType::Email, 'Send store alerts to', help: 'Defaults to the store contact email.'),
         ));

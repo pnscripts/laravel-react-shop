@@ -1274,6 +1274,9 @@
                                                         "lines",
                                                         "total"
                                                     ]
+                                                },
+                                                "coupon": {
+                                                    "description": "{code, valid, applied, message} when a coupon code was entered."
                                                 }
                                             },
                                             "required": [
@@ -1282,7 +1285,8 @@
                                                 "total_quantity",
                                                 "total_price",
                                                 "final_price",
-                                                "totals"
+                                                "totals",
+                                                "coupon"
                                             ]
                                         }
                                     },
@@ -1696,6 +1700,9 @@
                                                         "lines",
                                                         "total"
                                                     ]
+                                                },
+                                                "coupon": {
+                                                    "description": "{code, valid, applied, message} when a coupon code was entered."
                                                 }
                                             },
                                             "required": [
@@ -1704,7 +1711,8 @@
                                                 "total_quantity",
                                                 "total_price",
                                                 "final_price",
-                                                "totals"
+                                                "totals",
+                                                "coupon"
                                             ]
                                         }
                                     },
@@ -2116,6 +2124,9 @@
                                                         "lines",
                                                         "total"
                                                     ]
+                                                },
+                                                "coupon": {
+                                                    "description": "{code, valid, applied, message} when a coupon code was entered."
                                                 }
                                             },
                                             "required": [
@@ -2124,7 +2135,8 @@
                                                 "total_quantity",
                                                 "total_price",
                                                 "final_price",
-                                                "totals"
+                                                "totals",
+                                                "coupon"
                                             ]
                                         }
                                     },
@@ -2514,6 +2526,9 @@
                                                         "lines",
                                                         "total"
                                                     ]
+                                                },
+                                                "coupon": {
+                                                    "description": "{code, valid, applied, message} when a coupon code was entered."
                                                 }
                                             },
                                             "required": [
@@ -2522,7 +2537,815 @@
                                                 "total_quantity",
                                                 "total_price",
                                                 "final_price",
-                                                "totals"
+                                                "totals",
+                                                "coupon"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/cart/coupon": {
+            "post": {
+                "operationId": "store.cart.coupon.store",
+                "description": "An unknown or used-up code is refused (422). A valid code the cart does not qualify for\nyet is kept: `coupon.applied` is false and `coupon.message` says why.",
+                "summary": "Enter a coupon code",
+                "tags": [
+                    "Cart"
+                ],
+                "parameters": [
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Guest cart token (from a cart response). Not needed with a customer token.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "code": {
+                                        "type": "string",
+                                        "maxLength": 64
+                                    }
+                                },
+                                "required": [
+                                    "code"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Null for a customer's cart (found through the account) and for a guest without a cart yet."
+                                                },
+                                                "items": {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "variant_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "product_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "title": {
+                                                                "type": "string"
+                                                            },
+                                                            "slug": {
+                                                                "type": "string"
+                                                            },
+                                                            "variant_label": {
+                                                                "type": "string"
+                                                            },
+                                                            "sku": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "price": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            },
+                                                            "sale_price": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            },
+                                                            "unit_price": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            },
+                                                            "image": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "url": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "thumb": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "srcset": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "alt": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "width": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "height": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "url",
+                                                                    "thumb",
+                                                                    "srcset",
+                                                                    "alt",
+                                                                    "width",
+                                                                    "height"
+                                                                ]
+                                                            },
+                                                            "stock": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "quantity": {
+                                                                "type": "integer"
+                                                            },
+                                                            "line_total": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "variant_id",
+                                                            "product_id",
+                                                            "title",
+                                                            "slug",
+                                                            "variant_label",
+                                                            "sku",
+                                                            "price",
+                                                            "sale_price",
+                                                            "unit_price",
+                                                            "image",
+                                                            "stock",
+                                                            "quantity",
+                                                            "line_total"
+                                                        ]
+                                                    }
+                                                },
+                                                "total_quantity": {
+                                                    "type": "string"
+                                                },
+                                                "total_price": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "minor": {
+                                                            "type": "integer"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "minor",
+                                                        "currency",
+                                                        "formatted"
+                                                    ]
+                                                },
+                                                "final_price": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "minor": {
+                                                            "type": "integer"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "minor",
+                                                        "currency",
+                                                        "formatted"
+                                                    ]
+                                                },
+                                                "totals": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "subtotal": {
+                                                            "type": [
+                                                                "object",
+                                                                "null"
+                                                            ],
+                                                            "properties": {
+                                                                "amount": {
+                                                                    "type": "string"
+                                                                },
+                                                                "minor": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "currency": {
+                                                                    "type": "string"
+                                                                },
+                                                                "formatted": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "amount",
+                                                                "minor",
+                                                                "currency",
+                                                                "formatted"
+                                                            ]
+                                                        },
+                                                        "lines": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        },
+                                                        "total": {
+                                                            "type": [
+                                                                "object",
+                                                                "null"
+                                                            ],
+                                                            "properties": {
+                                                                "amount": {
+                                                                    "type": "string"
+                                                                },
+                                                                "minor": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "currency": {
+                                                                    "type": "string"
+                                                                },
+                                                                "formatted": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "amount",
+                                                                "minor",
+                                                                "currency",
+                                                                "formatted"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "subtotal",
+                                                        "lines",
+                                                        "total"
+                                                    ]
+                                                },
+                                                "coupon": {
+                                                    "description": "{code, valid, applied, message} when a coupon code was entered."
+                                                }
+                                            },
+                                            "required": [
+                                                "token",
+                                                "items",
+                                                "total_quantity",
+                                                "total_price",
+                                                "final_price",
+                                                "totals",
+                                                "coupon"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    }
+                }
+            },
+            "delete": {
+                "operationId": "store.cart.coupon.destroy",
+                "summary": "Remove the coupon code",
+                "tags": [
+                    "Cart"
+                ],
+                "parameters": [
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "X-Cart-Token",
+                        "in": "header",
+                        "description": "Guest cart token (from a cart response). Not needed with a customer token.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "token": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ],
+                                                    "description": "Null for a customer's cart (found through the account) and for a guest without a cart yet."
+                                                },
+                                                "items": {
+                                                    "type": "object",
+                                                    "additionalProperties": {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "variant_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "product_id": {
+                                                                "type": "integer"
+                                                            },
+                                                            "title": {
+                                                                "type": "string"
+                                                            },
+                                                            "slug": {
+                                                                "type": "string"
+                                                            },
+                                                            "variant_label": {
+                                                                "type": "string"
+                                                            },
+                                                            "sku": {
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "price": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            },
+                                                            "sale_price": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            },
+                                                            "unit_price": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            },
+                                                            "image": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "url": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "thumb": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "srcset": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "alt": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "width": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    },
+                                                                    "height": {
+                                                                        "type": [
+                                                                            "integer",
+                                                                            "null"
+                                                                        ]
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "id",
+                                                                    "url",
+                                                                    "thumb",
+                                                                    "srcset",
+                                                                    "alt",
+                                                                    "width",
+                                                                    "height"
+                                                                ]
+                                                            },
+                                                            "stock": {
+                                                                "type": [
+                                                                    "integer",
+                                                                    "null"
+                                                                ]
+                                                            },
+                                                            "quantity": {
+                                                                "type": "integer"
+                                                            },
+                                                            "line_total": {
+                                                                "type": [
+                                                                    "object",
+                                                                    "null"
+                                                                ],
+                                                                "properties": {
+                                                                    "amount": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "minor": {
+                                                                        "type": "integer"
+                                                                    },
+                                                                    "currency": {
+                                                                        "type": "string"
+                                                                    },
+                                                                    "formatted": {
+                                                                        "type": "string"
+                                                                    }
+                                                                },
+                                                                "required": [
+                                                                    "amount",
+                                                                    "minor",
+                                                                    "currency",
+                                                                    "formatted"
+                                                                ]
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "variant_id",
+                                                            "product_id",
+                                                            "title",
+                                                            "slug",
+                                                            "variant_label",
+                                                            "sku",
+                                                            "price",
+                                                            "sale_price",
+                                                            "unit_price",
+                                                            "image",
+                                                            "stock",
+                                                            "quantity",
+                                                            "line_total"
+                                                        ]
+                                                    }
+                                                },
+                                                "total_quantity": {
+                                                    "type": "string"
+                                                },
+                                                "total_price": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "minor": {
+                                                            "type": "integer"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "minor",
+                                                        "currency",
+                                                        "formatted"
+                                                    ]
+                                                },
+                                                "final_price": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "minor": {
+                                                            "type": "integer"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "minor",
+                                                        "currency",
+                                                        "formatted"
+                                                    ]
+                                                },
+                                                "totals": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "subtotal": {
+                                                            "type": [
+                                                                "object",
+                                                                "null"
+                                                            ],
+                                                            "properties": {
+                                                                "amount": {
+                                                                    "type": "string"
+                                                                },
+                                                                "minor": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "currency": {
+                                                                    "type": "string"
+                                                                },
+                                                                "formatted": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "amount",
+                                                                "minor",
+                                                                "currency",
+                                                                "formatted"
+                                                            ]
+                                                        },
+                                                        "lines": {
+                                                            "type": "array",
+                                                            "items": {}
+                                                        },
+                                                        "total": {
+                                                            "type": [
+                                                                "object",
+                                                                "null"
+                                                            ],
+                                                            "properties": {
+                                                                "amount": {
+                                                                    "type": "string"
+                                                                },
+                                                                "minor": {
+                                                                    "type": "integer"
+                                                                },
+                                                                "currency": {
+                                                                    "type": "string"
+                                                                },
+                                                                "formatted": {
+                                                                    "type": "string"
+                                                                }
+                                                            },
+                                                            "required": [
+                                                                "amount",
+                                                                "minor",
+                                                                "currency",
+                                                                "formatted"
+                                                            ]
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "subtotal",
+                                                        "lines",
+                                                        "total"
+                                                    ]
+                                                },
+                                                "coupon": {
+                                                    "description": "{code, valid, applied, message} when a coupon code was entered."
+                                                }
+                                            },
+                                            "required": [
+                                                "token",
+                                                "items",
+                                                "total_quantity",
+                                                "total_price",
+                                                "final_price",
+                                                "totals",
+                                                "coupon"
                                             ]
                                         }
                                     },
@@ -4050,6 +4873,46 @@
                                                     "required": [
                                                         "number"
                                                     ]
+                                                },
+                                                "returns": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "returnable": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "allowed": {
+                                                            "type": "string"
+                                                        },
+                                                        "reason": {
+                                                            "type": "string"
+                                                        },
+                                                        "deadline": {
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
+                                                        },
+                                                        "items": {
+                                                            "type": "string",
+                                                            "description": "order item id => units that can still be returned"
+                                                        },
+                                                        "reasons": {
+                                                            "type": "object",
+                                                            "additionalProperties": {
+                                                                "type": "string"
+                                                            }
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "allowed",
+                                                        "reason",
+                                                        "deadline",
+                                                        "items",
+                                                        "reasons"
+                                                    ]
                                                 }
                                             },
                                             "required": [
@@ -4077,7 +4940,9 @@
                                                 "totals",
                                                 "shipments",
                                                 "refunds",
-                                                "invoice"
+                                                "invoice",
+                                                "returns",
+                                                "returnable"
                                             ]
                                         }
                                     },
@@ -4087,6 +4952,213 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    }
+                }
+            }
+        },
+        "/orders/{order}/returns": {
+            "post": {
+                "operationId": "store.orders.returns.store",
+                "description": "`items` maps order item ids to units (see the order's `returnable.items`); `reason` is\none of `returnable.reasons`. Same access as reading the order (keep the signed URL's\nquery string for guests).",
+                "summary": "Request a return",
+                "tags": [
+                    "Order"
+                ],
+                "parameters": [
+                    {
+                        "name": "order",
+                        "in": "path",
+                        "required": true,
+                        "description": "The order ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "locale",
+                        "in": "query",
+                        "description": "Response language (a store language code); defaults to Accept-Language, then the store default.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "items": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "minimum": 0
+                                        },
+                                        "minItems": 1
+                                    },
+                                    "reason": {
+                                        "$ref": "#/components/schemas/ReturnReason"
+                                    },
+                                    "note": {
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ],
+                                        "maxLength": 2000
+                                    }
+                                },
+                                "required": [
+                                    "items",
+                                    "reason"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object",
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "number": {
+                                                    "type": "string"
+                                                },
+                                                "order_id": {
+                                                    "type": "integer"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "status_label": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Requested",
+                                                        "Approved",
+                                                        "Rejected",
+                                                        "Received",
+                                                        "Refunded",
+                                                        "Closed"
+                                                    ]
+                                                },
+                                                "reason": {
+                                                    "type": "string"
+                                                },
+                                                "reason_label": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Arrived damaged or faulty",
+                                                        "Wrong item sent",
+                                                        "Not as described",
+                                                        "No longer needed",
+                                                        "Other"
+                                                    ]
+                                                },
+                                                "customer_note": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "staff_note": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "restocked": {
+                                                    "type": "boolean"
+                                                },
+                                                "lines": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "refunded": {
+                                                    "type": [
+                                                        "object",
+                                                        "null"
+                                                    ],
+                                                    "properties": {
+                                                        "amount": {
+                                                            "type": "string"
+                                                        },
+                                                        "minor": {
+                                                            "type": "integer"
+                                                        },
+                                                        "currency": {
+                                                            "type": "string"
+                                                        },
+                                                        "formatted": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "amount",
+                                                        "minor",
+                                                        "currency",
+                                                        "formatted"
+                                                    ]
+                                                },
+                                                "transitions": {
+                                                    "type": "array",
+                                                    "items": {}
+                                                },
+                                                "created_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                },
+                                                "updated_at": {
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
+                                                }
+                                            },
+                                            "required": [
+                                                "id",
+                                                "number",
+                                                "order_id",
+                                                "status",
+                                                "status_label",
+                                                "reason",
+                                                "reason_label",
+                                                "customer_note",
+                                                "staff_note",
+                                                "restocked",
+                                                "lines",
+                                                "refunded",
+                                                "transitions",
+                                                "created_at",
+                                                "updated_at"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "data"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -4737,6 +5809,18 @@
                     "taxClassId"
                 ],
                 "title": "CartItemDTO"
+            },
+            "ReturnReason": {
+                "type": "string",
+                "description": "Why the customer returns the items.\n",
+                "enum": [
+                    "damaged",
+                    "wrong_item",
+                    "not_as_described",
+                    "no_longer_needed",
+                    "other"
+                ],
+                "title": "ReturnReason"
             }
         },
         "responses": {
