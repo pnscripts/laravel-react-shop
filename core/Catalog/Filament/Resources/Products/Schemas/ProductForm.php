@@ -8,6 +8,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use PnShop\Localization\Filament\TranslationsSection;
 
 class ProductForm
 {
@@ -61,6 +62,12 @@ class ProductForm
                         TextInput::make('barcode')
                             ->maxLength(255),
                     ]),
+                TranslationsSection::make([
+                    'title' => fn (string $name) => TextInput::make($name)->label('Title')->maxLength(255),
+                    'slug' => fn (string $name) => TextInput::make($name)->label('URL slug')->maxLength(255)
+                        ->helperText('Generated from the title when empty.'),
+                    'description' => fn (string $name) => Textarea::make($name)->label('Description')->rows(6),
+                ])->columnSpanFull(),
             ]);
     }
 }

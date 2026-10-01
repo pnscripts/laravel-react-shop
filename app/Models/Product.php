@@ -3,19 +3,20 @@
 namespace App\Models;
 
 use App\Traits\HasSlug;
-use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use PnShop\Localization\Concerns\Translatable;
+use PnShop\Localization\Contracts\TranslatableModel;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
-class Product extends Model
+class Product extends Model implements TranslatableModel
 {
-    use HasFactory, HasSlug, HasTranslations, LogsActivity, SoftDeletes;
+    use HasFactory, HasSlug, LogsActivity, SoftDeletes, Translatable;
 
     /**
      * The attributes that are mass assignable.
@@ -39,7 +40,7 @@ class Product extends Model
     /**
      * The attributes that support translations.
      */
-    protected $translatable = [
+    protected array $translatable = [
         'title',
         'slug',
         'description',

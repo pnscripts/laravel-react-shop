@@ -20,8 +20,7 @@ class ProductCategorySeeder extends Seeder
         ]);
 
         // Set translations for the 'title' field (only for 'Uncategorized')
-        $uncategorized->setTranslation('title', 'en', 'Uncategorized');
-        $uncategorized->setTranslation('title', 'bg', 'Некатегоризирани'); // Bulgarian translation for 'Uncategorized'
+        $uncategorized->setTranslations('bg', ['title' => 'Некатегоризирани']);
 
         // Create parent categories without translations
         $parentCategories = ProductCategory::factory(5)->create();

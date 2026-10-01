@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Localization\Concerns\Translatable;
+use PnShop\Localization\Contracts\TranslatableModel;
 
-class ProductAttribute extends Model
+class ProductAttribute extends Model implements TranslatableModel
 {
-    use HasFactory, HasTranslations, SoftDeletes;
+    use HasFactory, SoftDeletes, Translatable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,10 +28,8 @@ class ProductAttribute extends Model
 
     /**
      * The attributes that should be translated.
-     *
-     * @var array
      */
-    protected $translatable = ['label'];
+    protected array $translatable = ['label'];
 
     /**
      * The attributes that should be cast to native types.

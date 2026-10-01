@@ -53,49 +53,29 @@ class ProductCategoryTest extends TestCase
         $this->assertEquals(Str::slug('Test Category').'-1', $uniqueSlug);
     }
 
-    /**
-     * Test creating a product category with translations.
-     *
-     * Arrange: Create a category titled 'Uncategorized' and set its translation for Bulgarian.
-     * Act: Retrieve the translated title for the 'bg' locale.
-     * Assert: Ensure the title translation is returned correctly.
-     */
-    public function test_it_can_create_a_product_category_with_translations()
+    public function test_it_can_create_a_product_category_with_translations(): void
     {
-        // Arrange
         $category = ProductCategory::create(['title' => 'Uncategorized']);
-        $category->setTranslation('title', 'bg', 'Некатегоризирани');
+        $category->setTranslations('bg', ['title' => 'Некатегоризирани']);
 
-        // Act
-        $translatedTitle = $category->getTranslatedAttribute('title', 'bg');
-
-        // Assert
-        $this->assertEquals('Некатегоризирани', $translatedTitle);
+        $this->assertSame('Некатегоризирани', $category->translation('title', 'bg'));
+        $this->assertSame('nekategorizirani', $category->translation('slug', 'bg'));
+        $this->assertNull($category->translation('title', 'en'), 'The default language lives in the category itself.');
     }
 
-    /**
-     * Test retrieving a translated title from the getTranslatedAttribute method.
-     *
-     * Arrange: Create a category and set its translations for 'bg' and 'en' locales.
-     * Act: Retrieve the translated title for both locales.
-     * Assert: Ensure the correct translations are returned for both locales.
-     */
-    public function test_it_can_retrieve_translated_title_from_get_translated_attribute()
+    public function test_attributes_follow_the_current_locale_and_fall_back_to_the_source_language(): void
     {
-        // Arrange
         $category = ProductCategory::create(['title' => 'Uncategorized']);
-        $category->setTranslation('title', 'bg', 'Некатегоризирани');
-        $category->setTranslation('title', 'fr', 'Non catégorisé');
+        $category->setTranslations('bg', ['title' => 'Некатегоризирани']);
 
-        // Act
-        $bgTranslation = $category->getTranslatedAttribute('title', 'bg');
-        $frTranslation = $category->getTranslatedAttribute('title', 'fr');
-        $enTranslation = $category->getTranslatedAttribute('title', 'en');
+        app()->setLocale('bg');
+        $this->assertSame('Некатегоризирани', ProductCategory::query()->find($category->id)->title);
 
-        // Assert
-        $this->assertEquals('Некатегоризирани', $bgTranslation);
-        $this->assertEquals('Non catégorisé', $frTranslation);
-        $this->assertEquals('Uncategorized', $enTranslation);
+        app()->setLocale('de');
+        $this->assertSame('Uncategorized', ProductCategory::query()->find($category->id)->title);
+
+        app()->setLocale('en');
+        $this->assertSame('Uncategorized', ProductCategory::query()->find($category->id)->title);
     }
 
     /**

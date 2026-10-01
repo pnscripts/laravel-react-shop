@@ -77,4 +77,24 @@ class ProductResourceTest extends AdminTestCase
         Livewire::test(ListProducts::class)->assertActionHidden('create');
         $this->get('/admin/products/create')->assertForbidden();
     }
+
+    public function test_translations_are_saved_and_shown_on_the_localized_storefront(): void
+    {
+        $this->actingAsAdministrator();
+        $product = Product::factory()->active()->create(['title' => 'Desk Lamp']);
+
+        Livewire::test(EditProduct::class, ['record' => $product->getRouteKey()])
+            ->fillForm(['translations' => ['bg' => ['title' => 'Настолна лампа', 'slug' => '', 'description' => 'Ярка']]])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('Настолна лампа', $product->translation('title', 'bg'));
+        $this->assertSame('nastolna-lampa', $product->translation('slug', 'bg'));
+        $this->assertSame('Desk Lamp', $product->fresh()->getRawOriginal('title'));
+
+        Livewire::test(EditProduct::class, ['record' => $product->getRouteKey()])
+            ->assertSchemaStateSet(['translations.bg.title' => 'Настолна лампа']);
+
+        $this->get('/bg/shop/nastolna-lampa')->assertOk();
+    }
 }

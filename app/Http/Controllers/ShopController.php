@@ -18,7 +18,7 @@ class ShopController extends Controller
             ->active()
             ->with('category:id,title,slug')
             ->when($categorySlug, function ($query) use ($categorySlug) {
-                $query->whereHas('category', fn ($category) => $category->where('slug', $categorySlug));
+                $query->whereHas('category', fn ($category) => $category->whereTranslated('slug', $categorySlug));
             })
             ->latest()
             ->paginate(12)

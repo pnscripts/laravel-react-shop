@@ -66,11 +66,11 @@ class ProductCategoryTest extends TestCase
     {
         // Arrange
         $category = ProductCategory::create(['title' => 'Uncategorized']);
-        $category->setTranslation('title', 'bg', 'Некатегоризирани');
+        $category->setTranslations('bg', ['title' => 'Некатегоризирани']);
 
         // Act
-        $bgTranslation = $category->getTranslatedAttribute('title', 'bg');
-        $enTranslation = $category->getTranslatedAttribute('title', 'en');
+        $bgTranslation = $category->translation('title', 'bg');
+        $enTranslation = $category->title;
 
         // Assert
         $this->assertEquals('Некатегоризирани', $bgTranslation);

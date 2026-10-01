@@ -4,7 +4,6 @@ namespace App\Models;
 
 use App\Traits\HasSlug;
 use App\Traits\HasSortOrder;
-use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,10 +11,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Localization\Concerns\Translatable;
+use PnShop\Localization\Contracts\TranslatableModel;
 
-class ProductCategory extends Model
+class ProductCategory extends Model implements TranslatableModel
 {
-    use HasFactory, HasSlug, HasSortOrder, HasTranslations, SoftDeletes;
+    use HasFactory, HasSlug, HasSortOrder, SoftDeletes, Translatable;
 
     /**
      * The attributes that are mass assignable.

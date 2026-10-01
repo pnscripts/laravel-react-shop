@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
-use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Localization\Concerns\Translatable;
+use PnShop\Localization\Contracts\TranslatableModel;
 
-class ProductAttributeValue extends Model
+class ProductAttributeValue extends Model implements TranslatableModel
 {
-    use HasFactory, HasTranslations, SoftDeletes;
+    use HasFactory, SoftDeletes, Translatable;
 
     /**
      * The attributes that are mass assignable.
@@ -26,7 +27,7 @@ class ProductAttributeValue extends Model
     /**
      * The attributes that support translations.
      */
-    protected $translatable = [
+    protected array $translatable = [
         'value',
     ];
 
