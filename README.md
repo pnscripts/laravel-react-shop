@@ -20,7 +20,8 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
 - Auth from the official Laravel React starter (register, login, password reset, profile)
 - Admin panel at `/admin` (Filament 5) with separate staff accounts, roles and permissions
   - Dashboard: today's orders, pending orders, latest orders, low stock
-  - Products: list, filter, create, edit, delete/restore
+  - Products with variants (options such as size), gallery images, brands, nested categories, filterable attributes, related products/upsells/cross-sells
+  - Inventory with a stock movement ledger; media library with WebP conversions
   - Orders: list, view, change status (cancelling returns stock)
   - Admin users, roles, store settings, activity log
 - Domain models already in the repo: `Product`, `ProductCategory`, `ProductAttribute*`, `Order`, `OrderItem`, `OrderStatus`, `PaymentMethod`, `Translation`, `ShoppingCartService`
@@ -33,7 +34,7 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
 - Stripe, PayPal, or any payment gateway
 - REST API
 - Language switcher UI (the translation trait exists; the storefront is English)
-- Category admin, attribute filtering, media uploads, order history page for customers
+- Order history page for customers
 
 ---
 
@@ -70,9 +71,12 @@ Then:
 
 ```bash
 php artisan migrate --seed
+php artisan storage:link
 npm install
 npm run dev
 ```
+
+Image conversions run on the queue: `composer run dev` starts a worker, and production needs `php artisan queue:work`.
 
 In another terminal:
 

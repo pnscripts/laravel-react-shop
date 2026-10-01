@@ -1,6 +1,6 @@
 # PN Shop documentation
 
-Architecture approved 2026-10-01. Phases 0–3 are implemented; the documents below record the plan, research and what has shipped.
+Architecture approved 2026-10-01. Phases 0–4 are implemented; the documents below record the plan, research and what has shipped.
 
 | Document | Purpose |
 |---|---|
@@ -13,6 +13,8 @@ Architecture approved 2026-10-01. Phases 0–3 are implemented; the documents be
 | [upgrades/2026-10-phase-2.md](upgrades/2026-10-phase-2.md) | Upgrade notes for the core foundation and admin panel (Phase 2) |
 | [upgrades/2026-10-phase-3.md](upgrades/2026-10-phase-3.md) | Upgrade notes for localization and money (Phase 3) |
 | [development/localization-and-money.md](development/localization-and-money.md) | Languages, localized URLs, translatable models, interface text, money |
+| [upgrades/2026-10-phase-4.md](upgrades/2026-10-phase-4.md) | Upgrade notes for the catalog redesign (Phase 4) |
+| [ecommerce/catalog-and-inventory.md](ecommerce/catalog-and-inventory.md) | Products, variants, options, categories, brands, attributes, images, inventory |
 | [development/core-modules.md](development/core-modules.md) | Core module layout, permissions, pipelines and settings for developers |
 | [administration/staff-and-roles.md](administration/staff-and-roles.md) | Admin panel, staff accounts, roles and the activity log |
 

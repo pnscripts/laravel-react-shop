@@ -1,6 +1,6 @@
 # Core modules and the extension kernel
 
-PN Shop's platform code lives in `core/` under the `PnShop\` namespace. `app/` remains the merchant's application space; legacy catalog and order code still sits in `app/Models` and `app/Services`, and moves into its modules during the catalog and sales redesign.
+PN Shop's platform code lives in `core/` under the `PnShop\` namespace. `app/` remains the merchant's application space; order, cart and checkout code still sits in `app/Models` and `app/Services` and moves into the Sales module with the orders redesign.
 
 ## Layout
 
@@ -13,7 +13,9 @@ core/
 ├── Money/                   MoneyCast, MoneyPresenter (minor units, Brick Money)
 ├── Acl/                     staff accounts (admin_users), roles, permissions, commands
 ├── System/                  activity log
-├── Catalog/                 product permissions, policy, admin resource, low-stock widget
+├── Catalog/                 products, variants, options, categories, brands, attributes, relations + admin
+├── Inventory/               stock locations, levels, movement ledger, InventoryService
+├── Media/                   media library, uploads, WebP conversions, HasMedia
 ├── Sales/                   order permissions, policy, admin resource, dashboard widgets
 └── Admin/                   the Filament panel (/admin)
 ```
