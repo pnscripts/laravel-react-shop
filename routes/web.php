@@ -1,12 +1,14 @@
 <?php
 
+use App\Http\Controllers\Account\AddressesController;
+use App\Http\Controllers\Account\DashboardController;
+use App\Http\Controllers\Account\OrdersController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', HomeController::class)->name('home');
 
@@ -28,9 +30,14 @@ Route::post('/checkout', [CheckoutController::class, 'store'])
 Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
+    Route::get('account/orders', [OrdersController::class, 'index'])->name('account.orders');
+    Route::get('account/addresses', [AddressesController::class, 'index'])->name('account.addresses');
+    Route::post('account/addresses', [AddressesController::class, 'store'])->name('account.addresses.store');
+    Route::put('account/addresses/{address}', [AddressesController::class, 'update'])->name('account.addresses.update');
+    Route::delete('account/addresses/{address}', [AddressesController::class, 'destroy'])->name('account.addresses.destroy');
+    Route::post('account/addresses/{address}/default', [AddressesController::class, 'makeDefaultFor'])->name('account.addresses.default');
+
+    Route::get('dashboard', DashboardController::class)->name('dashboard');
 });
 
 require __DIR__.'/settings.php';

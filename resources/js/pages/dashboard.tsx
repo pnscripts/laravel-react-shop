@@ -1,43 +1,71 @@
 import { Button } from '@/components/ui/button';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type Money } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/dashboard',
-    },
-];
+const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
-export default function Dashboard() {
+type OrderSummary = { id: number; status: string | null; created_at: string; total: Money };
+
+export default function Dashboard({ recentOrders, defaultAddress }: { recentOrders: OrderSummary[]; defaultAddress: string[] | null }) {
     const t = useTranslations();
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={t('Dashboard')} />
-            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
-                <div className="flex flex-wrap gap-2">
-                    <Button asChild>
-                        <Link href={route('shop.index')}>{t('Go to shop')}</Link>
-                    </Button>
-                </div>
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                </div>
-                <div className="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border md:min-h-min">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                </div>
+            <div className="grid gap-4 p-4 md:grid-cols-3">
+                <Card className="md:col-span-2">
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>{t('Recent orders')}</CardTitle>
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={route('account.orders')}>{t('View all')}</Link>
+                        </Button>
+                    </CardHeader>
+                    <CardContent>
+                        {recentOrders.length === 0 ? (
+                            <div className="text-muted-foreground flex flex-col items-start gap-3 text-sm">
+                                <p>{t('You have not placed any orders yet.')}</p>
+                                <Button asChild size="sm">
+                                    <Link href={route('shop.index')}>{t('Go to shop')}</Link>
+                                </Button>
+                            </div>
+                        ) : (
+                            <ul className="divide-y text-sm">
+                                {recentOrders.map((order) => (
+                                    <li key={order.id} className="flex items-center justify-between gap-4 py-2">
+                                        <Link href={route('orders.show', order.id)} className="font-medium hover:underline">
+                                            {t('Order #:id', { id: order.id })}
+                                        </Link>
+                                        <span className="text-muted-foreground">{order.created_at}</span>
+                                        <span>{order.status}</span>
+                                        <span className="font-medium">{order.total.formatted}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between">
+                        <CardTitle>{t('Default address')}</CardTitle>
+                        <Button variant="ghost" size="sm" asChild>
+                            <Link href={route('account.addresses')}>{t('Manage')}</Link>
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="text-sm">
+                        {defaultAddress ? (
+                            <address className="not-italic">
+                                {defaultAddress.map((line) => (
+                                    <div key={line}>{line}</div>
+                                ))}
+                            </address>
+                        ) : (
+                            <p className="text-muted-foreground">{t('No address saved yet.')}</p>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
         </AppLayout>
     );
