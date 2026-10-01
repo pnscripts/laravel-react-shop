@@ -43,6 +43,9 @@ jobs:
       - name: Build Assets
         run: npm run build
 
+      - name: Bundle Size Budget
+        run: node scripts/check-bundle-size.mjs
+
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 

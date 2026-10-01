@@ -20,7 +20,7 @@ class BrandController extends AdminController
     {
         Gate::authorize('viewAny', Brand::class);
 
-        $brands = $this->updatedSince(Brand::query(), $request)->orderBy('id')->cursorPaginate($this->perPage($request))->withQueryString();
+        $brands = $this->updatedSince(Brand::query()->with('allTranslations'), $request)->orderBy('id')->cursorPaginate($this->perPage($request))->withQueryString();
 
         return $this->paginated($brands, fn (Brand $brand) => AdminCatalogPresenter::brand($brand));
     }

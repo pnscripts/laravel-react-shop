@@ -153,6 +153,8 @@ trait Translatable
     public function translationsInput(): array
     {
         $input = [];
+        // Eager-load allTranslations for lists: one query for all models instead of one per value.
+        $loaded = $this->relationLoaded('allTranslations') ? $this->getRelation('allTranslations')->keyBy('locale') : null;
 
         foreach (app(Localization::class)->languages() as $language) {
             if ($language->is_default) {
@@ -160,11 +162,26 @@ trait Translatable
             }
 
             foreach ($this->translatableAttributes() as $attribute) {
-                $input[$language->code][$attribute] = $this->translation($attribute, $language->code);
+                $value = $loaded?->get($language->code)?->getAttribute($attribute);
+
+                $input[$language->code][$attribute] = $loaded === null
+                    ? $this->translation($attribute, $language->code)
+                    : (is_string($value) && $value !== '' ? $value : null);
             }
         }
 
         return $input;
+    }
+
+    /**
+     * Every language's translation row, unlike translations() which the global scope limits
+     * to the current language. For admin lists and APIs that show all languages.
+     *
+     * @return HasMany<Model, $this>
+     */
+    public function allTranslations(): HasMany
+    {
+        return $this->translations();
     }
 
     private function applyPendingTranslations(): void

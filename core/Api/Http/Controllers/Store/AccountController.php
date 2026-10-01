@@ -68,7 +68,7 @@ class AccountController extends ApiController
      */
     public function orders(Request $request): array
     {
-        $orders = $this->user($request)->orders()->reorder()->orderByDesc('id')->cursorPaginate($this->perPage($request));
+        $orders = $this->user($request)->orders()->with('items')->reorder()->orderByDesc('id')->cursorPaginate($this->perPage($request));
 
         return $this->paginated($orders, fn (Order $order) => OrderPresenter::summary($order));
     }

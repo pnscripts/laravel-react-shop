@@ -23,7 +23,7 @@ class CategoryController extends AdminController
     {
         Gate::authorize('viewAny', Category::class);
 
-        return ['data' => $this->updatedSince(Category::query()->defaultOrder(), $request)->get()
+        return ['data' => $this->updatedSince(Category::query()->defaultOrder()->with('allTranslations'), $request)->get()
             ->map(fn (Category $category) => AdminCatalogPresenter::category($category))
             ->values()
             ->all()];

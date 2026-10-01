@@ -50,7 +50,8 @@ class OrderController extends AdminController
         [$column, $direction] = $this->sort($request, ['id', 'updated_at'], '-id');
         $filter = (array) $request->input('filter', []);
 
-        $orders = $this->updatedSince(Order::query(), $request)
+        // Lines: orders placed before stored totals compute theirs from the lines.
+        $orders = $this->updatedSince(Order::query()->with('items'), $request)
             ->tap(function (Builder $query) use ($filter): void {
                 foreach (array_keys(self::STATES) as $field) {
                     if (isset($filter[$field])) {

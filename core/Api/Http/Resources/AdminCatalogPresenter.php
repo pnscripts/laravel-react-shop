@@ -18,7 +18,7 @@ use PnShop\Money\MoneyPresenter;
 final class AdminCatalogPresenter
 {
     /** @var list<string> */
-    public const PRODUCT_RELATIONS = ['variants.optionValues', 'variants.stockLevels', 'categories:id', 'options:id', 'media'];
+    public const PRODUCT_RELATIONS = ['variants.optionValues', 'variants.stockLevels', 'categories:id', 'options:id', 'media', 'allTranslations'];
 
     /**
      * @return array<string, mixed>

@@ -37,7 +37,7 @@ class PageController extends AdminController
     {
         Gate::authorize('viewAny', Page::class);
 
-        $pages = $this->updatedSince(Page::query(), $request)
+        $pages = $this->updatedSince(Page::query()->with('allTranslations'), $request)
             ->when($request->filled('filter.status'), fn ($query) => $query->where('status', $request->string('filter.status')->toString()))
             ->orderBy('id')
             ->cursorPaginate($this->perPage($request))
