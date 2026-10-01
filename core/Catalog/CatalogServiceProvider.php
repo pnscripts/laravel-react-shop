@@ -12,6 +12,7 @@ use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductAttribute;
 use PnShop\Catalog\Models\ProductAttributeValue;
 use PnShop\Catalog\Models\ProductVariant;
+use PnShop\Catalog\Policies\AttributePolicy;
 use PnShop\Catalog\Policies\BrandPolicy;
 use PnShop\Catalog\Policies\CategoryPolicy;
 use PnShop\Catalog\Policies\OptionPolicy;
@@ -34,6 +35,7 @@ class CatalogServiceProvider extends ModuleServiceProvider
             new Permission('catalog.categories.manage', 'Manage categories', 'Catalog'),
             new Permission('catalog.brands.manage', 'Manage brands', 'Catalog'),
             new Permission('catalog.options.manage', 'Manage variant options', 'Catalog'),
+            new Permission('catalog.attributes.manage', 'Manage attributes', 'Catalog'),
         ];
     }
 
@@ -57,5 +59,6 @@ class CatalogServiceProvider extends ModuleServiceProvider
         Gate::policy(Category::class, CategoryPolicy::class);
         Gate::policy(Brand::class, BrandPolicy::class);
         Gate::policy(Option::class, OptionPolicy::class);
+        Gate::policy(ProductAttribute::class, AttributePolicy::class);
     }
 }

@@ -11,6 +11,8 @@ use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Option;
 use PnShop\Catalog\Models\OptionValue;
 use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Models\ProductAttribute;
+use PnShop\Catalog\Models\ProductAttributeValue;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Catalog\Presenters\ProductCardPresenter;
 use PnShop\Media\MediaPresenter;
@@ -27,13 +29,27 @@ class ShopController extends Controller
         $category = $categorySlug !== '' ? Category::query()->active()->whereTranslated('slug', $categorySlug)->first() : null;
         $brand = $brandSlug !== '' ? Brand::query()->active()->whereTranslated('slug', $brandSlug)->first() : null;
 
-        $products = Product::query()
+        /** @var array<int, list<int>> $attributeFilters attribute id => chosen value ids */
+        $attributeFilters = collect((array) $request->input('filter', []))
+            ->mapWithKeys(fn (mixed $values, mixed $attributeId) => [(int) $attributeId => array_values(array_filter(array_map('intval', (array) $values)))])
+            ->filter()
+            ->all();
+
+        $base = Product::query()
             ->active()
-            ->with(ProductCardPresenter::RELATIONS)
             ->when($categorySlug !== '', fn (Builder $query) => $category
                 ? $query->whereHas('categories', fn (Builder $categories) => $categories->whereKey($category->subtreeIds()))
                 : $query->whereRaw('1 = 0'))
-            ->when($brandSlug !== '', fn (Builder $query) => $query->where('brand_id', $brand->id ?? 0))
+            ->when($brandSlug !== '', fn (Builder $query) => $query->where('brand_id', $brand->id ?? 0));
+
+        $products = (clone $base)
+            ->with(ProductCardPresenter::RELATIONS)
+            // Values of one attribute are alternatives (OR); different attributes narrow down (AND).
+            ->tap(function (Builder $query) use ($attributeFilters): void {
+                foreach ($attributeFilters as $valueIds) {
+                    $query->whereHas('selectedAttributeValues', fn (Builder $values) => $values->whereIn('product_attribute_values.id', $valueIds));
+                }
+            })
             ->latest()
             ->paginate(12)
             ->withQueryString()
@@ -49,10 +65,12 @@ class ShopController extends Controller
                 'children' => $categories->where('parent_id', $root->id)->map($link)->values()->all(),
             ])->values()->all(),
             'brands' => Brand::query()->active()->orderBy('name')->get(['id', 'name', 'slug']),
+            'facets' => $this->facets($base),
             'filters' => [
                 'category' => $category?->slug,
                 'category_path' => $category ? Category::query()->whereAncestorOf($category, andSelf: true)->defaultOrder()->pluck('slug') : [],
                 'brand' => $brand?->slug,
+                'attributes' => (object) $attributeFilters,
             ],
         ]);
     }
@@ -119,5 +137,30 @@ class ShopController extends Controller
                 'default_variant_id' => $product->defaultVariant()?->id,
             ],
         ]);
+    }
+
+    /**
+     * Filterable attributes with the values that occur among the products being browsed.
+     *
+     * @param  Builder<Product>  $base
+     * @return list<array{id: int, label: string, values: list<array{id: int, value: string}>}>
+     */
+    private function facets(Builder $base): array
+    {
+        $productIds = (clone $base)->select('products.id');
+
+        return ProductAttribute::query()
+            ->where('is_filterable', true)
+            ->orderBy('position')
+            ->with(['values' => fn ($values) => $values->whereHas('products', fn (Builder $products) => $products->whereIn('products.id', $productIds))])
+            ->get()
+            ->filter(fn (ProductAttribute $attribute) => $attribute->values->isNotEmpty())
+            ->map(fn (ProductAttribute $attribute) => [
+                'id' => $attribute->id,
+                'label' => $attribute->label,
+                'values' => $attribute->values->map(fn (ProductAttributeValue $value) => ['id' => $value->id, 'value' => $value->value])->values()->all(),
+            ])
+            ->values()
+            ->all();
     }
 }

@@ -22,10 +22,13 @@ class ProductAttribute extends Model implements TranslatableModel
      * @var list<string>
      */
     protected $fillable = [
-        'key',         // Internal reference like 'wifi', 'size', 'color'
-        'label',       // Translatable label like 'WiFi', 'Size', 'Color'
-        'type',        // Input type (e.g., text, boolean, select)
-        'is_required', // Whether this attribute is mandatory
+        'key',           // Internal reference like 'wifi', 'material'
+        'label',         // Translatable label like 'Wi-Fi', 'Material'
+        'type',          // select (one value per product), multiselect or boolean
+        'is_required',
+        'is_filterable', // Offered as a shop filter
+        'position',
+        'translations_input',
     ];
 
     /**
@@ -42,6 +45,8 @@ class ProductAttribute extends Model implements TranslatableModel
      */
     protected $casts = [
         'is_required' => 'boolean',
+        'is_filterable' => 'boolean',
+        'position' => 'integer',
     ];
 
     /**
@@ -51,7 +56,7 @@ class ProductAttribute extends Model implements TranslatableModel
      */
     public function values(): HasMany
     {
-        return $this->hasMany(ProductAttributeValue::class);
+        return $this->hasMany(ProductAttributeValue::class)->orderBy('position')->orderBy('id');
     }
 
     /**

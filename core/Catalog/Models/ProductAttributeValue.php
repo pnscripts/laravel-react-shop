@@ -23,7 +23,9 @@ class ProductAttributeValue extends Model implements TranslatableModel
      */
     protected $fillable = [
         'product_attribute_id',
-        'value', // The value for this attribute (e.g., 'True', 'S', 'blue', '123')
+        'value', // e.g. 'Cotton', 'Yes', '40 W'
+        'position',
+        'translations_input',
     ];
 
     /**

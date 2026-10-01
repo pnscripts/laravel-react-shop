@@ -16,6 +16,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use PnShop\Catalog\Filament\Resources\Categories\CategoryResource;
 use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Models\ProductAttribute;
 use PnShop\Catalog\ProductType;
 use PnShop\Localization\Filament\TranslationsSection;
 use PnShop\Media\MediaLibrary;
@@ -126,6 +127,19 @@ class ProductForm
                             ->unique('product_variants', 'sku', ignoreRecord: false, modifyRuleUsing: fn (Unique $rule, ?Product $record) => $rule->ignore($record?->defaultVariant()?->id))),
                         self::shortcut(TextInput::make('barcode')->maxLength(255)),
                         self::shortcut(TextInput::make('weight')->label('Weight (grams)')->integer()->minValue(0)),
+                    ]),
+                Section::make('Attributes')
+                    ->description('Specifications shown on the product page and used by shop filters.')
+                    ->columnSpan(1)
+                    ->schema([
+                        Select::make('selectedAttributeValues')
+                            ->hiddenLabel()
+                            ->relationship('selectedAttributeValues', 'value')
+                            ->options(fn () => ProductAttribute::query()->with('values')->orderBy('position')->get()
+                                ->mapWithKeys(fn (ProductAttribute $attribute) => [$attribute->label => $attribute->values->pluck('value', 'id')->all()])
+                                ->all())
+                            ->multiple()
+                            ->searchable(),
                     ]),
                 Section::make('Options')
                     ->description('Choose the options this product varies by, then add variants below.')
