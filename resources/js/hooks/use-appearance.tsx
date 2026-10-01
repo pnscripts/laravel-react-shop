@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
@@ -47,12 +47,20 @@ export function initializeTheme() {
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
+const listeners = new Set<() => void>();
+
+const subscribe = (listener: () => void) => {
+    listeners.add(listener);
+
+    return () => listeners.delete(listener);
+};
+
+const currentAppearance = (): Appearance => (localStorage.getItem('appearance') as Appearance | null) || 'system';
+
 export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+    const appearance = useSyncExternalStore(subscribe, currentAppearance, () => 'system' as Appearance);
 
     const updateAppearance = useCallback((mode: Appearance) => {
-        setAppearance(mode);
-
         // Store in localStorage for client-side persistence...
         localStorage.setItem('appearance', mode);
 
@@ -60,14 +68,8 @@ export function useAppearance() {
         setCookie('appearance', mode);
 
         applyTheme(mode);
+        listeners.forEach((listener) => listener());
     }, []);
-
-    useEffect(() => {
-        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-        updateAppearance(savedAppearance || 'system');
-
-        return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
-    }, [updateAppearance]);
 
     return { appearance, updateAppearance } as const;
 }
