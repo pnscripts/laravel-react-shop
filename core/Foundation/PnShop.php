@@ -7,5 +7,5 @@ final class PnShop
     /**
      * The PN Shop core version. Extensions declare compatibility against it.
      */
-    public const VERSION = '0.9.0-dev';
+    public const VERSION = '1.0.0';
 }

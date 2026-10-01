@@ -43,9 +43,9 @@ This is **not** a full marketplace. Card payments come through the included Stri
 - Built-in payment gateways are manual (cash on delivery, bank transfer); card gateways come as extensions
 - PHPUnit feature/unit tests for models, cart, shop flow, and admin access
 
-## What is not implemented
+## Not in 1.0
 
-- Tagged 1.0 release (Phase 13)
+Multi-store and sales channels in the admin, multi-location inventory screens, B2B price lists, a visual page-builder canvas, GraphQL and out-of-process apps are planned after 1.0. See [CHANGELOG.md](CHANGELOG.md) for what 1.0 contains.
 
 ---
 

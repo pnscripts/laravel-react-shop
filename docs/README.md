@@ -1,6 +1,6 @@
 # PN Shop documentation
 
-Architecture approved 2026-10-01. Phases 0–12 are implemented; the documents below record the plan, research and what has shipped.
+Architecture approved 2026-10-01. Phases 0–13 are implemented (1.0); the documents below record the plan, research and what has shipped.
 
 | Document | Purpose |
 |---|---|
@@ -20,6 +20,9 @@ Architecture approved 2026-10-01. Phases 0–12 are implemented; the documents b
 | [upgrades/2026-10-phase-10.md](upgrades/2026-10-phase-10.md) | Upgrade notes for the Store and Admin APIs (Phase 10) |
 | [upgrades/2026-10-phase-11.md](upgrades/2026-10-phase-11.md) | Upgrade notes for promotions, coupons and returns (Phase 11) |
 | [upgrades/2026-10-phase-12.md](upgrades/2026-10-phase-12.md) | Upgrade notes for the installer and updater (Phase 12) |
+| [upgrades/2026-10-phase-13.md](upgrades/2026-10-phase-13.md) | Upgrade notes for the 1.0 hardening (Phase 13) |
+| [security/security.md](security/security.md) | Security model, hardening, production checklist |
+| [release/pnscripts-com-product-page.md](release/pnscripts-com-product-page.md) | Copy changes for the PN Shop page on pnscripts.com (for whoever updates that site) |
 | [installation/installation.md](installation/installation.md) | Installing: requirements, `pnshop:install`, the web installer, after installing |
 | [installation/updating.md](installation/updating.md) | Updating: `pnshop:update`, dry run, backups, plugin compatibility |
 | [ecommerce/catalog-and-inventory.md](ecommerce/catalog-and-inventory.md) | Products, variants, options, categories, brands, attributes, images, inventory |
@@ -41,4 +44,4 @@ Architecture approved 2026-10-01. Phases 0–12 are implemented; the documents b
 | [development/core-modules.md](development/core-modules.md) | Core module layout, permissions, pipelines and settings for developers |
 | [administration/staff-and-roles.md](administration/staff-and-roles.md) | Admin panel, staff accounts, roles and the activity log |
 
-The full `docs/` tree (cms, ecommerce, plugins, themes, api, installation, …) is filled in phase by phase after approval.
+See also [CHANGELOG.md](../CHANGELOG.md).

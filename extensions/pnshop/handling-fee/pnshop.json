@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "type": "plugin",
     "requires": {
-        "pnshop": ">=0.8",
+        "pnshop": "^1.0",
         "php": ">=8.4"
     },
     "provider": "PnShop\\Plugins\\HandlingFee\\HandlingFeePlugin",

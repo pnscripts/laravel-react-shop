@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "type": "theme",
     "parent": "pnshop/default",
-    "requires": { "pnshop": ">=0.9" },
+    "requires": { "pnshop": "^1.0" },
     "settings": [
         {
             "key": "primary",
