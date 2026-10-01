@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Money\MoneyPresenter;
 
 class HomeController extends Controller
 {
@@ -32,8 +33,8 @@ class HomeController extends Controller
             'id' => $product->id,
             'title' => $product->title,
             'slug' => $product->slug,
-            'price' => $product->price,
-            'discount_price' => $product->discount_price,
+            'price' => MoneyPresenter::present($product->price),
+            'discount_price' => MoneyPresenter::present($product->discount_price),
             'image' => $product->image,
             'stock' => $product->stock,
             'category' => $product->category ? [

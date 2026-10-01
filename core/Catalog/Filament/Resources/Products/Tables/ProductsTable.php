@@ -2,6 +2,7 @@
 
 namespace PnShop\Catalog\Filament\Resources\Products\Tables;
 
+use Brick\Money\Money;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -30,10 +31,10 @@ class ProductsTable
                     ->searchable()
                     ->toggleable(),
                 TextColumn::make('price')
-                    ->numeric(2)
+                    ->formatStateUsing(fn (?Money $state) => $state?->formatToLocale(app()->getLocale()))
                     ->sortable(),
                 TextColumn::make('discount_price')
-                    ->numeric(2)
+                    ->formatStateUsing(fn (?Money $state) => $state?->formatToLocale(app()->getLocale()))
                     ->placeholder('—'),
                 TextColumn::make('stock')
                     ->numeric()

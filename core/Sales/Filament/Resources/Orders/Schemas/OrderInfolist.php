@@ -28,12 +28,10 @@ class OrderInfolist
                                 TextEntry::make('quantity'),
                                 TextEntry::make('line_total')
                                     ->label('Total')
-                                    ->state(fn (OrderItem $record) => ($record->discount_price ?: $record->price) * $record->quantity)
-                                    ->numeric(2),
+                                    ->state(fn (OrderItem $record) => $record->lineTotal()->formatToLocale(app()->getLocale())),
                             ]),
                         TextEntry::make('total')
-                            ->state(fn (Order $record) => $record->items->sum(fn (OrderItem $item) => ($item->discount_price ?: $item->price) * $item->quantity))
-                            ->numeric(2)
+                            ->state(fn (Order $record) => $record->itemsTotal()->formatToLocale(app()->getLocale()))
                             ->weight('bold'),
                     ]),
                 Section::make('Order')

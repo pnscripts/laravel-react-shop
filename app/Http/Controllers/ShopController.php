@@ -7,6 +7,7 @@ use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Money\MoneyPresenter;
 
 class ShopController extends Controller
 {
@@ -27,8 +28,8 @@ class ShopController extends Controller
                 'id' => $product->id,
                 'title' => $product->title,
                 'slug' => $product->slug,
-                'price' => $product->price,
-                'discount_price' => $product->discount_price,
+                'price' => MoneyPresenter::present($product->price),
+                'discount_price' => MoneyPresenter::present($product->discount_price),
                 'image' => $product->image,
                 'stock' => $product->stock,
                 'category' => $product->category ? [
@@ -65,8 +66,8 @@ class ShopController extends Controller
                 'title' => $product->title,
                 'slug' => $product->slug,
                 'description' => $product->description,
-                'price' => $product->price,
-                'discount_price' => $product->discount_price,
+                'price' => MoneyPresenter::present($product->price),
+                'discount_price' => MoneyPresenter::present($product->discount_price),
                 'image' => $product->image,
                 'stock' => $product->stock,
                 'sku' => $product->sku,

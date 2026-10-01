@@ -2,11 +2,16 @@
 
 namespace App\Models;
 
+use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Money\MoneyCast;
 
+/**
+ * @property string $currency ISO 4217 code, same as the order
+ */
 class OrderItem extends Model
 {
     use HasFactory, SoftDeletes;
@@ -22,6 +27,7 @@ class OrderItem extends Model
         'product_title',
         'product_sku',
         'quantity',
+        'currency',
         'price',
         'discount_price',
     ];
@@ -32,8 +38,8 @@ class OrderItem extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'price' => 'float',
-        'discount_price' => 'float',
+        'price' => MoneyCast::class.':currency',
+        'discount_price' => MoneyCast::class.':currency',
     ];
 
     /**
@@ -54,5 +60,15 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function unitPrice(): Money
+    {
+        return $this->discount_price !== null && $this->discount_price->isPositive() ? $this->discount_price : $this->price;
+    }
+
+    public function lineTotal(): Money
+    {
+        return $this->unitPrice()->multipliedBy($this->quantity);
     }
 }

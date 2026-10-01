@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
+/**
+ * @property string $currency ISO 4217 code the order was placed in
+ */
 class Order extends Model
 {
     use HasFactory, LogsActivity, SoftDeletes;
@@ -27,6 +31,7 @@ class Order extends Model
         'email',
         'order_status_id',
         'payment_method_id',
+        'currency',
     ];
 
     /**
@@ -76,5 +81,16 @@ class Order extends Model
             ->logOnly(['order_status_id'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
+    }
+
+    /**
+     * Sum of the order lines in the order currency.
+     */
+    public function itemsTotal(): Money
+    {
+        return $this->items->reduce(
+            fn (Money $total, OrderItem $item) => $total->plus($item->lineTotal()),
+            Money::zero($this->currency),
+        );
     }
 }

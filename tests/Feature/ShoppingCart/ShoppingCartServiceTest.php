@@ -76,7 +76,7 @@ class ShoppingCartServiceTest extends TestCase
         $this->assertEquals(1, $cartItems->where('product_id', $this->product2->id)->first()->quantity);
         $this->assertEquals(3, $cartItems->where('product_id', $this->product3->id)->first()->quantity);
         $this->assertEquals(1, $cartItems->where('product_id', $this->product4->id)->first()->quantity);
-        $this->assertEquals(80 * 5 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getTotalPrice());
+        $this->assertEquals(80 * 5 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getTotalPrice()->getAmount()->toFloat());
     }
 
     public function test_update_multiple_items_in_cart(): void
@@ -94,7 +94,7 @@ class ShoppingCartServiceTest extends TestCase
         $this->assertEquals(5, $cartItems->where('product_id', $this->product1->id)->first()->quantity);
         $this->assertEquals(2, $cartItems->where('product_id', $this->product2->id)->first()->quantity);
         $this->assertEquals(1, $cartItems->where('product_id', $this->product3->id)->first()->quantity);
-        $this->assertEquals(80 * 5 + 150 * 2 + 250 * 1 + 350 * 1, $this->service->getTotalPrice());
+        $this->assertEquals(80 * 5 + 150 * 2 + 250 * 1 + 350 * 1, $this->service->getTotalPrice()->getAmount()->toFloat());
     }
 
     public function test_remove_item_from_cart(): void
@@ -118,7 +118,7 @@ class ShoppingCartServiceTest extends TestCase
         $this->service->addItemToCart($this->product3->id, 3);
         $this->service->addItemToCart($this->product4->id, 1);
 
-        $this->assertEquals(80 * 2 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getTotalPrice());
+        $this->assertEquals(80 * 2 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getTotalPrice()->getAmount()->toFloat());
     }
 
     public function test_get_final_price(): void
@@ -128,7 +128,7 @@ class ShoppingCartServiceTest extends TestCase
         $this->service->addItemToCart($this->product3->id, 3);
         $this->service->addItemToCart($this->product4->id, 1);
 
-        $this->assertEquals(80 * 2 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getFinalPrice());
+        $this->assertEquals(80 * 2 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getFinalPrice()->getAmount()->toFloat());
     }
 
     private function makeCartService(): ShoppingCartService

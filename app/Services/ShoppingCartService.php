@@ -5,8 +5,11 @@ namespace App\Services;
 use App\DTOs\CartItemDTO;
 use App\Exceptions\CartException;
 use App\Models\Product;
+use Brick\Money\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use PnShop\Localization\Localization;
+use PnShop\Money\MoneyPresenter;
 
 /**
  * Session cart. The session holds only product ids and quantities; every read
@@ -98,12 +101,15 @@ class ShoppingCartService
         return is_array($lines) ? array_map('intval', $lines) : [];
     }
 
-    public function getTotalPrice(): float
+    public function getTotalPrice(): Money
     {
-        return $this->getCartItems()->sum(fn (CartItemDTO $item) => $item->getTotalPrice());
+        return $this->getCartItems()->reduce(
+            fn (Money $total, CartItemDTO $item) => $total->plus($item->getTotalPrice()),
+            Money::zero(app(Localization::class)->defaultCurrency()->code),
+        );
     }
 
-    public function getFinalPrice(): float
+    public function getFinalPrice(): Money
     {
         return $this->getTotalPrice();
     }
@@ -128,16 +134,17 @@ class ShoppingCartService
             'items' => $this->getCartItems()->map(fn (CartItemDTO $item) => [
                 'product_id' => $item->product_id,
                 'title' => $item->title,
-                'price' => $item->price,
-                'discount_price' => $item->discount_price,
+                'price' => MoneyPresenter::present($item->price),
+                'discount_price' => MoneyPresenter::present($item->discount_price),
+                'unit_price' => MoneyPresenter::present($item->getUnitPrice()),
                 'image' => $item->image,
                 'stock' => $item->stock,
                 'quantity' => $item->quantity,
-                'line_total' => $item->getTotalPrice(),
+                'line_total' => MoneyPresenter::present($item->getTotalPrice()),
             ])->all(),
             'total_quantity' => $this->getCartItems()->sum('quantity'),
-            'total_price' => $this->getTotalPrice(),
-            'final_price' => $this->getFinalPrice(),
+            'total_price' => MoneyPresenter::present($this->getTotalPrice()),
+            'final_price' => MoneyPresenter::present($this->getFinalPrice()),
         ];
     }
 

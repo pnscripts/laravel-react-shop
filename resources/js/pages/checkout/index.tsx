@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { formatMoney } from '@/lib/utils';
 import { type CartSummary } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
@@ -97,13 +96,13 @@ export default function Checkout({
                                 <span>
                                     {item.title} × {item.quantity}
                                 </span>
-                                <span>{formatMoney(item.line_total)}</span>
+                                <span>{item.line_total.formatted}</span>
                             </li>
                         ))}
                     </ul>
                     <div className="mb-6 flex justify-between font-semibold">
                         <span>Total</span>
-                        <span>{formatMoney(cart.final_price)}</span>
+                        <span>{cart.final_price.formatted}</span>
                     </div>
                     <Button type="submit" className="w-full" disabled={processing}>
                         Place order

@@ -3,6 +3,7 @@
 namespace App\DTOs;
 
 use App\Models\Product;
+use Brick\Money\Money;
 
 /**
  * A cart line built from the current product row. Prices are never taken from the session.
@@ -12,8 +13,8 @@ final readonly class CartItemDTO
     public function __construct(
         public int $product_id,
         public string $title,
-        public float $price,
-        public ?float $discount_price,
+        public Money $price,
+        public ?Money $discount_price,
         public ?string $image,
         public int $stock,
         public int $quantity,
@@ -24,8 +25,8 @@ final readonly class CartItemDTO
         return new self(
             $product->id,
             $product->title,
-            (float) $product->price,
-            $product->discount_price !== null ? (float) $product->discount_price : null,
+            $product->price,
+            $product->discount_price,
             $product->image,
             $product->stock,
             $quantity,
@@ -35,13 +36,13 @@ final readonly class CartItemDTO
     /**
      * The price of one unit: the discount price when set, otherwise the regular price.
      */
-    public function getUnitPrice(): float
+    public function getUnitPrice(): Money
     {
-        return $this->discount_price ?: $this->price;
+        return $this->discount_price !== null && $this->discount_price->isPositive() ? $this->discount_price : $this->price;
     }
 
-    public function getTotalPrice(): float
+    public function getTotalPrice(): Money
     {
-        return $this->getUnitPrice() * $this->quantity;
+        return $this->getUnitPrice()->multipliedBy($this->quantity);
     }
 }

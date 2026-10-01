@@ -6,6 +6,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Money\MoneyPresenter;
 
 class OrderController extends Controller
 {
@@ -33,11 +34,12 @@ class OrderController extends Controller
                     'id' => $item->id,
                     'title' => $item->product_title ?? 'Product',
                     'quantity' => $item->quantity,
-                    'price' => $item->price,
-                    'discount_price' => $item->discount_price,
-                    'line_total' => ($item->discount_price ?: $item->price) * $item->quantity,
+                    'price' => MoneyPresenter::present($item->price),
+                    'discount_price' => MoneyPresenter::present($item->discount_price),
+                    'unit_price' => MoneyPresenter::present($item->unitPrice()),
+                    'line_total' => MoneyPresenter::present($item->lineTotal()),
                 ]),
-                'total' => $order->items->sum(fn ($item) => ($item->discount_price ?: $item->price) * $item->quantity),
+                'total' => MoneyPresenter::present($order->itemsTotal()),
             ],
         ]);
     }

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { formatMoney } from '@/lib/utils';
+import { type Money } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 
@@ -13,8 +13,8 @@ type ProductShow = {
     title: string;
     slug: string;
     description: string | null;
-    price: string | number;
-    discount_price: string | number | null;
+    price: Money;
+    discount_price: Money | null;
     image: string | null;
     stock: number;
     sku: string | null;
@@ -23,7 +23,7 @@ type ProductShow = {
 };
 
 export default function ShopShow({ product }: { product: ProductShow }) {
-    const hasDiscount = product.discount_price !== null && Number(product.discount_price) > 0;
+    const hasDiscount = product.discount_price !== null && product.discount_price.minor > 0;
     const { data, setData, post, processing, errors } = useForm({
         product_id: product.id,
         quantity: 1,
@@ -64,8 +64,8 @@ export default function ShopShow({ product }: { product: ProductShow }) {
                     {product.category && <Badge variant="secondary">{product.category.title}</Badge>}
                     <h1 className="mt-3 mb-4 text-3xl font-semibold tracking-tight">{product.title}</h1>
                     <div className="mb-6 flex items-baseline gap-3">
-                        <span className="text-2xl font-semibold">{formatMoney(hasDiscount ? product.discount_price : product.price)}</span>
-                        {hasDiscount && <span className="text-muted-foreground line-through">{formatMoney(product.price)}</span>}
+                        <span className="text-2xl font-semibold">{(hasDiscount ? product.discount_price : product.price)?.formatted}</span>
+                        {hasDiscount && <span className="text-muted-foreground line-through">{product.price.formatted}</span>}
                     </div>
                     {product.description && <p className="text-muted-foreground mb-6 whitespace-pre-line">{product.description}</p>}
                     {product.sku && <p className="text-muted-foreground mb-4 text-sm">SKU: {product.sku}</p>}

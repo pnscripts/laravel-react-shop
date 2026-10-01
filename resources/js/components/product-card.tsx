@@ -1,11 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { formatMoney } from '@/lib/utils';
 import { type ProductCard as ProductCardType } from '@/types';
 import { Link } from '@inertiajs/react';
 
 export function ProductCard({ product }: { product: ProductCardType }) {
-    const hasDiscount = product.discount_price !== null && Number(product.discount_price) > 0;
+    const hasDiscount = product.discount_price !== null && product.discount_price.minor > 0;
 
     return (
         <Card className="overflow-hidden py-0">
@@ -27,8 +26,8 @@ export function ProductCard({ product }: { product: ProductCardType }) {
                 </CardHeader>
                 <CardContent className="px-4">
                     <div className="flex items-baseline gap-2">
-                        <span className="font-semibold">{formatMoney(hasDiscount ? product.discount_price : product.price)}</span>
-                        {hasDiscount && <span className="text-muted-foreground text-sm line-through">{formatMoney(product.price)}</span>}
+                        <span className="font-semibold">{(hasDiscount ? product.discount_price : product.price)?.formatted}</span>
+                        {hasDiscount && <span className="text-muted-foreground text-sm line-through">{product.price.formatted}</span>}
                     </div>
                 </CardContent>
                 <CardFooter className="px-4 pb-4">

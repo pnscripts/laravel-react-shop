@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { formatMoney } from '@/lib/utils';
+import { type Money } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 type OrderShow = {
@@ -16,11 +16,12 @@ type OrderShow = {
         id: number;
         title: string;
         quantity: number;
-        price: number;
-        discount_price: number | null;
-        line_total: number;
+        price: Money;
+        discount_price: Money | null;
+        unit_price: Money;
+        line_total: Money;
     }[];
-    total: number;
+    total: Money;
 };
 
 export default function OrderShow({ order }: { order: OrderShow }) {
@@ -60,14 +61,14 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                             <tr key={item.id} className="border-t">
                                 <td className="px-4 py-3">{item.title}</td>
                                 <td className="px-4 py-3">{item.quantity}</td>
-                                <td className="px-4 py-3">{formatMoney(item.line_total)}</td>
+                                <td className="px-4 py-3">{item.line_total.formatted}</td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
             <div className="mt-4 flex items-center justify-between">
-                <p className="font-semibold">Total {formatMoney(order.total)}</p>
+                <p className="font-semibold">Total {order.total.formatted}</p>
                 <Button asChild>
                     <Link href={route('shop.index')}>Continue shopping</Link>
                 </Button>

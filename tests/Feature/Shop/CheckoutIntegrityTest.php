@@ -34,16 +34,18 @@ class CheckoutIntegrityTest extends TestCase
         $product->update(['discount_price' => null, 'price' => 120]);
 
         $this->get(route('cart.index'))->assertInertia(fn (Assert $page) => $page
-            ->where('cart.items.0.price', 120)
-            ->where('cart.final_price', 120)
+            ->where('cart.items.0.price.amount', '120.00')
+            ->where('cart.final_price.amount', '120.00')
+            ->where('cart.final_price.formatted', '$120.00')
         );
 
         $this->post(route('checkout.store'), $this->checkoutData())->assertRedirect();
 
         $this->assertDatabaseHas('order_items', [
             'product_id' => $product->id,
-            'price' => 120,
-            'discount_price' => 0,
+            'price' => 12000,
+            'discount_price' => null,
+            'currency' => 'USD',
         ]);
     }
 

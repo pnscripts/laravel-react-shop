@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { formatMoney } from '@/lib/utils';
 import { type CartSummary } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 
@@ -36,7 +35,7 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                                         <tr key={item.product_id} className="border-t">
                                             <td className="px-4 py-3">
                                                 <div className="font-medium">{item.title}</div>
-                                                <div className="text-muted-foreground">{formatMoney(item.discount_price || item.price)}</div>
+                                                <div className="text-muted-foreground">{item.unit_price.formatted}</div>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Input
@@ -53,7 +52,7 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                                                     }}
                                                 />
                                             </td>
-                                            <td className="px-4 py-3">{formatMoney(item.line_total)}</td>
+                                            <td className="px-4 py-3">{item.line_total.formatted}</td>
                                             <td className="px-4 py-3 text-right">
                                                 <Button
                                                     variant="ghost"
@@ -77,7 +76,7 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                         </div>
                         <div className="mb-6 flex justify-between font-semibold">
                             <span>Total</span>
-                            <span>{formatMoney(cart.final_price)}</span>
+                            <span>{cart.final_price.formatted}</span>
                         </div>
                         <Button className="w-full" asChild>
                             <Link href={route('checkout.create')}>Checkout</Link>

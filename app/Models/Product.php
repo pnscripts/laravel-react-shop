@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
+use PnShop\Money\MoneyCast;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -48,8 +49,8 @@ class Product extends Model implements TranslatableModel
 
     protected $casts = [
         'attribute_values' => 'array',
-        'price' => 'decimal:2',
-        'discount_price' => 'decimal:2',
+        'price' => MoneyCast::class,
+        'discount_price' => MoneyCast::class,
         'is_active' => 'boolean',
     ];
 

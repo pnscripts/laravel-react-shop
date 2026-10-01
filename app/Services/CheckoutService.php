@@ -9,6 +9,7 @@ use App\Models\OrderStatus;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use PnShop\Localization\Localization;
 
 class CheckoutService
 {
@@ -43,6 +44,7 @@ class CheckoutService
                 ->keyBy('id');
 
             $status = OrderStatus::firstOrCreate(['name' => 'pending']);
+            $currency = app(Localization::class)->defaultCurrency()->code;
 
             $order = Order::create([
                 'user_id' => $user?->id,
@@ -52,6 +54,7 @@ class CheckoutService
                 'address' => $data['address'],
                 'payment_method_id' => $data['payment_method_id'],
                 'order_status_id' => $status->id,
+                'currency' => $currency,
             ]);
 
             foreach ($lines as $productId => $quantity) {
@@ -77,8 +80,9 @@ class CheckoutService
                     'product_title' => $product->title,
                     'product_sku' => $product->sku,
                     'quantity' => $quantity,
+                    'currency' => $currency,
                     'price' => $product->price,
-                    'discount_price' => $product->discount_price ?? 0,
+                    'discount_price' => $product->discount_price,
                 ]);
             }
 

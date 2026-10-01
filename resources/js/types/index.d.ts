@@ -54,12 +54,20 @@ export interface User {
     [key: string]: unknown; // This allows for additional properties...
 }
 
+/** Money as sent by the server: formatted in the visitor's language. */
+export interface Money {
+    amount: string;
+    minor: number;
+    currency: string;
+    formatted: string;
+}
+
 export interface ProductCard {
     id: number;
     title: string;
     slug: string;
-    price: string | number;
-    discount_price: string | number | null;
+    price: Money;
+    discount_price: Money | null;
     image: string | null;
     stock: number;
     category: {
@@ -72,19 +80,20 @@ export interface ProductCard {
 export interface CartItem {
     product_id: number;
     title: string;
-    price: number;
-    discount_price: number | null;
+    price: Money;
+    discount_price: Money | null;
+    unit_price: Money;
     image: string | null;
     stock: number;
     quantity: number;
-    line_total: number;
+    line_total: Money;
 }
 
 export interface CartSummary {
     items: CartItem[];
     total_quantity: number;
-    total_price: number;
-    final_price: number;
+    total_price: Money;
+    final_price: Money;
 }
 
 export interface Paginated<T> {
