@@ -26,7 +26,7 @@ final class BankTransfer extends ManualGateway
             new SettingDefinition('iban', SettingType::String, 'IBAN', rules: ['max:42']),
             new SettingDefinition('bic', SettingType::String, 'BIC / SWIFT', rules: ['max:16']),
             new SettingDefinition('bank_name', SettingType::String, 'Bank', rules: ['max:150']),
-            new SettingDefinition('instructions', SettingType::Text, 'Instructions for the customer', default: 'Please transfer :amount and use :order as the payment reference.', help: ':amount and :order are replaced with the order total and number.'),
+            new SettingDefinition('instructions', SettingType::Text, 'Instructions for the customer', default: __('Please transfer :amount and use :order as the payment reference.'), help: ':amount and :order are replaced with the order total and number.'),
         ];
     }
 

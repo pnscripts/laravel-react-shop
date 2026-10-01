@@ -14,6 +14,7 @@ use PnShop\Sales\Models\OrderItem;
 use PnShop\Sales\OrderWorkflow;
 use PnShop\Sales\States\FulfillmentStatus;
 use PnShop\Sales\States\OrderStatus;
+use PnShop\Shipping\Events\ShipmentCreated;
 use PnShop\Shipping\Models\Shipment;
 
 /**
@@ -86,6 +87,8 @@ class ShipmentService
         $note = $shipment->tracking_number === null ? null : __('Tracking number: :number', ['number' => $shipment->tracking_number]);
 
         $this->workflow->transition($order, $complete ? FulfillmentStatus::Fulfilled : FulfillmentStatus::PartiallyFulfilled, $actor, is_string($note) ? $note : null);
+
+        ShipmentCreated::dispatch($shipment);
 
         return $shipment;
     }

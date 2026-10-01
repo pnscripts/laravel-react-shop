@@ -20,7 +20,7 @@ final class CashOnDelivery extends ManualGateway
     public function settings(): array
     {
         return [
-            new SettingDefinition('instructions', SettingType::Text, 'Instructions for the customer', default: 'Please have :amount ready when your order arrives.', help: ':amount and :order are replaced with the order total and number.'),
+            new SettingDefinition('instructions', SettingType::Text, 'Instructions for the customer', default: __('Please have :amount ready when your order arrives.'), help: ':amount and :order are replaced with the order total and number.'),
         ];
     }
 }

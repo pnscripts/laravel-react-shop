@@ -44,6 +44,23 @@ Each order can have one invoice. When it is issued depends on Admin → Settings
 - **PDF:** the core renders printable HTML through `PnShop\Sales\Invoices\InvoiceRenderer`. A PDF extension binds its own renderer.
 - **Not yet covered:** credit notes for refunds are not issued yet. Refunds are listed on the order.
 
+## Emails
+
+Customers and the store are emailed about orders. Each email can be switched off in Admin → Settings → Emails.
+
+| Email | To | When |
+|---|---|---|
+| Order confirmation | customer | the order is placed. Includes lines, total, delivery method and payment instructions. |
+| Shipping update | customer | each shipment, with its lines and the tracking number or link |
+| Cancellation | customer | the order is cancelled |
+| Refund | customer | money is refunded |
+| New order | store (*Send store alerts to*, or the store email) | the order is placed |
+
+- **Language and branding:** customer emails are written in the language the order was placed in and carry the store name.
+- **Order link:** customer emails link to the order with a signed link, so guests can open it from their mail client. Anyone with the link sees the order, like a parcel tracking link.
+- **Delivery:** emails are queued and sent after the order change is saved. Run a queue worker (`php artisan queue:work`) and configure mail in `.env`.
+- **Templates:** emails use Laravel's notification layout. Publish it with `php artisan vendor:publish --tag=laravel-notifications` to change the look. Theme-provided templates follow in Phase 9.
+
 ## For developers
 
 ```php
@@ -60,5 +77,8 @@ $workflow->addNote($order, 'Customer asked for evening delivery.', $admin);
 - A transition that isn't allowed throws `PnShop\Sales\Exceptions\InvalidOrderTransition`. All order exceptions extend `OrderException`, whose message is safe to show staff.
 - **Events (after the transaction commits):**
   - `OrderPlaced($order)` when checkout has created the order;
-  - `OrderStateChanged($order, $from, $to, $note)` for every transition.
+  - `OrderStateChanged($order, $from, $to, $note, $actor)` for every transition;
+  - `PnShop\Shipping\Events\ShipmentCreated($shipment)`;
+  - `PnShop\Payment\Events\RefundCompleted($refund)`.
+- `PnShop\Sales\OrderLinks::signedShow($order)` gives the signed, localized order link used in emails.
 - The state enums implement Filament's `HasLabel` and `HasColor`, so they render as badges and filter options without extra code.

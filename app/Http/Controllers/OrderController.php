@@ -19,6 +19,12 @@ class OrderController extends Controller
         $isOwner = $request->user() && (int) $order->user_id === (int) $request->user()->id;
         $isRecent = $recentIds->contains($order->id);
 
+        // A signed link from an order email: remember the order for this browser (invoice link, refresh).
+        if (! $isOwner && ! $isRecent && $request->hasValidSignature()) {
+            $request->session()->put('recent_order_ids', $recentIds->push($order->id)->unique()->values()->all());
+            $isRecent = true;
+        }
+
         abort_unless($isOwner || $isRecent, 403);
 
         $order->load(['items', 'paymentMethod', 'shippingAddress', 'billingAddress', 'shipments.lines', 'refunds', 'invoice']);

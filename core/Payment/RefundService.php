@@ -11,6 +11,7 @@ use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Inventory\StockMovementReason;
+use PnShop\Payment\Events\RefundCompleted;
 use PnShop\Payment\Models\Payment;
 use PnShop\Payment\Models\PaymentTransaction;
 use PnShop\Payment\Models\Refund;
@@ -89,6 +90,8 @@ class RefundService
         $fullyRefunded = $order->payments()->get()->every(fn (Payment $p) => ! in_array($p->status, [PaymentState::Paid, PaymentState::PartiallyRefunded], true));
 
         $this->workflow->transition($order, $fullyRefunded ? PaymentStatus::Refunded : PaymentStatus::PartiallyRefunded, $actor, $reason);
+
+        RefundCompleted::dispatch($refund);
 
         return $refund;
     }

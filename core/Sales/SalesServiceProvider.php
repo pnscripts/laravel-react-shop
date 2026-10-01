@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use PnShop\Foundation\Extension\Permission;
 use PnShop\Foundation\ModuleServiceProvider;
+use PnShop\Payment\Events\RefundCompleted;
 use PnShop\Sales\Events\OrderPlaced;
 use PnShop\Sales\Events\OrderStateChanged;
 use PnShop\Sales\Invoices\HtmlInvoiceRenderer;
@@ -14,11 +15,13 @@ use PnShop\Sales\Invoices\InvoiceRenderer;
 use PnShop\Sales\Invoices\IssueInvoiceAutomatically;
 use PnShop\Sales\Models\Invoice;
 use PnShop\Sales\Models\Order;
+use PnShop\Sales\Notifications\SendOrderNotifications;
 use PnShop\Sales\Policies\OrderPolicy;
 use PnShop\Settings\SettingDefinition;
 use PnShop\Settings\SettingsRegistry;
 use PnShop\Settings\SettingsSchema;
 use PnShop\Settings\SettingType;
+use PnShop\Shipping\Events\ShipmentCreated;
 
 /**
  * Sales module: orders, checkout, payments.
@@ -63,5 +66,18 @@ class SalesServiceProvider extends ModuleServiceProvider
         ));
 
         Event::listen([OrderPlaced::class, OrderStateChanged::class], IssueInvoiceAutomatically::class);
+
+        $this->app->make(SettingsRegistry::class)->register(new SettingsSchema(
+            'notifications',
+            'Emails',
+            new SettingDefinition('order_confirmation', SettingType::Boolean, 'Order confirmation to the customer', default: true),
+            new SettingDefinition('shipping_updates', SettingType::Boolean, 'Shipping updates to the customer', default: true),
+            new SettingDefinition('cancellations', SettingType::Boolean, 'Cancellations to the customer', default: true),
+            new SettingDefinition('refunds', SettingType::Boolean, 'Refunds to the customer', default: true),
+            new SettingDefinition('staff_new_order', SettingType::Boolean, 'New order alert to the store', default: true),
+            new SettingDefinition('staff_email', SettingType::Email, 'Send store alerts to', help: 'Defaults to the store contact email.'),
+        ));
+
+        Event::listen([OrderPlaced::class, OrderStateChanged::class, ShipmentCreated::class, RefundCompleted::class], SendOrderNotifications::class);
     }
 }
