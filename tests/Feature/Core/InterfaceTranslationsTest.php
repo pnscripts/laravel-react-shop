@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Product;
 use PnShop\Payment\Models\PaymentMethod;
+use PnShop\Sales\Models\Order;
 use PnShop\Security\BotTrap;
 use Tests\TestCase;
 
@@ -60,7 +61,8 @@ class InterfaceTranslationsTest extends TestCase
         $this->post('/bg/checkout', $this->checkoutData($payment->id, ['email' => 'ivan@example.com']))
             ->assertSessionHas('success', 'Благодарим Ви! Поръчката е приета.');
 
-        $this->get('/bg/orders/1')->assertInertia(fn (Assert $page) => $page
+        // Not "/bg/orders/1": MySQL and PostgreSQL keep counting ids across rolled-back tests.
+        $this->get('/bg/orders/'.Order::query()->sole()->id)->assertInertia(fn (Assert $page) => $page
             ->where('order.status', 'Очаква обработка')
             ->where('order.created_at', fn (string $date) => str_contains($date, now()->locale('bg')->isoFormat('MMMM')))
         );

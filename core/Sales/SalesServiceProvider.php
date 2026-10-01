@@ -5,6 +5,7 @@ namespace PnShop\Sales;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use PnShop\Catalog\Models\Product;
 use PnShop\Foundation\Extension\Permission;
 use PnShop\Foundation\ModuleServiceProvider;
 use PnShop\Payment\Events\RefundCompleted;
@@ -15,6 +16,7 @@ use PnShop\Sales\Invoices\InvoiceRenderer;
 use PnShop\Sales\Invoices\IssueInvoiceAutomatically;
 use PnShop\Sales\Models\Invoice;
 use PnShop\Sales\Models\Order;
+use PnShop\Sales\Models\OrderItem;
 use PnShop\Sales\Notifications\SendOrderNotifications;
 use PnShop\Sales\Policies\OrderPolicy;
 use PnShop\Settings\SettingDefinition;
@@ -80,5 +82,11 @@ class SalesServiceProvider extends ModuleServiceProvider
         ));
 
         Event::listen([OrderPlaced::class, OrderStateChanged::class, ShipmentCreated::class, RefundCompleted::class], SendOrderNotifications::class);
+
+        // Order lines keep their copies of the product; unlink them before the product goes, so
+        // the outcome does not depend on the order in which the database runs its cascades.
+        Product::forceDeleting(function (Product $product): void {
+            OrderItem::query()->where('product_id', $product->id)->update(['product_id' => null, 'product_variant_id' => null]);
+        });
     }
 }

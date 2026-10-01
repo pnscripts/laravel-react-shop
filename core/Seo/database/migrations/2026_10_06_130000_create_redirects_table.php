@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('redirects', function (Blueprint $table) {
             $table->id();
-            $table->string('from_path', 1024);
+            // 768 characters keep the unique index within MySQL's 3072-byte key limit (utf8mb4).
+            $table->string('from_path', 768);
             $table->string('to_url', 2048);
             $table->unsignedSmallInteger('status')->default(301);
             $table->boolean('is_automatic')->default(false);

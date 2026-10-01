@@ -21,12 +21,25 @@ return new class extends Migration
         'App\\Models\\ProductAttributeValue' => ['table' => 'product_attribute_values', 'foreign' => 'product_attribute_value_id', 'columns' => ['value' => 'string']],
     ];
 
+    /**
+     * Laravel's index name, shortened when it is over MySQL's 64-character limit.
+     *
+     * @param  list<string>  $columns
+     */
+    private function indexName(string $table, array $columns, string $type): string
+    {
+        $name = strtolower($table.'_'.implode('_', $columns).'_'.$type);
+
+        return strlen($name) <= 64 ? $name : substr($name, 0, 55).'_'.substr(md5($name), 0, 8);
+    }
+
     public function up(): void
     {
         foreach ($this->entities as $entity) {
             Schema::create($this->translationTable($entity['table']), function (Blueprint $table) use ($entity) {
                 $table->id();
-                $table->foreignId($entity['foreign'])->constrained($entity['table'])->cascadeOnDelete();
+                $translations = $this->translationTable($entity['table']);
+                $table->foreignId($entity['foreign'])->constrained($entity['table'], indexName: $this->indexName($translations, [$entity['foreign']], 'foreign'))->cascadeOnDelete();
                 $table->string('locale', 12);
 
                 foreach ($entity['columns'] as $column => $type) {
@@ -35,7 +48,7 @@ return new class extends Migration
 
                 $table->timestamps();
 
-                $table->unique([$entity['foreign'], 'locale']);
+                $table->unique([$entity['foreign'], 'locale'], $this->indexName($translations, [$entity['foreign'], 'locale'], 'unique'));
 
                 if (isset($entity['columns']['slug'])) {
                     $table->unique(['locale', 'slug']);

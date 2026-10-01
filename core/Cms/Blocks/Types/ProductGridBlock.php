@@ -54,7 +54,7 @@ final class ProductGridBlock extends BlockType
             Select::make('product_ids')->label('Products')
                 ->multiple()
                 ->searchable()
-                ->getSearchResultsUsing(fn (string $search) => Product::query()->where('title', 'like', "%{$search}%")->limit(30)->pluck('title', 'id')->all())
+                ->getSearchResultsUsing(fn (string $search) => Product::query()->whereLike('title', '%'.addcslashes($search, '%_\\').'%')->limit(30)->pluck('title', 'id')->all())
                 ->getOptionLabelsUsing(fn (array $values) => Product::query()->whereKey($values)->pluck('title', 'id')->all())
                 ->visible(fn (Get $get) => $get('source') === 'selected')
                 ->required(fn (Get $get) => $get('source') === 'selected'),

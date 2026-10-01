@@ -42,7 +42,7 @@ class ProductController extends AdminController
             ->when(isset($filter['category_id']), fn (Builder $query) => $query->whereHas('categories', fn (Builder $categories) => $categories->whereKey((int) $filter['category_id'])))
             ->when(isset($filter['brand_id']), fn (Builder $query) => $query->where('brand_id', (int) $filter['brand_id']))
             ->when(isset($filter['sku']), fn (Builder $query) => $query->whereHas('variants', fn (Builder $variants) => $variants->where('sku', (string) $filter['sku'])))
-            ->when($request->filled('q'), fn (Builder $query) => $query->where('products.title', 'like', '%'.addcslashes($request->string('q')->toString(), '%_\\').'%'))
+            ->when($request->filled('q'), fn (Builder $query) => $query->whereLike('products.title', '%'.addcslashes($request->string('q')->toString(), '%_\\').'%'))
             ->orderBy('products.'.$column, $direction)
             ->when($column !== 'id', fn (Builder $query) => $query->orderBy('products.id', $direction))
             ->cursorPaginate($this->perPage($request))

@@ -14,7 +14,8 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::table('orders')->where('totals', '[]')->orderBy('id')->select(['id', 'subtotal'])->chunkById(500, function ($orders) {
+        // A JSON length, not a string comparison: MySQL never equals a JSON value to '[]'.
+        DB::table('orders')->whereJsonLength('totals', 0)->orderBy('id')->select(['id', 'subtotal'])->chunkById(500, function ($orders) {
             $sums = [];
 
             foreach (DB::table('order_items')->whereIn('order_id', $orders->pluck('id'))->get(['order_id', 'price', 'sale_price', 'quantity']) as $item) {

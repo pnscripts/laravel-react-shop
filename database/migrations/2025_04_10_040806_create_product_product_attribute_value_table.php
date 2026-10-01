@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('product_product_attribute_value', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_attribute_value_id')->constrained()->onDelete('cascade');
+            // Explicit name: the generated one is longer than MySQL's 64-character limit.
+            $table->foreignId('product_attribute_value_id')->constrained(indexName: 'ppav_product_attribute_value_id_foreign')->onDelete('cascade');
             $table->timestamps();
 
             $table->unique(['product_id', 'product_attribute_value_id'], 'product_attribute_unique');

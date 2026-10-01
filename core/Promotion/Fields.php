@@ -18,7 +18,7 @@ final class Fields
             ->multiple()
             ->searchable()
             ->getSearchResultsUsing(fn (string $search) => Product::query()
-                ->where('title', 'like', '%'.addcslashes($search, '%_\\').'%')
+                ->whereLike('title', '%'.addcslashes($search, '%_\\').'%')
                 ->limit(50)
                 ->pluck('title', 'id')
                 ->all())

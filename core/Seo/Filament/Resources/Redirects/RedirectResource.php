@@ -34,7 +34,7 @@ class RedirectResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->columns(2)->components([
-            TextInput::make('from_path')->label('From')->required()->maxLength(1024)
+            TextInput::make('from_path')->label('From')->required()->maxLength(768)
                 ->rules(['regex:#^/#'])
                 ->unique(ignoreRecord: true)
                 ->dehydrateStateUsing(fn (string $state) => Redirect::normalize($state))

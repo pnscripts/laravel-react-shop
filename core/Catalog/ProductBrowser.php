@@ -86,10 +86,11 @@ final class ProductBrowser
                 $pattern = '%'.addcslashes($this->search, '%_\\').'%';
                 $locale = app()->getLocale();
 
+                // whereLike ignores case on every database (PostgreSQL's LIKE does not).
                 $query->where(fn (Builder $query) => $query
-                    ->where('products.title', 'like', $pattern)
+                    ->whereLike('products.title', $pattern)
                     ->when($locale !== app(Localization::class)->defaultLocale(), fn (Builder $query) => $query
-                        ->orWhereHas('translations', fn (Builder $translations) => $translations->where('locale', $locale)->where('title', 'like', $pattern))));
+                        ->orWhereHas('translations', fn (Builder $translations) => $translations->where('locale', $locale)->whereLike('title', $pattern))));
             });
     }
 }
