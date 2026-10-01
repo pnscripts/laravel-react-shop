@@ -29,6 +29,21 @@ The root template prints these tags on every full page load. They don't need Jav
   - the old static `public/robots.txt` is removed.
 - **Staging copies:** turn *Let search engines index the shop* off. Every page becomes `noindex`, robots.txt disallows everything and the sitemap returns 404.
 
+## Redirects
+
+Old addresses keep working.
+
+- **Automatic:**
+  - when a product's or page's slug changes, in any language, a **301** from the old address to the new one is added;
+  - chains are collapsed (one → three, not one → two → three);
+  - an address that becomes live again stops redirecting.
+- **Manual:** staff add their own redirects in Admin → Content → Redirects:
+  - from a path of the shop (`/summer` or `/bg/shop/old-product`) to a path or a full URL;
+  - as a 301 (permanent) or 302 (temporary) redirect;
+  - hits and last use are counted.
+- **When redirects apply:** only to `GET`/`HEAD` requests for addresses that would otherwise be *not found*. Live pages always win, and query strings are carried over.
+- **Not covered yet:** category and brand slugs live in query strings (`/shop?category=…`), so slug changes there are not redirected yet.
+
 ## For developers
 
 ```php
@@ -45,3 +60,4 @@ app(Seo::class)
 
 - **Changing tags for every page:** add a stage to the `seo.meta` pipeline. It receives the `PnShop\Seo\SeoData` before it is printed.
 - **Lifetime:** `Seo` is reset after each request.
+- **Redirects in code:** add one with `PnShop\Seo\Redirects::add('/old', '/new')`. Watch another model's slugs with `SlugRedirects::watch(Model::class, ModelTranslation::class, fn ($slug) => '/path/'.$slug)`.

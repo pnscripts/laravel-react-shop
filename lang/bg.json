@@ -8,6 +8,7 @@
     "A new verification link has been sent to the email address you provided during registration.": "Изпратихме нов линк за потвърждение на имейл адреса, който посочихте при регистрацията.",
     "A new verification link has been sent to your email address.": "Изпратихме нов линк за потвърждение на Вашия имейл адрес.",
     "A product in your cart is no longer available. Please review your cart.": "Продукт от количката вече не е наличен. Моля, прегледайте количката си.",
+    "A redirect cannot point to itself.": "Пренасочването не може да сочи към себе си.",
     "A reset link will be sent if the account exists.": "Ако профилът съществува, ще изпратим линк за смяна на паролата.",
     "A simple Laravel + React shop": "Онлайн магазин с Laravel и React",
     "Account holder": "Титуляр на сметката",
