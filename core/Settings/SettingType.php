@@ -14,6 +14,8 @@ enum SettingType: string
     case Select = 'select';
     /** API keys and passwords: encrypted at rest and never sent back to the browser. */
     case Secret = 'secret';
+    /** A hex colour such as #4f46e5. */
+    case Color = 'color';
 
     public function cast(mixed $value): mixed
     {
@@ -37,6 +39,7 @@ enum SettingType: string
         return match ($this) {
             self::String, self::Select => ['string', 'max:255'],
             self::Secret => ['string', 'max:2000'],
+            self::Color => ['string', 'regex:/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/'],
             self::Text => ['string', 'max:65535'],
             self::Email => ['email', 'max:255'],
             self::Url => ['url', 'max:2048'],

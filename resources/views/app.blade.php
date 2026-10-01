@@ -64,8 +64,16 @@
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
 
         @routes
-        @viteReactRefresh
-        @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @if (! empty($themeBuild))
+            {{-- The active theme's prebuilt bundle. --}}
+            @vite($themeEntries, $themeBuild)
+        @else
+            @viteReactRefresh
+            @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        @endif
+        @if (! empty($themeCss))
+            <style>{!! $themeCss !!}</style>
+        @endif
         @inertiaHead
     </head>
     <body class="font-sans antialiased">

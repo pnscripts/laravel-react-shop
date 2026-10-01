@@ -1,0 +1,46 @@
+import tailwindcss from '@tailwindcss/vite';
+import react from '@vitejs/plugin-react';
+import laravel from 'laravel-vite-plugin';
+import { readFileSync } from 'node:fs';
+import { relative, resolve } from 'node:path';
+import { defineConfig } from 'vite';
+import { themeChain, themeOverrides } from './scripts/vite-theme-overrides';
+
+/**
+ * Builds a theme into themes/<vendor>/<name>/dist: the whole storefront, with the theme's
+ * files (and its parents') replacing the storefront's files of the same path.
+ *
+ *     npm run build:theme -- acme/aurora
+ */
+const root = import.meta.dirname;
+const themeId = process.env.PNSHOP_THEME ?? '';
+
+if (!themeId) {
+    throw new Error('Set PNSHOP_THEME to the theme id, e.g. PNSHOP_THEME=acme/aurora (or use npm run build:theme -- acme/aurora).');
+}
+
+const chain = themeChain(root, themeId);
+const themeDirectory = resolve(root, 'themes', themeId);
+const manifest = JSON.parse(readFileSync(resolve(themeDirectory, 'pnshop.json'), 'utf8')) as { entries?: string[] };
+
+export default defineConfig({
+    plugins: [
+        themeOverrides(root, chain),
+        laravel({
+            input: manifest.entries ?? ['resources/css/app.css', 'resources/js/app.tsx'],
+            publicDirectory: relative(root, themeDirectory),
+            buildDirectory: 'dist',
+            refresh: false,
+        }),
+        react(),
+        tailwindcss(),
+    ],
+    resolve: {
+        alias: {
+            'ziggy-js': resolve(root, 'vendor/tightenco/ziggy'),
+        },
+    },
+    build: {
+        emptyOutDir: true,
+    },
+});

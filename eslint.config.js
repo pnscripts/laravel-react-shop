@@ -30,7 +30,16 @@ export default [
     },
     reactHooks.configs.flat['recommended-latest'],
     {
-        ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js'],
+        // Build scripts run in Node.
+        files: ['scripts/**/*.{js,mjs,ts}', 'vite*.config.ts'],
+        languageOptions: {
+            globals: {
+                ...globals.node,
+            },
+        },
+    },
+    {
+        ignores: ['vendor', 'node_modules', 'public', 'bootstrap/ssr', 'tailwind.config.js', 'themes/*/*/dist', 'extensions/*/*/dist'],
     },
     prettier, // Turn off all rules that might conflict with Prettier
 ];

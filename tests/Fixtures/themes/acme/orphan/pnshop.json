@@ -1,0 +1,1 @@
+{ "id": "acme/orphan", "name": "Orphan", "version": "1.0.0", "type": "theme", "parent": "acme/missing" }

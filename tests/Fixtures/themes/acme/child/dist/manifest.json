@@ -1,0 +1,4 @@
+{
+    "resources/js/app.tsx": { "file": "assets/app-child.js", "src": "resources/js/app.tsx", "isEntry": true },
+    "resources/css/app.css": { "file": "assets/app-child.css", "src": "resources/css/app.css", "isEntry": true }
+}

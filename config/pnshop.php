@@ -18,6 +18,7 @@ use PnShop\Settings\SettingsServiceProvider;
 use PnShop\Shipping\ShippingServiceProvider;
 use PnShop\System\SystemServiceProvider;
 use PnShop\Tax\TaxServiceProvider;
+use PnShop\Theme\ThemeServiceProvider;
 
 return [
 
@@ -49,6 +50,7 @@ return [
         TaxServiceProvider::class,
         CmsServiceProvider::class,
         ExtensionServiceProvider::class,
+        ThemeServiceProvider::class,
         SeoServiceProvider::class,
         AdminServiceProvider::class,
     ],
@@ -113,6 +115,20 @@ return [
         'require_signatures' => (bool) env('PNSHOP_REQUIRE_SIGNATURES', false),
         // key id => base64 Ed25519 public key
         'trusted_keys' => [],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Themes
+    |--------------------------------------------------------------------------
+    |
+    | Storefront themes live in `path` (<vendor>/<name>/pnshop.json). A theme
+    | ships a prebuilt bundle in dist/, published to public/themes/<id>/build.
+    |
+    */
+
+    'themes' => [
+        'path' => env('PNSHOP_THEMES_PATH', base_path('themes')),
     ],
 
 ];

@@ -8,6 +8,7 @@ use Inertia\Middleware;
 use PnShop\Cart\ShoppingCartService;
 use PnShop\Cms\Menus;
 use PnShop\Settings\Settings;
+use PnShop\Theme\ThemeManager;
 use Tighten\Ziggy\Ziggy;
 
 class HandleInertiaRequests extends Middleware
@@ -28,7 +29,11 @@ class HandleInertiaRequests extends Middleware
      */
     public function version(Request $request): ?string
     {
-        return parent::version($request);
+        // A different theme bundle is a different asset version: browsers reload fully.
+        $theme = app(ThemeManager::class)->active();
+        $manifest = $theme->builtin ? null : public_path($theme->buildDirectory().'/manifest.json');
+
+        return md5(parent::version($request).'|'.$theme->id.'|'.($manifest !== null && is_file($manifest) ? md5_file($manifest) : ''));
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace PnShop\Settings\Filament;
 
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -27,6 +28,7 @@ final class SettingField
             SettingType::Integer => TextInput::make($definition->key)->integer(),
             SettingType::Decimal => TextInput::make($definition->key)->numeric(),
             SettingType::String => TextInput::make($definition->key),
+            SettingType::Color => ColorPicker::make($definition->key),
             SettingType::Secret => TextInput::make($definition->key)->password()->autocomplete('new-password')->placeholder(__('Saved values are hidden; leave empty to keep.')),
         };
 

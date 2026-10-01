@@ -26,6 +26,7 @@ core/
 ├── Cms/                     pages, revisions, content blocks (BlockRegistry, HasContentBlocks, ContentEditor), menus
 ├── Seo/                     meta tags, hreflang, JSON-LD (Schema), sitemaps, robots.txt, seo.meta pipeline, redirects
 ├── Extension/               plugin manifest, discovery, lifecycle (ExtensionManager), boot loader, integrity, zip uploads
+├── Theme/                   theme manifests, active theme and fallback, publishing, settings as CSS variables
 └── Admin/                   the Filament panel (/admin)
 ```
 

@@ -1,0 +1,28 @@
+{
+    "id": "pnshop/default",
+    "name": "PN Shop Default",
+    "description": "The storefront that ships with PN Shop. Other themes can extend it.",
+    "version": "1.0.0",
+    "type": "theme",
+    "builtin": true,
+    "settings": [
+        {
+            "key": "primary",
+            "type": "color",
+            "label": "Brand colour",
+            "default": "#171717",
+            "css_var": "--primary",
+            "contrast_var": "--primary-foreground",
+            "help": "Buttons and highlights in light mode."
+        },
+        {
+            "key": "radius",
+            "type": "select",
+            "label": "Corners",
+            "default": "0.625rem",
+            "css_var": "--radius",
+            "options": { "0rem": "Square", "0.375rem": "Slightly rounded", "0.625rem": "Rounded", "1rem": "Very rounded" }
+        }
+    ],
+    "author": "PN Scripts"
+}

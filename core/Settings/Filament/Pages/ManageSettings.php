@@ -50,7 +50,9 @@ class ManageSettings extends Page
         $state = [];
 
         foreach (app(SettingsRegistry::class)->all() as $namespace => $schema) {
-            $state[self::stateKey($namespace)] = $settings->namespace($namespace);
+            if (! $schema->isHidden()) {
+                $state[self::stateKey($namespace)] = $settings->namespace($namespace);
+            }
         }
 
         $this->form->fill($state);
@@ -61,7 +63,7 @@ class ManageSettings extends Page
         $tabs = [];
 
         // Core settings first, then the plugins' tabs.
-        $schemas = collect(app(SettingsRegistry::class)->all())->sortBy(fn ($settingsSchema, string $namespace) => str_starts_with($namespace, 'plugin.') ? 1 : 0, SORT_NUMERIC);
+        $schemas = collect(app(SettingsRegistry::class)->all())->reject(fn ($settingsSchema) => $settingsSchema->isHidden())->sortBy(fn ($settingsSchema, string $namespace) => str_starts_with($namespace, 'plugin.') ? 1 : 0, SORT_NUMERIC);
 
         foreach ($schemas as $namespace => $settingsSchema) {
             $tabs[] = Tab::make($settingsSchema->label)
@@ -97,6 +99,10 @@ class ManageSettings extends Page
         $settings = app(Settings::class);
 
         foreach (app(SettingsRegistry::class)->all() as $namespace => $schema) {
+            if ($schema->isHidden()) {
+                continue;
+            }
+
             $values = $state[self::stateKey($namespace)] ?? [];
 
             if ($values !== []) {

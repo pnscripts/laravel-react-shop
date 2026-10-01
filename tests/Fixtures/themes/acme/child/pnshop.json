@@ -1,0 +1,11 @@
+{
+    "id": "acme/child",
+    "name": "Acme child",
+    "version": "1.0.0",
+    "type": "theme",
+    "parent": "pnshop/default",
+    "settings": [
+        { "key": "primary", "type": "color", "label": "Brand colour", "default": "#ffd400", "css_var": "--primary", "contrast_var": "--primary-foreground" },
+        { "key": "radius", "type": "select", "label": "Corners", "default": "1rem", "css_var": "--radius", "options": { "0rem": "Square", "1rem": "Round" } }
+    ]
+}
