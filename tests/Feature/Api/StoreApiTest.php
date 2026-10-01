@@ -11,6 +11,7 @@ use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Product;
 use PnShop\Cms\Models\Page;
 use PnShop\Payment\Models\PaymentMethod;
+use PnShop\Promotion\Models\Promotion;
 use PnShop\Sales\Models\Order;
 use Tests\TestCase;
 
@@ -242,5 +243,25 @@ class StoreApiTest extends TestCase
 
         $this->flushHeaders();
         $this->getJson(self::API.'/store?locale=xx')->assertJsonPath('data.locale', 'en');
+    }
+
+    public function test_coupons_over_the_api(): void
+    {
+        $promotion = Promotion::factory()->create(['requires_coupon' => true, 'actions' => [['type' => 'percent_off', 'data' => ['percent' => 10]]]]);
+        $promotion->coupons()->create(['code' => 'TEN']);
+        $product = Product::factory()->active()->create(['price' => '20.00', 'sale_price' => null, 'stock' => 5]);
+
+        $token = $this->postJson(self::API.'/cart/items', ['product_id' => $product->id, 'quantity' => 1])->json('data.token');
+
+        $this->withHeader('X-Cart-Token', $token)->postJson(self::API.'/cart/coupon', ['code' => 'nope'])
+            ->assertStatus(422)
+            ->assertJsonPath('code', 'cart_rejected');
+
+        $this->withHeader('X-Cart-Token', $token)->postJson(self::API.'/cart/coupon', ['code' => 'ten'])
+            ->assertOk()
+            ->assertJsonPath('data.coupon.applied', true)
+            ->assertJsonPath('data.totals.total.amount', '18.00');
+
+        $this->withHeader('X-Cart-Token', $token)->deleteJson(self::API.'/cart/coupon')->assertOk()->assertJsonPath('data.coupon', null);
     }
 }

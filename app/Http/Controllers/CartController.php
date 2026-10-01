@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Cart\AddToCartRequest;
 use App\Http\Requests\Cart\UpdateCartRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -63,6 +64,27 @@ class CartController extends Controller
         $this->cart->removeItemFromCart($variant);
 
         return back()->with('success', __('Item removed from cart.'));
+    }
+
+    public function applyCoupon(Request $request): RedirectResponse
+    {
+        $code = (string) $request->validate(['code' => ['required', 'string', 'max:64']])['code'];
+
+        try {
+            $coupon = $this->cart->applyCoupon($code);
+        } catch (CartException $e) {
+            throw ValidationException::withMessages(['code' => $e->getMessage()]);
+        }
+
+        // A valid code the cart does not qualify for yet is kept; the cart says why it does not apply.
+        return back()->with('success', $coupon['applied'] ? __('Coupon applied.') : __('Coupon code saved.'));
+    }
+
+    public function removeCoupon(): RedirectResponse
+    {
+        $this->cart->setCouponCode(null);
+
+        return back()->with('success', __('Coupon removed.'));
     }
 
     /**

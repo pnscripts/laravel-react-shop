@@ -121,7 +121,8 @@ class RefundService
             }
 
             if ($quantity > 0) {
-                $lineAmount = $item->unitPrice()->multipliedBy($quantity);
+                // What was paid for these units: the price less their share of any promotion discount.
+                $lineAmount = $item->unitPrice()->multipliedBy($quantity)->minus($item->discountFor($quantity));
 
                 if ($taxAdded && $item->quantity > 0) {
                     $lineAmount = $lineAmount->plus($item->tax_amount->multipliedBy($quantity)->dividedBy($item->quantity, RoundingMode::HalfUp));

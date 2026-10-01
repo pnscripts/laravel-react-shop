@@ -259,4 +259,30 @@ class AdminApiTest extends TestCase
         $this->artisan('pnshop:api-token', ['email' => 'ops@example.com', '--ability' => ['no.such.permission']])->assertFailed();
         $this->artisan('pnshop:api-token', ['email' => 'nobody@example.com', '--all' => true])->assertFailed();
     }
+
+    public function test_promotions_are_validated_against_the_registered_types(): void
+    {
+        $headers = $this->token(['marketing.promotions.manage'], ['marketing.promotions.manage']);
+
+        $this->withHeaders($headers)->postJson(self::API.'/promotions', ['name' => 'Bad', 'actions' => [['type' => 'percent_off', 'data' => ['percent' => 500]]]])
+            ->assertStatus(422)
+            ->assertJsonStructure(['errors' => ['actions.0.data.percent']]);
+
+        $this->withHeaders($headers)->postJson(self::API.'/promotions', ['name' => 'Bad', 'actions' => [['type' => 'teleport']]])->assertStatus(422);
+
+        $id = $this->withHeaders($headers)->postJson(self::API.'/promotions', [
+            'name' => 'Newsletter',
+            'requires_coupon' => true,
+            'conditions' => [['type' => 'subtotal', 'data' => ['min' => 30]]],
+            'actions' => [['type' => 'fixed_off', 'data' => ['amount' => '5']]],
+        ])->assertCreated()->assertJsonPath('data.actions.0.type', 'fixed_off')->json('data.id');
+
+        $codes = $this->withHeaders($headers)->postJson(self::API."/promotions/{$id}/coupons", ['count' => 3, 'prefix' => 'NL', 'usage_limit' => 1])
+            ->assertCreated()
+            ->json('data.codes');
+
+        $this->assertCount(3, $codes);
+        $this->withHeaders($headers)->getJson(self::API."/promotions/{$id}")->assertOk()->assertJsonCount(3, 'data.coupons');
+        $this->withHeaders($headers)->patchJson(self::API."/promotions/{$id}", ['is_active' => false])->assertOk()->assertJsonPath('data.is_active', false);
+    }
 }

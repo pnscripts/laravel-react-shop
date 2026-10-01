@@ -29,7 +29,7 @@ final class OpenApiDocs
     private const PAGINATED = [
         'api.store.products.index', 'api.store.pages.index', 'api.store.account.orders',
         'api.admin.products.index', 'api.admin.variants.index', 'api.admin.brands.index', 'api.admin.orders.index',
-        'api.admin.customers.index', 'api.admin.pages.index',
+        'api.admin.customers.index', 'api.admin.pages.index', 'api.admin.promotions.index',
     ];
 
     public static function register(): void

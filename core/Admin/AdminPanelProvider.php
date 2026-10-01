@@ -27,7 +27,7 @@ use PnShop\Settings\Settings;
  */
 class AdminPanelProvider extends PanelProvider
 {
-    public const NAVIGATION_GROUPS = ['Catalog', 'Sales', 'Content', 'Store', 'Appearance', 'Extensions', 'System'];
+    public const NAVIGATION_GROUPS = ['Catalog', 'Sales', 'Marketing', 'Content', 'Store', 'Appearance', 'Extensions', 'System'];
 
     public function panel(Panel $panel): Panel
     {

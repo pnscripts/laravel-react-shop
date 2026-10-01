@@ -1,3 +1,4 @@
+import { CouponForm } from '@/components/coupon-form';
 import { ProductCard } from '@/components/product-card';
 import { Slot } from '@/components/slot';
 import { TotalsBreakdown } from '@/components/totals-breakdown';
@@ -81,6 +82,7 @@ export default function CartIndex({ cart, suggestions }: { cart: CartSummary; su
                             <span>{t('Items')}</span>
                             <span>{cart.total_quantity}</span>
                         </div>
+                        <CouponForm coupon={cart.coupon} />
                         <TotalsBreakdown totals={cart.totals} />
                         <Slot name="cart.after_totals" props={{ cart }} />
                         <Button className="w-full" asChild>

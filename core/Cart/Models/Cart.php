@@ -12,12 +12,13 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property string $token
  * @property int|null $user_id
+ * @property string|null $coupon_code
  * @property Carbon $updated_at
  */
 class Cart extends Model
 {
     /** @var list<string> */
-    protected $fillable = ['token', 'user_id'];
+    protected $fillable = ['token', 'user_id', 'coupon_code'];
 
     /**
      * @return HasMany<CartLine, $this>

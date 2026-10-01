@@ -17,6 +17,14 @@ final class CartTotals
     private array $lines = [];
 
     /**
+     * Discounts given on each line ("item:<variant id>", "shipping"), so later stages such
+     * as tax work from what the customer actually pays.
+     *
+     * @var array<string, Money>
+     */
+    private array $discounts = [];
+
+    /**
      * Details stages leave for later steps, e.g. `tax` (a TaxResult with the tax per line).
      *
      * @var array<string, mixed>
@@ -46,6 +54,31 @@ final class CartTotals
     public function lines(): array
     {
         return $this->lines;
+    }
+
+    /**
+     * Record a discount on one line (positive amount). A stage that does this also adds the
+     * matching negative TotalLine.
+     */
+    public function discount(string $lineKey, Money $amount): self
+    {
+        $this->discounts[$lineKey] = $this->discountOn($lineKey)->plus($amount);
+
+        return $this;
+    }
+
+    /** Discount recorded on a line so far (zero when none). */
+    public function discountOn(string $lineKey): Money
+    {
+        return $this->discounts[$lineKey] ?? Money::zero($this->currency());
+    }
+
+    /**
+     * @return array<string, Money>
+     */
+    public function discounts(): array
+    {
+        return $this->discounts;
     }
 
     public function line(string $code): ?TotalLine

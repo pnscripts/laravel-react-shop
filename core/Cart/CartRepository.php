@@ -33,6 +33,8 @@ final class CartRepository
 
     private const LINES_ATTRIBUTE = 'pnshop.cart.lines';
 
+    private const COUPON_ATTRIBUTE = 'pnshop.cart.coupon';
+
     /** Request attribute holding the guest token of a stateless (API) request. */
     private const STATELESS_TOKEN = 'pnshop.cart.stateless_token';
 
@@ -70,8 +72,28 @@ final class CartRepository
 
     public function clear(): void
     {
-        $this->current()?->lines()->delete();
+        $cart = $this->current();
+        $cart?->lines()->delete();
+        $cart?->update(['coupon_code' => null]);
         $this->forgetLines();
+    }
+
+    /** The coupon code entered for the current cart, if any. */
+    public function couponCode(): ?string
+    {
+        $attributes = $this->request()->attributes;
+
+        if (! $attributes->has(self::COUPON_ATTRIBUTE)) {
+            $attributes->set(self::COUPON_ATTRIBUTE, $this->current()?->coupon_code);
+        }
+
+        return $attributes->get(self::COUPON_ATTRIBUTE);
+    }
+
+    public function setCouponCode(?string $code): void
+    {
+        $this->current(create: $code !== null)?->update(['coupon_code' => $code]);
+        $this->request()->attributes->remove(self::COUPON_ATTRIBUTE);
     }
 
     /**
@@ -100,6 +122,11 @@ final class CartRepository
                 } else {
                     $cart->lines()->create(['product_variant_id' => $line->product_variant_id, 'quantity' => $line->quantity]);
                 }
+            }
+
+            // A coupon entered as a guest carries over.
+            if ($guest->coupon_code !== null) {
+                $cart->update(['coupon_code' => $guest->coupon_code]);
             }
 
             $guest->delete();
@@ -206,6 +233,7 @@ final class CartRepository
     private function forgetLines(): void
     {
         $this->request()->attributes->remove(self::LINES_ATTRIBUTE);
+        $this->request()->attributes->remove(self::COUPON_ATTRIBUTE);
     }
 
     private function request(): Request

@@ -21,6 +21,7 @@ use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Payment\PaymentContext;
 use PnShop\Payment\PaymentService;
 use PnShop\Sales\Events\OrderPlaced;
+use PnShop\Sales\Events\OrderPlacing;
 use PnShop\Sales\Exceptions\CheckoutException;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\Models\OrderAddress;
@@ -141,12 +142,13 @@ class CheckoutService
 
             $shippingMethod = $this->shippingMethod($data, $items, $currency, $shipping, $user);
 
-            $totals = $this->calculator->calculate($items, $currency, [
+            $totals = $this->calculator->calculate($items, $currency, $this->cart->context([
                 'shipping_address' => $shipping,
                 'billing_address' => $billing,
                 'shipping_method' => $shippingMethod,
                 'user' => $user,
-            ]);
+                'email' => $data['email'],
+            ]));
 
             $method = PaymentMethod::query()->find((int) $data['payment_method_id']);
 
@@ -156,10 +158,11 @@ class CheckoutService
 
             $tax = $totals->meta['tax'] ?? null;
 
-            if ($tax instanceof TaxResult) {
-                foreach ($order->items()->get() as $orderItem) {
-                    $orderItem->update(['tax_amount' => $tax->forLine('item:'.$orderItem->product_variant_id)]);
-                }
+            foreach ($order->items()->get() as $orderItem) {
+                $orderItem->update([
+                    'discount_amount' => $totals->discountOn('item:'.$orderItem->product_variant_id),
+                    ...($tax instanceof TaxResult ? ['tax_amount' => $tax->forLine('item:'.$orderItem->product_variant_id)] : []),
+                ]);
             }
 
             $order->update([
@@ -174,6 +177,8 @@ class CheckoutService
                     'included' => $line->included,
                 ], $totals->lines()),
             ]);
+
+            OrderPlacing::dispatch($order, $totals, $user);
 
             $this->workflow->recordPlaced($order, $user);
 

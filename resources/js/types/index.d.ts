@@ -146,6 +146,14 @@ export interface CartSummary {
     total_price: Money;
     final_price: Money;
     totals: Totals;
+    coupon: CartCoupon | null;
+}
+
+export interface CartCoupon {
+    code: string;
+    valid: boolean;
+    applied: boolean;
+    message: string | null;
 }
 
 export interface Paginated<T> {

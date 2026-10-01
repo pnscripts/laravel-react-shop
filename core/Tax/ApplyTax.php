@@ -2,6 +2,7 @@
 
 namespace PnShop\Tax;
 
+use Brick\Money\Money;
 use Closure;
 use PnShop\Cart\CartItemDTO;
 use PnShop\Cart\Totals\CartTotals;
@@ -35,8 +36,9 @@ class ApplyTax
             return $next($totals);
         }
 
+        // Tax is due on what is paid: amounts after discounts.
         $lines = $totals->items
-            ->map(fn (CartItemDTO $item) => new TaxableLine('item:'.$item->variant_id, $item->getTotalPrice(), $item->taxClassId))
+            ->map(fn (CartItemDTO $item) => new TaxableLine('item:'.$item->variant_id, $this->net($item->getTotalPrice(), $totals->discountOn('item:'.$item->variant_id)), $item->taxClassId))
             ->values()
             ->all();
 
@@ -44,7 +46,7 @@ class ApplyTax
         $method = $totals->context['shipping_method'] ?? null;
 
         if ($shipping !== null) {
-            $lines[] = new TaxableLine('shipping', $shipping->amount, $method instanceof ShippingMethod ? $method->tax_class_id : null);
+            $lines[] = new TaxableLine('shipping', $this->net($shipping->amount, $totals->discountOn('shipping')), $method instanceof ShippingMethod ? $method->tax_class_id : null);
         }
 
         $inclusive = (bool) $this->settings->get('tax.prices_include_tax');
@@ -58,6 +60,13 @@ class ApplyTax
         }
 
         return $next($totals);
+    }
+
+    private function net(Money $amount, Money $discount): Money
+    {
+        $net = $amount->minus($discount);
+
+        return $net->isNegative() ? Money::zero($amount->getCurrency()) : $net;
     }
 
     /**

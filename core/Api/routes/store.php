@@ -31,6 +31,8 @@ Route::middleware('throttle:cart')->group(function () {
     Route::post('cart/items', [CartController::class, 'store'])->name('cart.items.store');
     Route::patch('cart/items/{variant}', [CartController::class, 'update'])->whereNumber('variant')->name('cart.items.update');
     Route::delete('cart/items/{variant}', [CartController::class, 'destroy'])->whereNumber('variant')->name('cart.items.destroy');
+    Route::post('cart/coupon', [CartController::class, 'applyCoupon'])->name('cart.coupon.store');
+    Route::delete('cart/coupon', [CartController::class, 'removeCoupon'])->name('cart.coupon.destroy');
 });
 
 Route::get('checkout/payment-methods', [CheckoutController::class, 'paymentMethods'])->name('checkout.payment-methods');

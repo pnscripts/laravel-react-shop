@@ -9,6 +9,7 @@ use PnShop\Api\Http\Controllers\Admin\MediaController;
 use PnShop\Api\Http\Controllers\Admin\OrderController;
 use PnShop\Api\Http\Controllers\Admin\PageController;
 use PnShop\Api\Http\Controllers\Admin\ProductController;
+use PnShop\Api\Http\Controllers\Admin\PromotionController;
 use PnShop\Api\Http\Controllers\Admin\SettingsController;
 use PnShop\Api\Http\Controllers\Admin\SystemController;
 use PnShop\Api\Http\Controllers\Admin\VariantController;
@@ -42,6 +43,9 @@ Route::get('customers/{customer}', [CustomerController::class, 'show'])->whereNu
 Route::patch('customers/{customer}', [CustomerController::class, 'update'])->whereNumber('customer')->name('customers.update');
 
 Route::apiResource('pages', PageController::class)->whereNumber('page');
+
+Route::apiResource('promotions', PromotionController::class)->whereNumber('promotion');
+Route::post('promotions/{promotion}/coupons', [PromotionController::class, 'generateCoupons'])->whereNumber('promotion')->name('promotions.coupons.store');
 
 Route::get('settings', [SettingsController::class, 'index'])->name('settings.index');
 Route::get('settings/{namespace}', [SettingsController::class, 'show'])->where('namespace', '[a-z0-9_.-]+')->name('settings.show');

@@ -79,6 +79,35 @@ class CartController extends ApiController
     }
 
     /**
+     * Enter a coupon code
+     *
+     * An unknown or used-up code is refused (422). A valid code the cart does not qualify for
+     * yet is kept: `coupon.applied` is false and `coupon.message` says why.
+     *
+     * @return array<string, mixed>
+     */
+    public function applyCoupon(Request $request): array
+    {
+        $data = $request->validate(['code' => ['required', 'string', 'max:64']]);
+
+        $this->cart->applyCoupon($data['code']);
+
+        return $this->cart();
+    }
+
+    /**
+     * Remove the coupon code
+     *
+     * @return array<string, mixed>
+     */
+    public function removeCoupon(): array
+    {
+        $this->cart->setCouponCode(null);
+
+        return $this->cart();
+    }
+
+    /**
      * @return array{data: array<string, mixed>}
      */
     private function cart(): array

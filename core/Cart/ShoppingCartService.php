@@ -6,6 +6,7 @@ use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use PnShop\Cart\Exceptions\CartException;
 use PnShop\Cart\Totals\CartCalculator;
 use PnShop\Cart\Totals\CartTotals;
@@ -119,7 +120,61 @@ class ShoppingCartService
      */
     public function totals(array $context = []): CartTotals
     {
-        return $this->calculator->calculate($this->getCartItems(), app(Localization::class)->defaultCurrency()->code, $context);
+        return $this->calculator->calculate($this->getCartItems(), app(Localization::class)->defaultCurrency()->code, $this->context($context));
+    }
+
+    /**
+     * The totals context with the cart's own facts filled in: the entered coupon code and
+     * the signed-in customer (explicit values win).
+     *
+     * @param  array<string, mixed>  $context
+     * @return array<string, mixed>
+     */
+    public function context(array $context = []): array
+    {
+        return $context + [
+            'coupon_code' => $this->carts->couponCode(),
+            'user' => Auth::guard('web')->user(),
+        ];
+    }
+
+    public function couponCode(): ?string
+    {
+        return $this->carts->couponCode();
+    }
+
+    public function setCouponCode(?string $code): void
+    {
+        $this->carts->setCouponCode($code);
+    }
+
+    /**
+     * Enter a coupon code. A code that does not exist (or is used up) is refused; a valid
+     * code whose conditions the cart does not meet yet is kept and applies once they are met.
+     *
+     * @return array{code: string, valid: bool, applied: bool, message: string|null}
+     *
+     * @throws CartException when the code is not valid
+     */
+    public function applyCoupon(string $code): array
+    {
+        $previous = $this->couponCode();
+        $this->setCouponCode(trim($code));
+
+        $coupon = $this->totals()->meta['coupon'] ?? null;
+
+        if (! is_array($coupon) || empty($coupon['valid'])) {
+            $this->setCouponCode($previous);
+
+            throw new CartException(__('This coupon code is not valid.'));
+        }
+
+        return [
+            'code' => (string) $coupon['code'],
+            'valid' => true,
+            'applied' => (bool) $coupon['applied'],
+            'message' => is_string($coupon['message'] ?? null) ? $coupon['message'] : null,
+        ];
     }
 
     /**
@@ -177,6 +232,8 @@ class ShoppingCartService
             'total_price' => MoneyPresenter::present($totals->subtotal),
             'final_price' => MoneyPresenter::present($totals->total()),
             'totals' => $totals->toArray(),
+            // {code, valid, applied, message} when a coupon code was entered.
+            'coupon' => $totals->meta['coupon'] ?? null,
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace PnShop\Sales\Models;
 
+use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +20,7 @@ use PnShop\Money\MoneyCast;
  * @property Money $price
  * @property Money|null $sale_price
  * @property Money $tax_amount tax included in or added to the line total
+ * @property Money $discount_amount promotion discount on the whole line
  * @property int|null $product_id
  * @property int|null $product_variant_id
  * @property string|null $product_title
@@ -49,6 +51,7 @@ class OrderItem extends Model
         'price',
         'sale_price',
         'tax_amount',
+        'discount_amount',
     ];
 
     /**
@@ -64,6 +67,7 @@ class OrderItem extends Model
         'price' => MoneyCast::class.':currency',
         'sale_price' => MoneyCast::class.':currency',
         'tax_amount' => MoneyCast::class.':currency',
+        'discount_amount' => MoneyCast::class.':currency',
     ];
 
     /** Units that still have to ship. */
@@ -107,5 +111,17 @@ class OrderItem extends Model
     public function lineTotal(): Money
     {
         return $this->unitPrice()->multipliedBy($this->quantity);
+    }
+
+    /**
+     * The share of the line's promotion discount that belongs to the given number of units.
+     */
+    public function discountFor(int $quantity): Money
+    {
+        if ($this->quantity <= 0 || $this->discount_amount->isZero()) {
+            return Money::zero($this->discount_amount->getCurrency());
+        }
+
+        return $this->discount_amount->multipliedBy($quantity)->dividedBy($this->quantity, RoundingMode::HalfUp);
     }
 }

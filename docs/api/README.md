@@ -29,7 +29,7 @@ The default React storefront does not use these APIs. It shares the same service
   {"type": "about:blank", "title": "Unprocessable Content", "status": 422, "detail": "…", "code": "validation_failed", "errors": {"email": ["…"]}}
   ```
 
-  Branch on `code`. Its values are `validation_failed`, `cart_rejected`, `checkout_rejected`, `unauthenticated`, `forbidden`, `not_found`, `too_many_requests`, `idempotency_in_progress`, `idempotency_key_reused`, `invalid_idempotency_key`, `bad_request` and `server_error`.
+  Branch on `code`. Its values are `validation_failed`, `cart_rejected` (including unknown coupon codes), `checkout_rejected`, `unauthenticated`, `forbidden`, `not_found`, `too_many_requests`, `idempotency_in_progress`, `idempotency_key_reused`, `invalid_idempotency_key`, `bad_request` and `server_error`.
 - **Rate limits:** each token (or IP address without a token) gets 120 requests a minute on the Store API and 300 on the Admin API.
   - Change these with `PNSHOP_STORE_API_RATE_LIMIT` and `PNSHOP_ADMIN_API_RATE_LIMIT`.
   - Cart changes, checkout and sign-in also have the storefront's stricter limits.
@@ -51,6 +51,7 @@ The default React storefront does not use these APIs. It shares the same service
 | `GET /categories`, `GET /brands` | Category tree and brands |
 | `GET /pages`, `GET /pages/{slug}`, `GET /menus/{code}` | Published pages with their blocks, and menus |
 | `GET /cart`, `POST /cart/items`, `PATCH`/`DELETE /cart/items/{variant}` | The cart |
+| `POST /cart/coupon`, `DELETE /cart/coupon` | Enter or remove a coupon code (`data.coupon` tells whether it applies) |
 | `GET /checkout/payment-methods`, `POST /checkout/quote`, `POST /checkout` | Payment methods, shipping options and totals, placing the order |
 | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` | Customer tokens |
 | `GET`/`PATCH /account`, `GET /account/orders`, `/account/addresses` (CRUD) | The signed-in customer |
@@ -112,6 +113,7 @@ php artisan pnshop:api-token ops@example.com --name="ERP" --ability=catalog.prod
 | `POST /orders/{id}/transitions`, `/notes`, `/shipments` | `sales.orders.update` |
 | `GET /customers`, `GET /customers/{id}`, `PATCH /customers/{id}` | `customers.view` / `customers.manage` |
 | `/pages` (CRUD, blocks per language) | `content.pages.manage` (+ `cms.html_block` for HTML blocks) |
+| `/promotions` (CRUD), `POST /promotions/{id}/coupons` (generate codes) | `marketing.promotions.manage` |
 | `GET /settings`, `GET/PATCH /settings/{namespace}` | `system.settings.manage` |
 | `GET /extensions`, `GET /themes` | `system.extensions.manage`, `appearance.themes.manage` |
 
