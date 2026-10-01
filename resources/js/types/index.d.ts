@@ -28,11 +28,19 @@ export interface Localization {
     languages: { code: string; name: string; url: string; active: boolean }[];
 }
 
+export interface MenuItem {
+    label: string;
+    url: string | null;
+    new_tab: boolean;
+    children: MenuItem[];
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
     cartCount: number;
+    menus: { header: MenuItem[]; footer: MenuItem[] };
     flash: {
         success: string | null;
         error: string | null;

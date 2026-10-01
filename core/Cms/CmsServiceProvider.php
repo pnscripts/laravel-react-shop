@@ -4,6 +4,9 @@ namespace PnShop\Cms;
 
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Gate;
+use PnShop\Catalog\Models\Brand;
+use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\Product;
 use PnShop\Cms\Blocks\BlockRegistry;
 use PnShop\Cms\Blocks\Types\CallToActionBlock;
 use PnShop\Cms\Blocks\Types\CategoryGridBlock;
@@ -13,7 +16,10 @@ use PnShop\Cms\Blocks\Types\ImageBlock;
 use PnShop\Cms\Blocks\Types\ProductGridBlock;
 use PnShop\Cms\Blocks\Types\RichTextBlock;
 use PnShop\Cms\Blocks\Types\VideoBlock;
+use PnShop\Cms\Models\Menu;
+use PnShop\Cms\Models\MenuItem;
 use PnShop\Cms\Models\Page;
+use PnShop\Cms\Policies\MenuPolicy;
 use PnShop\Cms\Policies\PagePolicy;
 use PnShop\Foundation\Extension\Permission;
 use PnShop\Foundation\ModuleServiceProvider;
@@ -39,13 +45,14 @@ class CmsServiceProvider extends ModuleServiceProvider
             return $registry;
         });
 
-        Relation::morphMap(['page' => Page::class]);
+        Relation::morphMap(['page' => Page::class, 'menu' => Menu::class, 'menu_item' => MenuItem::class]);
     }
 
     protected function permissions(): array
     {
         return [
             new Permission('content.pages.manage', 'Manage pages', 'Content'),
+            new Permission('content.menus.manage', 'Manage menus', 'Content'),
             new Permission('cms.html_block', 'Add custom HTML blocks (can run scripts on the storefront)', 'Content'),
         ];
     }
@@ -53,6 +60,14 @@ class CmsServiceProvider extends ModuleServiceProvider
     protected function bootModule(): void
     {
         Gate::policy(Page::class, PagePolicy::class);
+        Gate::policy(Menu::class, MenuPolicy::class);
+        Gate::policy(MenuItem::class, MenuPolicy::class);
+
+        // Menus link to these; a change to one can change a menu.
+        foreach ([Page::class, Category::class, Brand::class, Product::class] as $model) {
+            $model::saved(fn () => Menus::flush());
+            $model::deleted(fn () => Menus::flush());
+        }
 
         $this->app->make(SettingsRegistry::class)->register(new SettingsSchema(
             'cms',

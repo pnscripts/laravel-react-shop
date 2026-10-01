@@ -1,3 +1,4 @@
+import { StorefrontFooter } from '@/components/storefront-footer';
 import { StorefrontHeader } from '@/components/storefront-header';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -24,6 +25,7 @@ export default function StorefrontLayout({ children }: PropsWithChildren) {
                 </div>
             )}
             <main className="mx-auto w-full px-4 py-8 md:max-w-7xl">{children}</main>
+            <StorefrontFooter />
         </div>
     );
 }

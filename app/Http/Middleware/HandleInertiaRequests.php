@@ -6,6 +6,7 @@ use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 use PnShop\Cart\ShoppingCartService;
+use PnShop\Cms\Menus;
 use PnShop\Settings\Settings;
 use Tighten\Ziggy\Ziggy;
 
@@ -49,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                 'user' => $request->user(),
             ],
             'cartCount' => fn () => app(ShoppingCartService::class)->getTotalQuantity(),
+            'menus' => fn () => ['header' => Menus::tree('header'), 'footer' => Menus::tree('footer')],
             'flash' => [
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),

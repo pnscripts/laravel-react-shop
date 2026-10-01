@@ -2,15 +2,17 @@ import AppLogo from '@/components/app-logo';
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { Icon } from '@/components/icon';
 import LanguageSwitcher from '@/components/language-switcher';
+import { MenuLink } from '@/components/menu-link';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutDashboard, LogIn, Menu, ShoppingBag, Store } from 'lucide-react';
+import { ChevronDown, LayoutDashboard, LogIn, Menu, ShoppingBag, Store } from 'lucide-react';
 
 export function StorefrontHeader() {
-    const { auth, cartCount } = usePage<SharedData>().props;
+    const { auth, cartCount, menus } = usePage<SharedData>().props;
     const t = useTranslations();
 
     return (
@@ -29,10 +31,21 @@ export function StorefrontHeader() {
                                 <AppLogo />
                             </SheetHeader>
                             <div className="flex flex-col gap-3 p-4 text-sm font-medium">
-                                <Link href={route('shop.index')} className="flex items-center gap-2">
-                                    <Store className="h-4 w-4" />
-                                    {t('Shop')}
-                                </Link>
+                                {menus.header.length === 0 ? (
+                                    <Link href={route('shop.index')} className="flex items-center gap-2">
+                                        <Store className="h-4 w-4" />
+                                        {t('Shop')}
+                                    </Link>
+                                ) : (
+                                    menus.header.map((item) => (
+                                        <div key={item.label} className="flex flex-col gap-2">
+                                            <MenuLink item={item} />
+                                            {item.children.map((child) => (
+                                                <MenuLink key={child.label} item={child} className="text-muted-foreground pl-4" />
+                                            ))}
+                                        </div>
+                                    ))
+                                )}
                                 <Link href={route('cart.index')} className="flex items-center gap-2">
                                     <ShoppingBag className="h-4 w-4" />
                                     {t('Cart (:count)', { count: cartCount })}
@@ -63,12 +76,43 @@ export function StorefrontHeader() {
                 </Link>
 
                 <nav className="ml-6 hidden items-center gap-1 lg:flex">
-                    <Button variant="ghost" asChild>
-                        <Link href={route('shop.index')}>
-                            <Icon iconNode={Store} className="h-4 w-4" />
-                            {t('Shop')}
-                        </Link>
-                    </Button>
+                    {menus.header.length === 0 ? (
+                        <Button variant="ghost" asChild>
+                            <Link href={route('shop.index')}>
+                                <Icon iconNode={Store} className="h-4 w-4" />
+                                {t('Shop')}
+                            </Link>
+                        </Button>
+                    ) : (
+                        menus.header.map((item) =>
+                            item.children.length === 0 ? (
+                                <Button key={item.label} variant="ghost" asChild>
+                                    <MenuLink item={item} />
+                                </Button>
+                            ) : (
+                                <DropdownMenu key={item.label}>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost">
+                                            {item.label}
+                                            <ChevronDown className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start">
+                                        {item.url && (
+                                            <DropdownMenuItem asChild>
+                                                <MenuLink item={item} />
+                                            </DropdownMenuItem>
+                                        )}
+                                        {item.children.map((child) => (
+                                            <DropdownMenuItem key={child.label} asChild>
+                                                <MenuLink item={child} />
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            ),
+                        )
+                    )}
                 </nav>
 
                 <div className="ml-auto flex items-center gap-2">
