@@ -80,6 +80,10 @@ class QueryCountTest extends TestCase
 
     public function test_api_lists_do_not_grow(): void
     {
+        // Sanctum writes the token's last_used_at only when the second changes: with a moving
+        // clock one request in a pair may run an extra UPDATE.
+        $this->freezeTime();
+
         $admin = AdminUser::factory()->administrator()->create();
         $token = 'Bearer '.$admin->createToken('perf', ['*'])->plainTextToken;
         $counts = [];

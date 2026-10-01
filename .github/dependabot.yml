@@ -14,3 +14,12 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # ESLint 10 waits for eslint-plugin-react to support it (npm ERESOLVE otherwise).
+      - dependency-name: eslint
+        update-types: ['version-update:semver-major']
+      - dependency-name: '@eslint/js'
+        update-types: ['version-update:semver-major']
+      # Node types follow the Node version in .nvmrc (24), not the newest Node.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
