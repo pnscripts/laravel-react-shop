@@ -2,160 +2,130 @@
 
 namespace App\Services;
 
-use App\DTOs\ShoppingCartDTO;
+use App\DTOs\CartItemDTO;
+use App\Exceptions\CartException;
 use App\Models\Product;
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
+/**
+ * Session cart. The session holds only product ids and quantities; every read
+ * resolves current prices, titles and stock from the database.
+ */
 class ShoppingCartService
 {
-    private string $sessionKey = 'shopping_cart';
+    private const SESSION_KEY = 'cart.lines';
 
-    private Request $request;
+    /** Session key used by the previous object-based cart; cleared on first use. */
+    private const LEGACY_SESSION_KEY = 'shopping_cart';
 
-    /**
-     * ShoppingCartService constructor.
-     */
-    public function __construct(Request $request)
-    {
-        $this->request = $request;
-    }
+    /** @var Collection<int, CartItemDTO>|null */
+    private ?Collection $items = null;
 
-    /**
-     * Get the shopping cart from the session.
-     */
-    private function getCart(): ShoppingCartDTO
-    {
-        return $this->request->session()->get($this->sessionKey, new ShoppingCartDTO);
-    }
+    public function __construct(private Request $request) {}
 
-    /**
-     * Save the shopping cart to the session.
-     */
-    private function saveCart(ShoppingCartDTO $cart): void
-    {
-        $this->request->session()->put($this->sessionKey, $cart);
-    }
-
-    /**
-     * Add an item to the cart.
-     *
-     * @throws Exception
-     */
     public function addItemToCart(int $productId, int $quantity): void
     {
-        $product = Product::find($productId);
+        $lines = $this->getLines();
 
-        if (! $product) {
-            throw new Exception('Product not found.');
-        }
+        $this->assertQuantityAvailable($productId, ($lines[$productId] ?? 0) + $quantity);
 
-        if ($quantity > $product->stock) {
-            throw new Exception("Cannot add more than the available stock for {$product->title}. Available: {$product->stock}.");
-        }
-
-        // Get the current shopping cart
-        $cart = $this->getCart();
-
-        // Add the item to the cart
-        $cart->addItem($product, $quantity);
-
-        // Save the updated cart to session
-        $this->saveCart($cart);
+        $lines[$productId] = ($lines[$productId] ?? 0) + $quantity;
+        $this->saveLines($lines);
     }
 
-    /**
-     * Update an item's quantity in the cart.
-     *
-     * @throws Exception
-     */
     public function updateItemQuantityInCart(int $productId, int $quantity): void
     {
-        $product = Product::find($productId);
+        $lines = $this->getLines();
 
-        if (! $product) {
-            throw new Exception('Product not found.');
+        if (! isset($lines[$productId])) {
+            throw new CartException('Item not found in the cart.');
         }
 
-        if ($quantity > $product->stock) {
-            throw new Exception("Cannot update quantity to {$quantity}. Available stock: {$product->stock}.");
-        }
+        $this->assertQuantityAvailable($productId, $quantity);
 
-        // Get the current shopping cart
-        $cart = $this->getCart();
-
-        // Update the item quantity
-        $cart->updateItemQuantity($product, $quantity);
-
-        // Save the updated cart to session
-        $this->saveCart($cart);
+        $lines[$productId] = $quantity;
+        $this->saveLines($lines);
     }
 
-    /**
-     * Remove an item from the cart.
-     */
     public function removeItemFromCart(int $productId): void
     {
-        // Get the current shopping cart
-        $cart = $this->getCart();
-
-        // Remove the item from the cart
-        $cart->removeItem($productId);
-
-        // Save the updated cart to session
-        $this->saveCart($cart);
+        $lines = $this->getLines();
+        unset($lines[$productId]);
+        $this->saveLines($lines);
     }
 
     /**
-     * Get all items in the cart.
+     * Cart lines for products that are still active, priced from the database.
+     *
+     * @return Collection<int, CartItemDTO>
      */
     public function getCartItems(): Collection
     {
-        return $this->getCart()->getItems();
+        if ($this->items !== null) {
+            return $this->items;
+        }
+
+        $lines = $this->getLines();
+
+        $products = Product::query()
+            ->active()
+            ->whereKey(array_keys($lines))
+            ->get()
+            ->keyBy('id');
+
+        return $this->items = collect($lines)
+            ->filter(fn (int $quantity, int $productId) => $products->has($productId))
+            ->map(fn (int $quantity, int $productId) => CartItemDTO::fromProduct($products[$productId], $quantity))
+            ->values();
     }
 
     /**
-     * Get the total price of the cart.
+     * Raw product id => quantity lines, without touching the database.
+     *
+     * @return array<int, int>
      */
+    public function getLines(): array
+    {
+        $session = $this->request->session();
+
+        if ($session->has(self::LEGACY_SESSION_KEY)) {
+            $session->forget(self::LEGACY_SESSION_KEY);
+        }
+
+        $lines = $session->get(self::SESSION_KEY, []);
+
+        return is_array($lines) ? array_map('intval', $lines) : [];
+    }
+
     public function getTotalPrice(): float
     {
-        return $this->getCart()->getTotalPrice();
+        return $this->getCartItems()->sum(fn (CartItemDTO $item) => $item->getTotalPrice());
     }
 
-    /**
-     * Get the final price after applying any discounts.
-     */
     public function getFinalPrice(): float
     {
-        return $this->getCart()->getFinalPrice();
+        return $this->getTotalPrice();
     }
 
-    /**
-     * Get the total quantity of all items in the cart.
-     */
     public function getTotalQuantity(): int
     {
-        return $this->getCart()->getTotalQuantity();
+        return array_sum($this->getLines());
     }
 
-    /**
-     * Remove every item from the cart.
-     */
     public function clearCart(): void
     {
-        $this->request->session()->forget($this->sessionKey);
+        $this->request->session()->forget(self::SESSION_KEY);
+        $this->items = null;
     }
 
     /**
-     * Cart payload for Inertia pages.
-     *
      * @return array<string, mixed>
      */
     public function toArray(): array
     {
         return [
-            'items' => $this->getCartItems()->map(fn ($item) => [
+            'items' => $this->getCartItems()->map(fn (CartItemDTO $item) => [
                 'product_id' => $item->product_id,
                 'title' => $item->title,
                 'price' => $item->price,
@@ -164,10 +134,36 @@ class ShoppingCartService
                 'stock' => $item->stock,
                 'quantity' => $item->quantity,
                 'line_total' => $item->getTotalPrice(),
-            ])->values()->all(),
-            'total_quantity' => $this->getTotalQuantity(),
+            ])->all(),
+            'total_quantity' => $this->getCartItems()->sum('quantity'),
             'total_price' => $this->getTotalPrice(),
             'final_price' => $this->getFinalPrice(),
         ];
+    }
+
+    private function assertQuantityAvailable(int $productId, int $quantity): void
+    {
+        if ($quantity <= 0) {
+            throw new CartException('Quantity must be greater than 0.');
+        }
+
+        $product = Product::query()->active()->find($productId);
+
+        if (! $product) {
+            throw new CartException('This product is not available.');
+        }
+
+        if ($quantity > $product->stock) {
+            throw new CartException("Only {$product->stock} of {$product->title} available.");
+        }
+    }
+
+    /**
+     * @param  array<int, int>  $lines
+     */
+    private function saveLines(array $lines): void
+    {
+        $this->request->session()->put(self::SESSION_KEY, $lines);
+        $this->items = null;
     }
 }

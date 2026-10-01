@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CheckoutException;
 use App\Http\Requests\Checkout\StoreCheckoutRequest;
 use App\Models\PaymentMethod;
 use App\Services\CheckoutService;
 use App\Services\ShoppingCartService;
-use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -44,7 +44,7 @@ class CheckoutController extends Controller
     {
         try {
             $order = $this->checkout->place($request->validated(), $request->user());
-        } catch (Exception $e) {
+        } catch (CheckoutException $e) {
             return back()->with('error', $e->getMessage())->withInput();
         }
 

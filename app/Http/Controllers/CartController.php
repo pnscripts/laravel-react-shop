@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\CartException;
 use App\Http\Requests\Cart\AddToCartRequest;
 use App\Http\Requests\Cart\UpdateCartRequest;
 use App\Models\Product;
 use App\Services\ShoppingCartService;
-use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -30,7 +30,7 @@ class CartController extends Controller
                 (int) $request->validated('product_id'),
                 (int) $request->validated('quantity'),
             );
-        } catch (Exception $e) {
+        } catch (CartException $e) {
             throw ValidationException::withMessages([
                 'quantity' => $e->getMessage(),
             ]);
@@ -46,7 +46,7 @@ class CartController extends Controller
                 $product->id,
                 (int) $request->validated('quantity'),
             );
-        } catch (Exception $e) {
+        } catch (CartException $e) {
             throw ValidationException::withMessages([
                 'quantity' => $e->getMessage(),
             ]);

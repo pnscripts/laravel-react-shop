@@ -2,40 +2,46 @@
 
 namespace App\DTOs;
 
-class CartItemDTO
+use App\Models\Product;
+
+/**
+ * A cart line built from the current product row. Prices are never taken from the session.
+ */
+final readonly class CartItemDTO
 {
-    public int $product_id;
+    public function __construct(
+        public int $product_id,
+        public string $title,
+        public float $price,
+        public ?float $discount_price,
+        public ?string $image,
+        public int $stock,
+        public int $quantity,
+    ) {}
 
-    public string $title;
-
-    public float $price;
-
-    public ?float $discount_price;
-
-    public ?string $image;
-
-    public int $stock;
-
-    public int $quantity;
-
-    public function __construct(int $product_id, string $title, float $price, ?float $discount_price, ?string $image, int $stock, int $quantity)
+    public static function fromProduct(Product $product, int $quantity): self
     {
-        $this->product_id = $product_id;
-        $this->title = $title;
-        $this->price = $price;
-        $this->discount_price = $discount_price;
-        $this->image = $image;
-        $this->stock = $stock;
-        $this->quantity = $quantity;
+        return new self(
+            $product->id,
+            $product->title,
+            (float) $product->price,
+            $product->discount_price !== null ? (float) $product->discount_price : null,
+            $product->image,
+            $product->stock,
+            $quantity,
+        );
     }
 
     /**
-     * Get the total price of this item (use discount_price if available, otherwise use price).
+     * The price of one unit: the discount price when set, otherwise the regular price.
      */
+    public function getUnitPrice(): float
+    {
+        return $this->discount_price ?: $this->price;
+    }
+
     public function getTotalPrice(): float
     {
-        $itemPrice = $this->discount_price ?: $this->price; // Use discount_price if available
-
-        return $itemPrice * $this->quantity;
+        return $this->getUnitPrice() * $this->quantity;
     }
 }
