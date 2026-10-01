@@ -24,7 +24,8 @@ core/
 ├── Shipping/                zones, methods, carriers (ShippingCarrierManager), shipments, cart.totals stage, contract test kit
 ├── Tax/                     tax classes, zones, rates, TaxProvider (rate tables by default), cart.totals stage
 ├── Cms/                     pages, revisions, content blocks (BlockRegistry, HasContentBlocks, ContentEditor), menus
-├── Seo/                     meta tags, hreflang, JSON-LD (Schema), sitemaps, robots.txt, seo.meta pipeline
+├── Seo/                     meta tags, hreflang, JSON-LD (Schema), sitemaps, robots.txt, seo.meta pipeline, redirects
+├── Extension/               plugin manifest, discovery, lifecycle (ExtensionManager), boot loader, integrity, zip uploads
 └── Admin/                   the Filament panel (/admin)
 ```
 
@@ -40,7 +41,7 @@ Admin screens are discovered from `core/<Module>/Filament/{Resources,Pages,Widge
 
 ## Extension kernel
 
-These are the stable extension points that core modules use today, and that plugins will use once the extension system lands (Phase 8).
+These are the stable extension points that core modules and plugins use (see [plugins](../extensions/plugins.md)).
 
 ### Permissions
 

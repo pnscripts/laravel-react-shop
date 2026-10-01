@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use PnShop\Extension\PluginLoader;
 use PnShop\Settings\Settings;
 
 /**
@@ -63,6 +64,14 @@ class AdminPanelProvider extends PanelProvider
             $module = basename(dirname($directory));
             $namespace = "PnShop\\{$module}\\Filament";
 
+            $panel
+                ->discoverResources(in: "{$directory}/Resources", for: "{$namespace}\\Resources")
+                ->discoverPages(in: "{$directory}/Pages", for: "{$namespace}\\Pages")
+                ->discoverWidgets(in: "{$directory}/Widgets", for: "{$namespace}\\Widgets");
+        }
+
+        // Admin screens of enabled plugins (src/Filament/{Resources,Pages,Widgets}).
+        foreach (PluginLoader::filamentDirectories() as [$directory, $namespace]) {
             $panel
                 ->discoverResources(in: "{$directory}/Resources", for: "{$namespace}\\Resources")
                 ->discoverPages(in: "{$directory}/Pages", for: "{$namespace}\\Pages")

@@ -1,0 +1,7 @@
+{
+    "id": "acme/broken",
+    "name": "Broken plugin",
+    "version": "1.0.0",
+    "provider": "Acme\\Broken\\BrokenPlugin",
+    "autoload": { "psr-4": { "Acme\\Broken\\": "src/" } }
+}

@@ -1,0 +1,12 @@
+{
+    "id": "acme/good",
+    "name": "Good plugin",
+    "description": "A well-behaved test plugin.",
+    "version": "1.0.0",
+    "type": "plugin",
+    "requires": { "pnshop": ">=0.8", "php": ">=8.4" },
+    "provider": "Acme\\Good\\GoodPlugin",
+    "autoload": { "psr-4": { "Acme\\Good\\": "src/" } },
+    "permissions": [{ "key": "good.manage", "label": "Manage the good plugin" }],
+    "settings": [{ "key": "greeting", "type": "string", "label": "Greeting", "default": "Hello" }]
+}

@@ -16,6 +16,7 @@
     "require": {
         "php": "^8.4",
         "brick/money": "^0.15.2",
+        "composer/semver": "^3.4",
         "filament/filament": "^5.9",
         "inertiajs/inertia-laravel": "^3.4",
         "intervention/image": "^4.3",

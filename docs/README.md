@@ -26,6 +26,7 @@ Architecture approved 2026-10-01. Phases 0–7 are implemented; the documents be
 | [cms/pages-and-blocks.md](cms/pages-and-blocks.md) | CMS pages, scheduling, revisions, the homepage, content blocks and adding block types |
 | [cms/menus.md](cms/menus.md) | Header and footer menus, item types, translations, caching |
 | [seo/seo.md](seo/seo.md) | Meta tags, hreflang, JSON-LD, sitemaps, robots.txt, staging mode, redirects |
+| [extensions/plugins.md](extensions/plugins.md) | Plugins: trust model, manifest, lifecycle, CLI, safe mode, signatures, writing a plugin |
 | [development/core-modules.md](development/core-modules.md) | Core module layout, permissions, pipelines and settings for developers |
 | [administration/staff-and-roles.md](administration/staff-and-roles.md) | Admin panel, staff accounts, roles and the activity log |
 

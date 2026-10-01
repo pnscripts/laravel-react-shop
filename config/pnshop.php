@@ -6,6 +6,7 @@ use PnShop\Cart\CartServiceProvider;
 use PnShop\Catalog\CatalogServiceProvider;
 use PnShop\Cms\CmsServiceProvider;
 use PnShop\Customer\CustomerServiceProvider;
+use PnShop\Extension\ExtensionServiceProvider;
 use PnShop\Inventory\InventoryServiceProvider;
 use PnShop\Localization\LocalizationServiceProvider;
 use PnShop\Media\MediaServiceProvider;
@@ -47,6 +48,7 @@ return [
         ShippingServiceProvider::class,
         TaxServiceProvider::class,
         CmsServiceProvider::class,
+        ExtensionServiceProvider::class,
         SeoServiceProvider::class,
         AdminServiceProvider::class,
     ],
@@ -87,6 +89,30 @@ return [
             'min_seconds' => (int) env('PNSHOP_BOT_TRAP_MIN_SECONDS', 2),
             'max_age_hours' => 24,
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Extensions
+    |--------------------------------------------------------------------------
+    |
+    | Plugins live in `path` (<vendor>/<name>/pnshop.json) or come from Composer
+    | packages of type "pnshop-plugin". Enabled plugins are booted from `cache`.
+    | Safe mode boots no plugins at all, so a broken one can be removed.
+    | Plugins run with full application privileges: install only code you trust.
+    |
+    */
+
+    'extensions' => [
+        'path' => env('PNSHOP_EXTENSIONS_PATH', base_path('extensions')),
+        'cache' => env('PNSHOP_PLUGIN_CACHE', base_path('bootstrap/cache/pnshop-plugins.php')),
+        'safe_mode' => (bool) env('PNSHOP_SAFE_MODE', false),
+        // Zip uploads in the admin; off by default.
+        'uploads' => (bool) env('PNSHOP_EXTENSION_UPLOADS', false),
+        // Refuse plugins without a valid signature from one of the trusted keys.
+        'require_signatures' => (bool) env('PNSHOP_REQUIRE_SIGNATURES', false),
+        // key id => base64 Ed25519 public key
+        'trusted_keys' => [],
     ],
 
 ];

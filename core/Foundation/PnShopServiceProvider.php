@@ -3,6 +3,7 @@
 namespace PnShop\Foundation;
 
 use Illuminate\Support\ServiceProvider;
+use PnShop\Extension\PluginLoader;
 use PnShop\Foundation\Extension\PermissionRegistry;
 use PnShop\Foundation\Extension\PipelineRegistry;
 
@@ -22,5 +23,9 @@ class PnShopServiceProvider extends ServiceProvider
         foreach ($modules as $module) {
             $this->app->register($module);
         }
+
+        // Enabled plugins come after the core modules whose registries they use.
+        $this->app->singleton(PluginLoader::class);
+        $this->app->make(PluginLoader::class)->bootEnabled();
     }
 }

@@ -1,0 +1,8 @@
+{
+    "id": "acme/needs-good",
+    "name": "Needs good",
+    "version": "1.0.0",
+    "requires": { "plugins": { "acme/good": "^2.0" } },
+    "provider": "Acme\\NeedsGood\\NeedsGoodPlugin",
+    "autoload": { "psr-4": { "Acme\\NeedsGood\\": "src/" } }
+}
