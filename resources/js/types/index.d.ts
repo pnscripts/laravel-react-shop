@@ -22,6 +22,12 @@ export interface NavItem {
     isActive?: boolean;
 }
 
+export interface Localization {
+    locale: string;
+    currency: string;
+    languages: { code: string; name: string; url: string; active: boolean }[];
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
@@ -32,6 +38,7 @@ export interface SharedData {
         error: string | null;
     };
     ziggy: Config & { location: string };
+    localization: Localization;
     sidebarOpen: boolean;
     [key: string]: unknown;
 }

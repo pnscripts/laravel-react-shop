@@ -1,6 +1,7 @@
 import AppLogo from '@/components/app-logo';
 import AppearanceToggleDropdown from '@/components/appearance-dropdown';
 import { Icon } from '@/components/icon';
+import LanguageSwitcher from '@/components/language-switcher';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { type SharedData } from '@/types';
@@ -80,6 +81,7 @@ export function StorefrontHeader() {
                             )}
                         </Link>
                     </Button>
+                    <LanguageSwitcher />
                     <AppearanceToggleDropdown />
                     {auth.user ? (
                         <Button variant="outline" asChild>

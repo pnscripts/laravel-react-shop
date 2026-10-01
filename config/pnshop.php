@@ -3,6 +3,7 @@
 use PnShop\Acl\AclServiceProvider;
 use PnShop\Admin\AdminServiceProvider;
 use PnShop\Catalog\CatalogServiceProvider;
+use PnShop\Localization\LocalizationServiceProvider;
 use PnShop\Sales\SalesServiceProvider;
 use PnShop\Settings\SettingsServiceProvider;
 use PnShop\System\SystemServiceProvider;
@@ -22,6 +23,7 @@ return [
 
     'modules' => [
         SettingsServiceProvider::class,
+        LocalizationServiceProvider::class,
         AclServiceProvider::class,
         SystemServiceProvider::class,
         CatalogServiceProvider::class,
