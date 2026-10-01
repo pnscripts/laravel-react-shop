@@ -2,12 +2,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type Money } from '@/types';
+import { type BreadcrumbItem, type Money, type OrderStates } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: 'Dashboard', href: '/dashboard' }];
 
-type OrderSummary = { id: number; status: string | null; created_at: string; total: Money };
+type OrderSummary = OrderStates & { id: number; created_at: string; total: Money };
 
 export default function Dashboard({ recentOrders, defaultAddress }: { recentOrders: OrderSummary[]; defaultAddress: string[] | null }) {
     const t = useTranslations();
@@ -36,7 +36,7 @@ export default function Dashboard({ recentOrders, defaultAddress }: { recentOrde
                                 {recentOrders.map((order) => (
                                     <li key={order.id} className="flex items-center justify-between gap-4 py-2">
                                         <Link href={route('orders.show', order.id)} className="font-medium hover:underline">
-                                            {t('Order #:id', { id: order.id })}
+                                            {t('Order :number', { number: order.number })}
                                         </Link>
                                         <span className="text-muted-foreground">{order.created_at}</span>
                                         <span>{order.status}</span>

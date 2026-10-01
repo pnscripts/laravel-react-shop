@@ -9,6 +9,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ListOrders;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ViewOrder;
+use PnShop\Sales\Filament\Resources\Orders\RelationManagers\HistoryRelationManager;
 use PnShop\Sales\Filament\Resources\Orders\Schemas\OrderInfolist;
 use PnShop\Sales\Filament\Resources\Orders\Tables\OrdersTable;
 use PnShop\Sales\Models\Order;
@@ -24,6 +25,8 @@ class OrderResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
+    protected static ?string $recordTitleAttribute = 'number';
+
     public static function infolist(Schema $schema): Schema
     {
         return OrderInfolist::configure($schema);
@@ -32,6 +35,11 @@ class OrderResource extends Resource
     public static function table(Table $table): Table
     {
         return OrdersTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [HistoryRelationManager::class];
     }
 
     public static function canCreate(): bool

@@ -24,7 +24,7 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
   - Dashboard: today's orders, pending orders, latest orders, low stock
   - Products with variants (options such as size), gallery images, brands, nested categories, filterable attributes, related products/upsells/cross-sells
   - Inventory with a stock movement ledger; media library with WebP conversions
-  - Orders: list, view, change status (stock is reserved at checkout, taken when shipped, released on cancel)
+  - Orders: numbers, status / payment / fulfillment state machines with history and notes (stock is reserved at checkout, taken when shipped, released on cancel)
   - Customers with address books and order history; customer groups
   - Admin users, roles, store settings, activity log
 - Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)

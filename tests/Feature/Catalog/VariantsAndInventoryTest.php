@@ -18,9 +18,11 @@ use PnShop\Inventory\Models\StockMovement;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Inventory\StockMovementReason;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Sales\Models\PaymentMethod;
-use PnShop\Sales\OrderStatusService;
+use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\FulfillmentStatus;
+use PnShop\Sales\States\OrderStatus;
+use PnShop\Sales\States\PaymentStatus;
 use Tests\Feature\Admin\AdminTestCase;
 
 class VariantsAndInventoryTest extends AdminTestCase
@@ -31,7 +33,6 @@ class VariantsAndInventoryTest extends AdminTestCase
     {
         parent::setUp();
 
-        OrderStatus::factory()->create(['name' => 'pending']);
         $this->payment = PaymentMethod::factory()->create(['is_active' => true]);
     }
 
@@ -101,7 +102,7 @@ class VariantsAndInventoryTest extends AdminTestCase
         $this->assertSame(['on_hand' => 1, 'reserved' => 1], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
         $this->assertDatabaseMissing('stock_movements', ['product_variant_id' => $medium->id, 'reference_id' => $order->id]);
 
-        app(OrderStatusService::class)->change($order, OrderStatus::factory()->create(['name' => 'shipped']));
+        app(OrderWorkflow::class)->transition($order, FulfillmentStatus::Fulfilled);
 
         $this->assertSame(['on_hand' => 0, 'reserved' => 0], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
         $this->assertSame(OrderStockStatus::Fulfilled, $order->fresh()->stock_status);
@@ -138,7 +139,7 @@ class VariantsAndInventoryTest extends AdminTestCase
 
         $this->post('/cart', ['variant_id' => $medium->id, 'quantity' => 3])->assertSessionHasNoErrors();
         $this->post('/checkout', $this->checkoutData($this->payment->id))->assertRedirect();
-        app(OrderStatusService::class)->change(Order::query()->sole(), OrderStatus::factory()->create(['name' => 'shipped']));
+        app(OrderWorkflow::class)->transition(Order::query()->sole(), FulfillmentStatus::Fulfilled);
 
         $this->assertSame(-2, (int) $medium->stockLevels()->sum('on_hand'));
     }
@@ -149,7 +150,7 @@ class VariantsAndInventoryTest extends AdminTestCase
         $this->post('/cart', ['variant_id' => $medium->id, 'quantity' => 1]);
         $this->post('/checkout', $this->checkoutData($this->payment->id));
 
-        app(OrderStatusService::class)->change(Order::query()->sole(), OrderStatus::factory()->create(['name' => 'cancelled']));
+        app(OrderWorkflow::class)->transition(Order::query()->sole(), OrderStatus::Cancelled);
 
         $this->assertSame(1, $medium->fresh()->available());
         $this->assertSame(['on_hand' => 1, 'reserved' => 0], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
@@ -162,14 +163,13 @@ class VariantsAndInventoryTest extends AdminTestCase
         $this->post('/cart', ['variant_id' => $medium->id, 'quantity' => 1]);
         $this->post('/checkout', $this->checkoutData($this->payment->id));
         $order = Order::query()->sole();
-        $statuses = app(OrderStatusService::class);
+        $workflow = app(OrderWorkflow::class);
 
-        $statuses->change($order, OrderStatus::factory()->create(['name' => 'shipped']));
-        // Back to an open status: the goods have already left.
-        $statuses->change($order, OrderStatus::factory()->create(['name' => 'paid']));
+        $workflow->transition($order, FulfillmentStatus::Fulfilled);
+        $workflow->transition($order, PaymentStatus::Paid);
         $this->assertSame(0, $medium->fresh()->available());
 
-        $statuses->change($order, OrderStatus::factory()->create(['name' => 'cancelled']));
+        $workflow->transition($order, OrderStatus::Cancelled);
 
         $this->assertSame(['on_hand' => 1, 'reserved' => 0], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
         $this->assertDatabaseHas('stock_movements', ['product_variant_id' => $medium->id, 'quantity' => 1, 'reason' => 'order_cancelled']);

@@ -14,11 +14,12 @@ class OrdersController extends Controller
     public function index(Request $request): Response
     {
         $orders = $request->user()->orders()
-            ->with(['orderStatus', 'items'])
+            ->with(['items'])
             ->paginate(10)
             ->through(fn (Order $order) => [
                 'id' => $order->id,
-                'status' => $order->orderStatus ? __(ucfirst($order->orderStatus->name)) : null,
+                'number' => $order->number,
+                ...$order->presentStates(),
                 'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LL'),
                 'items_count' => $order->items->sum('quantity'),
                 'total' => MoneyPresenter::present($order->grandTotal()),

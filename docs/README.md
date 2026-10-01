@@ -17,6 +17,8 @@ Architecture approved 2026-10-01. Phases 0–5 are implemented; the documents be
 | [ecommerce/catalog-and-inventory.md](ecommerce/catalog-and-inventory.md) | Products, variants, options, categories, brands, attributes, images, inventory |
 | [upgrades/2026-10-phase-5.md](upgrades/2026-10-phase-5.md) | Upgrade notes for customers, database carts, structured checkout and stock reservations (Phase 5) |
 | [ecommerce/customers-cart-and-checkout.md](ecommerce/customers-cart-and-checkout.md) | Customer groups, address books, carts, the totals pipeline, checkout, reservations, spam protection |
+| [upgrades/2026-10-phase-6.md](upgrades/2026-10-phase-6.md) | Upgrade notes for orders, payments, shipping and tax (Phase 6, in progress) |
+| [ecommerce/orders.md](ecommerce/orders.md) | Order numbers, status/payment/fulfillment states, history, OrderWorkflow |
 | [development/core-modules.md](development/core-modules.md) | Core module layout, permissions, pipelines and settings for developers |
 | [administration/staff-and-roles.md](administration/staff-and-roles.md) | Admin panel, staff accounts, roles and the activity log |
 

@@ -5,7 +5,6 @@ namespace Tests\Feature\Core;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Product;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Security\BotTrap;
 use Tests\TestCase;
@@ -54,7 +53,6 @@ class InterfaceTranslationsTest extends TestCase
 
     public function test_order_pages_show_localized_status_and_date(): void
     {
-        OrderStatus::factory()->create(['name' => 'pending']);
         $payment = PaymentMethod::factory()->create(['is_active' => true]);
         $product = Product::factory()->active()->create(['stock' => 2]);
 

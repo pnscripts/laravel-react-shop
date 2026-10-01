@@ -18,7 +18,7 @@ class OrderController extends Controller
 
         abort_unless($isOwner || $isRecent, 403);
 
-        $order->load(['items', 'orderStatus', 'paymentMethod', 'shippingAddress', 'billingAddress']);
+        $order->load(['items', 'paymentMethod', 'shippingAddress', 'billingAddress']);
 
         return Inertia::render('orders/show', [
             'order' => [
@@ -28,7 +28,8 @@ class OrderController extends Controller
                 'phone' => $order->phone,
                 'shipping_address' => $order->shippingLines(),
                 'billing_address' => $order->billingAddress?->toPostalAddress()->lines(),
-                'status' => $order->orderStatus ? __(ucfirst($order->orderStatus->name)) : null,
+                'number' => $order->number,
+                ...$order->presentStates(),
                 'payment_method' => $order->paymentMethod?->name,
                 'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LLL'),
                 'items' => $order->items->map(fn ($item) => [

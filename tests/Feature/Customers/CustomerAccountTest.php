@@ -8,7 +8,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Customer\Models\CustomerAddress;
 use PnShop\Customer\Models\CustomerGroup;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Security\BotTrap;
 use Tests\TestCase;
 
@@ -25,10 +24,9 @@ class CustomerAccountTest extends TestCase
 
     public function test_customers_see_only_their_own_orders(): void
     {
-        $status = OrderStatus::factory()->create(['name' => 'pending']);
         $customer = User::factory()->create();
-        $mine = Order::factory()->create(['user_id' => $customer->id, 'order_status_id' => $status->id]);
-        Order::factory()->create(['user_id' => User::factory()->create()->id, 'order_status_id' => $status->id]);
+        $mine = Order::factory()->create(['user_id' => $customer->id]);
+        Order::factory()->create(['user_id' => User::factory()->create()->id]);
 
         $this->actingAs($customer)->get('/account/orders')->assertInertia(fn (Assert $page) => $page
             ->component('account/orders')

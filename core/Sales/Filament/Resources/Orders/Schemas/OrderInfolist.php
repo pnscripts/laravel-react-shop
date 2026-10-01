@@ -48,7 +48,10 @@ class OrderInfolist
                 Section::make('Order')
                     ->columnSpan(1)
                     ->schema([
-                        TextEntry::make('orderStatus.name')->label('Status')->badge(),
+                        TextEntry::make('number')->label('Order number')->copyable(),
+                        TextEntry::make('status')->badge(),
+                        TextEntry::make('payment_status')->label('Payment status')->badge(),
+                        TextEntry::make('fulfillment_status')->label('Fulfillment')->badge(),
                         TextEntry::make('paymentMethod.name')->label('Payment'),
                         TextEntry::make('created_at')->label('Placed')->dateTime(),
                         TextEntry::make('name')->label('Customer'),

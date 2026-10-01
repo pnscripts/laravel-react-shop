@@ -14,10 +14,20 @@ use PnShop\Inventory\OrderStockStatus;
 use PnShop\Money\MoneyCast;
 use PnShop\Money\MoneyPresenter;
 use PnShop\Sales\Factories\OrderFactory;
+use PnShop\Sales\OrderNumber;
+use PnShop\Sales\States\FulfillmentStatus;
+use PnShop\Sales\States\OrderStatus;
+use PnShop\Sales\States\PaymentStatus;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 /**
+ * @property int $id
+ * @property string|null $number human order number, e.g. ORD-000042
+ * @property OrderStatus $status
+ * @property PaymentStatus $payment_status
+ * @property FulfillmentStatus $fulfillment_status
+ * @property string|null $locale language the customer used
  * @property string $currency ISO 4217 code the order was placed in
  * @property OrderStockStatus $stock_status
  * @property string|null $address free-text address of orders placed before structured addresses
@@ -41,7 +51,11 @@ class Order extends Model
         'address',
         'phone',
         'email',
-        'order_status_id',
+        'number',
+        'status',
+        'payment_status',
+        'fulfillment_status',
+        'locale',
         'payment_method_id',
         'currency',
         'stock_status',
@@ -56,7 +70,27 @@ class Order extends Model
         'total' => MoneyCast::class.':currency',
         'totals' => 'array',
         'stock_status' => OrderStockStatus::class,
+        'status' => OrderStatus::class,
+        'payment_status' => PaymentStatus::class,
+        'fulfillment_status' => FulfillmentStatus::class,
     ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'status' => 'pending',
+        'payment_status' => 'unpaid',
+        'fulfillment_status' => 'unfulfilled',
+    ];
+
+    protected static function booted(): void
+    {
+        // The number needs the id, so it is assigned right after the insert.
+        static::created(function (Order $order): void {
+            if ($order->number === null) {
+                $order->forceFill(['number' => OrderNumber::for($order)])->saveQuietly();
+            }
+        });
+    }
 
     /**
      * Get the items for this order.
@@ -142,13 +176,27 @@ class Order extends Model
     }
 
     /**
-     * Get the order status associated with the order.
+     * The order's timeline, oldest first.
      *
-     * @return BelongsTo<OrderStatus, $this>
+     * @return HasMany<OrderHistory, $this>
      */
-    public function orderStatus(): BelongsTo
+    public function history(): HasMany
     {
-        return $this->belongsTo(OrderStatus::class);
+        return $this->hasMany(OrderHistory::class)->orderBy('id');
+    }
+
+    /**
+     * Status, payment and fulfillment labels in the current language, for the storefront.
+     *
+     * @return array{status: string, payment_status: string, fulfillment_status: string}
+     */
+    public function presentStates(): array
+    {
+        return [
+            'status' => __($this->status->label()),
+            'payment_status' => __($this->payment_status->label()),
+            'fulfillment_status' => __($this->fulfillment_status->label()),
+        ];
     }
 
     /**
@@ -165,7 +213,7 @@ class Order extends Model
     {
         return LogOptions::defaults()
             ->useLogName('sales')
-            ->logOnly(['order_status_id'])
+            ->logOnly(['status', 'payment_status', 'fulfillment_status'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
     }

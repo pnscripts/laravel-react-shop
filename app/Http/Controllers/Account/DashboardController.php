@@ -17,9 +17,10 @@ class DashboardController extends Controller
         $address = $user->addresses()->where('is_default_shipping', true)->first();
 
         return Inertia::render('dashboard', [
-            'recentOrders' => $user->orders()->with(['orderStatus', 'items'])->limit(3)->get()->map(fn (Order $order) => [
+            'recentOrders' => $user->orders()->with(['items'])->limit(3)->get()->map(fn (Order $order) => [
                 'id' => $order->id,
-                'status' => $order->orderStatus ? __(ucfirst($order->orderStatus->name)) : null,
+                'number' => $order->number,
+                ...$order->presentStates(),
                 'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LL'),
                 'total' => MoneyPresenter::present($order->grandTotal()),
             ]),

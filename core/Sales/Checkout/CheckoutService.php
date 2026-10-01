@@ -15,11 +15,15 @@ use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Localization\Localization;
+use PnShop\Sales\Events\OrderPlaced;
 use PnShop\Sales\Exceptions\CheckoutException;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\Models\OrderAddress;
 use PnShop\Sales\Models\OrderItem;
-use PnShop\Sales\Models\OrderStatus;
+use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\FulfillmentStatus;
+use PnShop\Sales\States\OrderStatus;
+use PnShop\Sales\States\PaymentStatus;
 
 class CheckoutService
 {
@@ -27,6 +31,7 @@ class CheckoutService
         private ShoppingCartService $cart,
         private InventoryService $inventory,
         private CartCalculator $calculator,
+        private OrderWorkflow $workflow,
     ) {}
 
     /**
@@ -34,7 +39,7 @@ class CheckoutService
      *
      * Prices come from the variant rows, and stock is reserved with a conditional update,
      * so it cannot be oversold even under concurrent checkouts. It leaves the shelf when
-     * the order ships (OrderStatusService).
+     * the order ships (OrderWorkflow).
      *
      * The order keeps copies of the shipping and billing addresses and its totals from
      * the cart.totals pipeline, computed from the locked variant rows.
@@ -74,8 +79,11 @@ class CheckoutService
                 'email' => $data['email'],
                 'phone' => (string) $shipping->phone,
                 'payment_method_id' => $data['payment_method_id'],
-                'order_status_id' => OrderStatus::firstOrCreate(['name' => 'pending'])->id,
+                'status' => OrderStatus::Pending,
+                'payment_status' => PaymentStatus::Unpaid,
+                'fulfillment_status' => FulfillmentStatus::Unfulfilled,
                 'currency' => $currency,
+                'locale' => app()->getLocale(),
                 'stock_status' => OrderStockStatus::Reserved,
             ]);
 
@@ -131,8 +139,12 @@ class CheckoutService
                 ], $totals->lines()),
             ]);
 
+            $this->workflow->recordPlaced($order, $user);
+
             return $order;
         }, attempts: 3);
+
+        OrderPlaced::dispatch($order);
 
         $this->cart->clearCart();
 
@@ -140,7 +152,7 @@ class CheckoutService
             $this->saveToAddressBook($user, $shipping);
         }
 
-        return $order->load(['items', 'orderStatus', 'paymentMethod', 'addresses']);
+        return $order->load(['items', 'paymentMethod', 'addresses']);
     }
 
     /**

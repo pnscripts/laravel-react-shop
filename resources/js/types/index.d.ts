@@ -118,6 +118,14 @@ export interface Totals {
     total: Money;
 }
 
+/** Order number and its states, already translated (Order::presentStates). */
+export interface OrderStates {
+    number: string;
+    status: string;
+    payment_status: string;
+    fulfillment_status: string;
+}
+
 export interface CartSummary {
     items: CartItem[];
     total_quantity: number;

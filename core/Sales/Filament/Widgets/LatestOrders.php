@@ -23,13 +23,13 @@ class LatestOrders extends TableWidget
     public function table(Table $table): Table
     {
         return $table
-            ->query(Order::query()->with(['orderStatus', 'paymentMethod'])->latest()->limit(5))
+            ->query(Order::query()->with(['paymentMethod'])->latest()->limit(5))
             ->paginated(false)
             ->columns([
-                TextColumn::make('id')->label('#'),
+                TextColumn::make('number')->label('Order'),
                 TextColumn::make('name')->label('Customer'),
-                TextColumn::make('orderStatus.name')->label('Status')->badge(),
-                TextColumn::make('paymentMethod.name')->label('Payment'),
+                TextColumn::make('status')->badge(),
+                TextColumn::make('payment_status')->label('Payment')->badge(),
                 TextColumn::make('created_at')->label('Placed')->since(),
             ])
             ->recordActions([

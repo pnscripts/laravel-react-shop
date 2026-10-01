@@ -65,12 +65,12 @@ Signed-in customers can save a new address to their address book. It is not save
 
 | Order state | Stock |
 |---|---|
-| Placed (pending, paid, …) | **Reserved**: still on hand, no longer available |
-| Shipped / delivered / completed | **Fulfilled**: taken off hand, with an `order_fulfilled` movement |
-| Cancelled | **Released**: a reservation is dropped; shipped stock is put back (`order_cancelled` movement) |
+| Placed | **Reserved**: still on hand, no longer available |
+| Fulfillment *Shipped* | **Fulfilled**: taken off hand, with an `order_fulfilled` movement |
+| Status *Cancelled* | **Released**: a reservation is dropped; shipped stock is put back (`order_cancelled` movement) |
 
 - Reopening a cancelled order reserves the stock again. It fails when the stock is gone.
-- Moving a shipped order back to an open status keeps it fulfilled, because the goods have left.
+- See [orders](orders.md) for the state machines that drive these changes.
 - The admin's *Stock on hand* field shows the shelf quantity, including reserved units, so saving a product never loses reservations.
 
 ## Spam protection

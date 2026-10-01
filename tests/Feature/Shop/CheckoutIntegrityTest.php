@@ -8,7 +8,6 @@ use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Cart\Models\CartLine;
 use PnShop\Catalog\Models\Product;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
@@ -22,7 +21,6 @@ class CheckoutIntegrityTest extends TestCase
     {
         parent::setUp();
 
-        OrderStatus::factory()->create(['name' => 'pending']);
         $this->payment = PaymentMethod::factory()->create(['is_active' => true]);
     }
 

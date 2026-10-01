@@ -5,8 +5,9 @@ namespace Tests\Feature\Orders;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Sales\Models\PaymentMethod;
+use PnShop\Sales\States\OrderStatus;
+use PnShop\Settings\Settings;
 use Tests\TestCase;
 
 class OrderTest extends TestCase
@@ -20,7 +21,6 @@ class OrderTest extends TestCase
     {
         // Arrange
         $user = User::factory()->create();
-        $status = OrderStatus::factory()->create(['name' => 'pending']);
         $payment = PaymentMethod::factory()->create(['name' => 'paypal']);
 
         // Act
@@ -30,7 +30,6 @@ class OrderTest extends TestCase
             'address' => '123 Main St',
             'phone' => '0888123456',
             'email' => 'john@example.com',
-            'order_status_id' => $status->id,
             'payment_method_id' => $payment->id,
         ]);
 
@@ -42,7 +41,8 @@ class OrderTest extends TestCase
         ]);
 
         $this->assertEquals('paypal', $order->paymentMethod->name);
-        $this->assertEquals('pending', $order->orderStatus->name);
+        $this->assertSame(OrderStatus::Pending, $order->fresh()->status);
+        $this->assertSame('ORD-'.str_pad((string) $order->id, 6, '0', STR_PAD_LEFT), $order->fresh()->number);
     }
 
     /**
@@ -73,20 +73,12 @@ class OrderTest extends TestCase
         $this->assertSoftDeleted('orders', ['id' => $order->id]);
     }
 
-    /**
-     * Test updating the status of an order.
-     */
-    public function test_order_status_can_be_updated(): void
+    public function test_order_numbers_follow_the_settings(): void
     {
-        // Arrange
-        $statusOld = OrderStatus::factory()->create(['name' => 'pending']);
-        $statusNew = OrderStatus::factory()->create(['name' => 'completed']);
-        $order = Order::factory()->create(['order_status_id' => $statusOld->id]);
+        app(Settings::class)->set('sales', ['order_number_prefix' => 'BG-', 'order_number_digits' => 4]);
 
-        // Act
-        $order->update(['order_status_id' => $statusNew->id]);
+        $order = Order::factory()->create();
 
-        // Assert
-        $this->assertEquals('completed', $order->fresh()->orderStatus->name);
+        $this->assertSame('BG-'.str_pad((string) $order->id, 4, '0', STR_PAD_LEFT), $order->number);
     }
 }

@@ -10,7 +10,6 @@ use PnShop\Catalog\Models\ProductAttribute;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\Models\OrderItem;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
@@ -114,7 +113,6 @@ class ShopTest extends TestCase
             'price' => 50,
             'sale_price' => null,
         ]);
-        OrderStatus::factory()->create(['name' => 'pending']);
         $payment = PaymentMethod::factory()->create([
             'name' => 'Cash on Delivery',
             'type' => 'cash_on_delivery',

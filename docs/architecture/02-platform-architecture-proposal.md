@@ -1,6 +1,6 @@
 # PN Shop — Platform Architecture Proposal (Approval Checkpoint)
 
-Status: **Phase 6 — awaiting approval.** Nothing in this document has been implemented.
+Status: **approved 2026-10-01** (D1–D7). Implementation follows §20; see [docs/README.md](../README.md) for what has shipped and the upgrade notes for deviations (customers stay in `users`; existing data is migrated in place instead of a new baseline).
 Inputs: [01-discovery-and-gap-analysis.md](01-discovery-and-gap-analysis.md), [platform-comparison](../research/platform-comparison.md), [version-modernization](../research/version-modernization.md), [security-performance-audit](../research/security-performance-audit.md).
 
 PN Shop stays a **standalone, self-hosted** Laravel product. It has no dependency on pnscripts.com and no Marketplace code inside it. A future Marketplace client is only a possible extension *source* (§7.6).

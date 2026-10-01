@@ -2,17 +2,16 @@ import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { type Money, type Totals } from '@/types';
+import { type Money, type OrderStates, type Totals } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
-type OrderShow = {
+type OrderShow = OrderStates & {
     id: number;
     name: string;
     email: string;
     phone: string;
     shipping_address: string[];
     billing_address: string[] | null;
-    status: string | null;
     payment_method: string | null;
     created_at: string | null;
     items: {
@@ -43,8 +42,8 @@ export default function OrderShow({ order }: { order: OrderShow }) {
 
     return (
         <StorefrontLayout>
-            <Head title={t('Order #:id', { id: order.id })} />
-            <h1 className="mb-2 text-3xl font-semibold tracking-tight">{t('Order #:id', { id: order.id })}</h1>
+            <Head title={t('Order :number', { number: order.number })} />
+            <h1 className="mb-2 text-3xl font-semibold tracking-tight">{t('Order :number', { number: order.number })}</h1>
             <p className="text-muted-foreground mb-8">{t('Thanks — we saved your order. Keep this page if you checked out as a guest.')}</p>
 
             <div className="mb-8 grid gap-6 md:grid-cols-3">
@@ -62,7 +61,9 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                 )}
                 <div className="rounded-xl border p-6">
                     <h2 className="mb-3 font-semibold">{t('Details')}</h2>
-                    <p>{t('Status: :status', { status: order.status ?? t('pending') })}</p>
+                    <p>{t('Status: :status', { status: order.status })}</p>
+                    <p>{t('Payment status: :status', { status: order.payment_status })}</p>
+                    <p>{t('Shipping: :status', { status: order.fulfillment_status })}</p>
                     <p>{t('Payment: :method', { method: order.payment_method ?? '—' })}</p>
                     {order.created_at && <p>{t('Placed: :date', { date: order.created_at })}</p>}
                 </div>

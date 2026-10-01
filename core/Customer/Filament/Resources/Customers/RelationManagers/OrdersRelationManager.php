@@ -23,10 +23,12 @@ class OrdersRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn ($query) => $query->with(['orderStatus', 'items']))
+            ->modifyQueryUsing(fn ($query) => $query->with(['items']))
             ->columns([
-                TextColumn::make('id')->label('#'),
-                TextColumn::make('orderStatus.name')->label('Status')->badge(),
+                TextColumn::make('number')->label('Order'),
+                TextColumn::make('status')->badge(),
+                TextColumn::make('payment_status')->label('Payment')->badge(),
+                TextColumn::make('fulfillment_status')->label('Fulfillment')->badge(),
                 TextColumn::make('total')->state(fn (Order $record) => $record->grandTotal()->formatToLocale(app()->getLocale())),
                 TextColumn::make('created_at')->label('Placed')->dateTime(),
             ])

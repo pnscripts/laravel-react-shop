@@ -6,9 +6,11 @@ use Livewire\Livewire;
 use PnShop\Catalog\Models\Product;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ListOrders;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ViewOrder;
+use PnShop\Sales\Filament\Resources\Orders\RelationManagers\HistoryRelationManager;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Sales\Models\PaymentMethod;
+use PnShop\Sales\States\OrderStatus;
+use PnShop\Sales\States\PaymentStatus;
 
 class OrderResourceTest extends AdminTestCase
 {
@@ -20,7 +22,6 @@ class OrderResourceTest extends AdminTestCase
     {
         parent::setUp();
 
-        OrderStatus::factory()->create(['name' => 'pending']);
         $payment = PaymentMethod::factory()->create(['is_active' => true]);
         $this->product = Product::factory()->active()->create(['stock' => 4, 'title' => 'Mug']);
 
@@ -43,14 +44,14 @@ class OrderResourceTest extends AdminTestCase
     public function test_cancelling_from_the_admin_returns_stock(): void
     {
         $this->actingAsAdministrator();
-        $cancelled = OrderStatus::factory()->create(['name' => 'cancelled']);
 
         Livewire::test(ViewOrder::class, ['record' => $this->order->getRouteKey()])
-            ->callAction('changeStatus', ['order_status_id' => $cancelled->id])
+            ->callAction('changeStatus', ['state' => 'cancelled', 'note' => 'Customer asked'])
             ->assertHasNoActionErrors()
-            ->assertSee('cancelled');
+            ->assertSee('Cancelled');
 
-        $this->assertSame($cancelled->id, $this->order->fresh()->order_status_id);
+        $this->assertSame(OrderStatus::Cancelled, $this->order->fresh()->status);
+        $this->assertDatabaseHas('order_history', ['order_id' => $this->order->id, 'field' => 'status', 'from' => 'pending', 'to' => 'cancelled', 'note' => 'Customer asked', 'actor_type' => 'admin_user']);
         $this->assertSame(4, $this->product->fresh()->stock);
     }
 
@@ -60,5 +61,26 @@ class OrderResourceTest extends AdminTestCase
 
         Livewire::test(ViewOrder::class, ['record' => $this->order->getRouteKey()])
             ->assertActionHidden('changeStatus');
+    }
+
+    public function test_staff_record_payments_and_see_the_history(): void
+    {
+        $admin = $this->actingAsAdministrator();
+
+        Livewire::test(ViewOrder::class, ['record' => $this->order->getRouteKey()])
+            ->assertActionVisible('changeFulfillment')
+            ->callAction('changePayment', ['state' => 'paid'])
+            ->assertHasNoActionErrors()
+            ->callAction('addNote', ['note' => 'Paid by bank transfer'])
+            ->assertHasNoActionErrors();
+
+        $this->assertSame(PaymentStatus::Paid, $this->order->fresh()->payment_status);
+        $this->assertSame(OrderStatus::Processing, $this->order->fresh()->status);
+
+        Livewire::test(HistoryRelationManager::class, ['ownerRecord' => $this->order->fresh(), 'pageClass' => ViewOrder::class])
+            ->assertSee('Unpaid → Paid')
+            ->assertSee('Pending → Processing')
+            ->assertSee('Paid by bank transfer')
+            ->assertSee($admin->name.' (staff)');
     }
 }

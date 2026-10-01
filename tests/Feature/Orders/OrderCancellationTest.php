@@ -4,11 +4,11 @@ namespace Tests\Feature\Orders;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PnShop\Catalog\Models\Product;
-use PnShop\Sales\Exceptions\CheckoutException;
+use PnShop\Sales\Exceptions\OrderException;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\OrderStatus;
 use PnShop\Sales\Models\PaymentMethod;
-use PnShop\Sales\OrderStatusService;
+use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\OrderStatus;
 use Tests\TestCase;
 
 class OrderCancellationTest extends TestCase
@@ -19,13 +19,12 @@ class OrderCancellationTest extends TestCase
 
     private Order $order;
 
-    private OrderStatusService $statuses;
+    private OrderWorkflow $workflow;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        OrderStatus::factory()->create(['name' => 'pending']);
         $payment = PaymentMethod::factory()->create(['is_active' => true]);
         $this->product = Product::factory()->active()->create(['stock' => 5]);
 
@@ -33,48 +32,40 @@ class OrderCancellationTest extends TestCase
         $this->post(route('checkout.store'), $this->checkoutData($payment->id, ['email' => 'jane@example.com']));
 
         $this->order = Order::query()->sole();
-        $this->statuses = app(OrderStatusService::class);
+        $this->workflow = app(OrderWorkflow::class);
     }
 
     public function test_cancelling_an_order_returns_its_stock(): void
     {
-        $cancelled = OrderStatus::factory()->create(['name' => 'cancelled']);
-
-        $this->statuses->change($this->order, $cancelled);
+        $this->workflow->transition($this->order, OrderStatus::Cancelled);
 
         $this->assertSame(5, $this->product->fresh()->stock);
-        $this->assertSame($cancelled->id, $this->order->fresh()->order_status_id);
+        $this->assertSame(OrderStatus::Cancelled, $this->order->fresh()->status);
     }
 
     public function test_reopening_a_cancelled_order_takes_stock_again_once(): void
     {
-        $cancelled = OrderStatus::factory()->create(['name' => 'cancelled']);
-        $paid = OrderStatus::factory()->create(['name' => 'paid']);
-
-        $this->statuses->change($this->order, $cancelled);
-        $this->statuses->change($this->order, $cancelled);
+        $this->workflow->transition($this->order, OrderStatus::Cancelled);
+        $this->workflow->transition($this->order, OrderStatus::Cancelled);
         $this->assertSame(5, $this->product->fresh()->stock);
 
-        $this->statuses->change($this->order, $paid);
+        $this->workflow->transition($this->order, OrderStatus::Pending);
         $this->assertSame(2, $this->product->fresh()->stock);
     }
 
     public function test_reopening_fails_when_stock_is_gone(): void
     {
-        $cancelled = OrderStatus::factory()->create(['name' => 'cancelled']);
-        $paid = OrderStatus::factory()->create(['name' => 'paid']);
-
-        $this->statuses->change($this->order, $cancelled);
+        $this->workflow->transition($this->order, OrderStatus::Cancelled);
         $this->product->update(['stock' => 1]);
 
         try {
-            $this->statuses->change($this->order, $paid);
+            $this->workflow->transition($this->order, OrderStatus::Pending);
             $this->fail('Reopening without stock should be refused.');
-        } catch (CheckoutException) {
+        } catch (OrderException) {
             //
         }
 
         $this->assertSame(1, $this->product->fresh()->stock);
-        $this->assertSame($cancelled->id, $this->order->fresh()->order_status_id);
+        $this->assertSame(OrderStatus::Cancelled, $this->order->fresh()->status);
     }
 }
