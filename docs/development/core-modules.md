@@ -30,6 +30,7 @@ core/
 ├── Extension/               plugin manifest, discovery, lifecycle (ExtensionManager), boot loader, integrity, zip uploads
 ├── Theme/                   theme manifests, active theme and fallback, publishing, settings as CSS variables
 ├── Api/                     Store API and Admin API (Sanctum tokens, problem+json, idempotency, rate limits, OpenAPI)
+├── Installer/               pnshop:install, web installer (/install), pnshop:update, backups, system_versions
 └── Admin/                   the Filament panel (/admin)
 ```
 

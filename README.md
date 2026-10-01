@@ -37,6 +37,7 @@ This is **not** a full marketplace. Card payments come through the included Stri
 - JSON APIs ([docs/api](docs/api/README.md)), both with problem+json errors, cursor pagination and OpenAPI documents:
   - **Store API** (`/api/store/v1`) for headless storefronts and apps: catalog, pages, menus, cart, idempotent checkout, customer accounts.
   - **Admin API** (`/api/admin/v1`) for integrations: staff tokens limited to chosen permissions.
+- Installer (`php artisan pnshop:install` or the web installer at `/install`) and updater (`php artisan pnshop:update` with dry run, backup and plugin compatibility checks); tested on SQLite and MySQL 8
 - Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)
 - English and Bulgarian storefront with a language switcher, localized URLs (`/bg/...`) and translatable catalog content
 - Built-in payment gateways are manual (cash on delivery, bank transfer); card gateways come as extensions
@@ -44,7 +45,7 @@ This is **not** a full marketplace. Card payments come through the included Stri
 
 ## What is not implemented
 
-- Web installer and updater (Phase 12)
+- Tagged 1.0 release (Phase 13)
 
 ---
 
@@ -61,59 +62,25 @@ This is **not** a full marketplace. Card payments come through the included Stri
 ## Install
 
 ```bash
-git clone git@github.com:pnscripts/laravel-react-shop.git
-cd laravel-react-shop
+git clone git@github.com:pnscripts/laravel-react-shop.git shop
+cd shop
 composer install
 cp .env.example .env
 php artisan key:generate
+php artisan pnshop:install
 ```
 
-`.env.example` ships production-safe defaults. For local development set `APP_ENV=local` and `APP_DEBUG=true` in `.env`.
+The installer checks the server, sets up the database (SQLite by default, or `--db-connection=mysql …`), creates the tables, store settings and the **first administrator**. There are no default accounts. Without SSH, open the site in a browser to use the same installer at `/install`. See [docs/installation/installation.md](docs/installation/installation.md). Updates: `php artisan pnshop:update` ([docs/installation/updating.md](docs/installation/updating.md)).
 
-SQLite is the default. Create the database file if it does not exist:
-
-```bash
-touch database/database.sqlite
-```
-
-Then:
+For development:
 
 ```bash
-php artisan migrate --seed
-php artisan storage:link
+php artisan pnshop:install --demo        # with demo categories and products
 npm install
-npm run dev
+composer run dev                          # app server, Vite, queue worker and logs
 ```
 
-Image conversions run on the queue: `composer run dev` starts a worker, and production needs `php artisan queue:work`.
-
-In another terminal:
-
-```bash
-php artisan serve
-```
-
-Or run the bundled Composer script (app server + Vite + queue + logs):
-
-```bash
-composer run dev
-```
-
-Open `http://localhost:8000`.
-
-### Administrator account
-
-No accounts are seeded. Create an administrator after migrating, then sign in at `/admin`:
-
-```bash
-php artisan pnshop:create-admin you@example.com --name="Your Name"
-```
-
-The command asks for a password (or use `--generate-password` to print a random one once). Staff accounts are separate from customer accounts; see [docs/administration/staff-and-roles.md](docs/administration/staff-and-roles.md).
-
-Seeded payment methods: **Cash on Delivery**, **Bank Transfer**.  
-Seeded order statuses: **pending**, **paid**, **shipped**, **cancelled**.  
-Outside production, the seeders also create sample categories, attributes and products.
+`.env.example` ships production-safe defaults; for local development set `APP_ENV=local` and `APP_DEBUG=true`. More staff accounts: `php artisan pnshop:create-admin you@example.com`, or Admin → System → Admin users ([docs/administration/staff-and-roles.md](docs/administration/staff-and-roles.md)).
 
 ---
 

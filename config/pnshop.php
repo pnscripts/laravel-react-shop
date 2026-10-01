@@ -8,6 +8,7 @@ use PnShop\Catalog\CatalogServiceProvider;
 use PnShop\Cms\CmsServiceProvider;
 use PnShop\Customer\CustomerServiceProvider;
 use PnShop\Extension\ExtensionServiceProvider;
+use PnShop\Installer\InstallerServiceProvider;
 use PnShop\Inventory\InventoryServiceProvider;
 use PnShop\Localization\LocalizationServiceProvider;
 use PnShop\Media\MediaServiceProvider;
@@ -59,6 +60,7 @@ return [
         SeoServiceProvider::class,
         ApiServiceProvider::class,
         AdminServiceProvider::class,
+        InstallerServiceProvider::class,
     ],
 
     /*
@@ -150,6 +152,22 @@ return [
     'api' => [
         'store_rate_limit' => (int) env('PNSHOP_STORE_API_RATE_LIMIT', 120),
         'admin_rate_limit' => (int) env('PNSHOP_ADMIN_API_RATE_LIMIT', 300),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Installer
+    |--------------------------------------------------------------------------
+    |
+    | Until PN Shop is installed every page leads to the web installer
+    | (/install). `enforce` is off in the test suite. The lock file marks
+    | the installation; delete it only together with the database.
+    |
+    */
+
+    'installer' => [
+        'enforce' => (bool) env('PNSHOP_ENFORCE_INSTALL', true),
+        'lock' => env('PNSHOP_INSTALL_LOCK', storage_path('app/pnshop-installed.json')),
     ],
 
 ];

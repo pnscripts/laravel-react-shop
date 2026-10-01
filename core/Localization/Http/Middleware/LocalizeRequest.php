@@ -5,6 +5,7 @@ namespace PnShop\Localization\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use PnShop\Installer\Http\Middleware\InstallGate;
 use PnShop\Localization\Localization;
 use PnShop\Settings\Settings;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,11 @@ class LocalizeRequest
 
     public function handle(Request $request, Closure $next): Response
     {
+        // The installer runs before the database (and its settings) exist.
+        if ($request->attributes->get(InstallGate::ATTRIBUTE) === true) {
+            return $next($request);
+        }
+
         $timezone = app(Settings::class)->get('localization.timezone');
         config(['app.timezone' => $timezone]);
         date_default_timezone_set($timezone);

@@ -12,6 +12,11 @@ abstract class TestCase extends BaseTestCase
         parent::setUp();
 
         $this->withoutVite();
+
+        // Never read or write the checkout's own install lock.
+        $lock = sys_get_temp_dir().'/pnshop-test-installed-'.getmypid().'.json';
+        @unlink($lock);
+        config(['pnshop.installer.lock' => $lock]);
     }
 
     /**
