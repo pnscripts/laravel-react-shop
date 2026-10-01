@@ -1,8 +1,6 @@
 <?php
 
-namespace App\Traits;
-
-use Illuminate\Database\Eloquent\Builder;
+namespace PnShop\Foundation\Concerns;
 
 trait HasSortOrder
 {
@@ -33,25 +31,5 @@ trait HasSortOrder
     protected static function getNextSortOrder(): int
     {
         return static::max('sort_order') + 1;  // Increment the highest value by 1
-    }
-
-    /**
-     * Scope: Order categories by sort order, with optional direction and secondary order.
-     *
-     * @param  Builder  $query
-     * @param  string  $direction  'asc' or 'desc'
-     * @param  string|null  $secondary  'created_at' or any other column
-     * @param  string  $secondaryDirection  'asc' or 'desc'
-     * @return Builder
-     */
-    public function scopeSortByOrder($query, string $direction = 'asc', ?string $secondary = null, string $secondaryDirection = 'asc')
-    {
-        $query->orderBy('sort_order', $direction);
-
-        if ($secondary) {
-            $query->orderBy($secondary, $secondaryDirection);
-        }
-
-        return $query;
     }
 }

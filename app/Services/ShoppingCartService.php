@@ -4,10 +4,10 @@ namespace App\Services;
 
 use App\DTOs\CartItemDTO;
 use App\Exceptions\CartException;
-use App\Models\Product;
 use Brick\Money\Money;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use PnShop\Catalog\Models\Product;
 use PnShop\Localization\Localization;
 use PnShop\Money\MoneyPresenter;
 

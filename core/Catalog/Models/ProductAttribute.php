@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Catalog\Factories\ProductAttributeFactory;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
 
 class ProductAttribute extends Model implements TranslatableModel
 {
+    /** @use HasFactory<ProductAttributeFactory> */
     use HasFactory, SoftDeletes, Translatable;
 
     /**
@@ -29,6 +31,8 @@ class ProductAttribute extends Model implements TranslatableModel
     /**
      * The attributes that should be translated.
      */
+
+    /** @var list<string> */
     protected array $translatable = ['label'];
 
     /**
@@ -53,10 +57,15 @@ class ProductAttribute extends Model implements TranslatableModel
     /**
      * Get the categories that have this attribute.
      *
-     * @return BelongsToMany<ProductCategory, $this>
+     * @return BelongsToMany<Category, $this>
      */
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(ProductCategory::class);
+        return $this->belongsToMany(Category::class, 'product_attribute_product_category', 'product_attribute_id', 'product_category_id');
+    }
+
+    protected static function newFactory(): ProductAttributeFactory
+    {
+        return ProductAttributeFactory::new();
     }
 }

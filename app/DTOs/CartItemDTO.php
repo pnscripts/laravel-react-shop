@@ -2,8 +2,8 @@
 
 namespace App\DTOs;
 
-use App\Models\Product;
 use Brick\Money\Money;
+use PnShop\Catalog\Models\Product;
 
 /**
  * A cart line built from the current product row. Prices are never taken from the session.

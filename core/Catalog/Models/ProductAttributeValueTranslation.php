@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

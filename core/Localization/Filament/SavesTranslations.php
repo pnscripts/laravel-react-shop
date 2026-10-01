@@ -50,7 +50,7 @@ trait SavesTranslations
                 (array) ($translations[$locale] ?? []),
             );
 
-            if (array_filter($values) === [] && ! $record->translations()->where('locale', $locale)->exists()) {
+            if (array_filter($values) === [] && ! $record->hasTranslation($locale)) {
                 continue;
             }
 

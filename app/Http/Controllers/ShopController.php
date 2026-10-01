@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\Product;
 use PnShop\Money\MoneyPresenter;
 
 class ShopController extends Controller
@@ -39,8 +39,8 @@ class ShopController extends Controller
                 ] : null,
             ]);
 
-        $categories = ProductCategory::query()
-            ->whereActive()
+        $categories = Category::query()
+            ->active()
             ->orderBy('sort_order')
             ->orderBy('title')
             ->get(['id', 'title', 'slug']);

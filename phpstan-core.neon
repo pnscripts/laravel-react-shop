@@ -6,7 +6,3 @@ parameters:
     paths:
         - core/
     level: 7
-    ignoreErrors:
-        # Core traits used only by legacy app/ models (analysed by phpstan.neon) until those models move into core.
-        - identifier: trait.unused
-          path: core/Localization/Concerns/Translatable.php

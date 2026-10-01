@@ -1,11 +1,11 @@
 <?php
 
-namespace Database\Factories;
+namespace PnShop\Catalog\Factories;
 
-use App\Models\ProductAttribute;
-use App\Models\ProductAttributeValue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
+use PnShop\Catalog\Models\ProductAttribute;
+use PnShop\Catalog\Models\ProductAttributeValue;
 
 /**
  * @extends Factory<ProductAttributeValue>

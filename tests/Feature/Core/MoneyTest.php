@@ -3,11 +3,11 @@
 namespace Tests\Feature\Core;
 
 use App\Models\OrderItem;
-use App\Models\Product;
 use Brick\Money\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use PnShop\Catalog\Models\Product;
 use PnShop\Money\MoneyPresenter;
 use Tests\TestCase;
 

@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Exceptions\CartException;
 use App\Http\Requests\Cart\AddToCartRequest;
 use App\Http\Requests\Cart\UpdateCartRequest;
-use App\Models\Product;
 use App\Services\ShoppingCartService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Catalog\Models\Product;
 
 class CartController extends Controller
 {

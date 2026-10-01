@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Traits;
 
-use App\Traits\HasSlug;
 use Mockery;
+use PnShop\Foundation\Concerns\HasSlug;
 use Tests\TestCase;
 
 class HasSlugTest extends TestCase

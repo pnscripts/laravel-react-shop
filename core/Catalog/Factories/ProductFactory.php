@@ -1,11 +1,11 @@
 <?php
 
-namespace Database\Factories;
+namespace PnShop\Catalog\Factories;
 
-use App\Models\Product;
-use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
+use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\Product;
 
 /**
  * @extends Factory<Product>
@@ -29,7 +29,7 @@ class ProductFactory extends Factory
         $price = $this->faker->randomFloat(2, 10, 5000);
 
         return [
-            'product_category_id' => ProductCategory::query()->inRandomOrder()->value('id') ?? ProductCategory::factory(),
+            'product_category_id' => Category::query()->inRandomOrder()->value('id') ?? Category::factory(),
             'title' => $this->faker->words(3, true),
             'slug' => $this->faker->slug(),
             'description' => $this->faker->paragraph(),

@@ -2,8 +2,8 @@
 
 namespace PnShop\Catalog\Policies;
 
-use App\Models\Product;
 use PnShop\Acl\Models\AdminUser;
+use PnShop\Catalog\Models\Product;
 
 class ProductPolicy
 {

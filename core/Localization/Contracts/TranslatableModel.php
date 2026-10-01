@@ -3,7 +3,6 @@
 namespace PnShop\Localization\Contracts;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use PnShop\Localization\Concerns\Translatable;
 
 /**
@@ -23,8 +22,5 @@ interface TranslatableModel
      */
     public function setTranslations(string $locale, array $values): void;
 
-    /**
-     * @return HasMany<Model, Model>
-     */
-    public function translations(): HasMany;
+    public function hasTranslation(string $locale): bool;
 }

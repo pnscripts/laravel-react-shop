@@ -3,9 +3,9 @@
 namespace PnShop\Sales\Filament\Widgets;
 
 use App\Models\Order;
-use App\Models\Product;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use PnShop\Catalog\Models\Product;
 
 class StoreStatsOverview extends StatsOverviewWidget
 {

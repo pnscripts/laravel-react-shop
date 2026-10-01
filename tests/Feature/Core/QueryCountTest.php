@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Core;
 
-use App\Models\Product;
-use App\Models\ProductCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\Product;
 use Tests\TestCase;
 
 /**
@@ -45,7 +45,7 @@ class QueryCountTest extends TestCase
 
     public function test_translated_pages_show_translated_text(): void
     {
-        $category = ProductCategory::factory()->create(['title' => 'Lamps']);
+        $category = Category::factory()->create(['title' => 'Lamps']);
         $category->setTranslations('bg', ['title' => 'Лампи']);
         $product = Product::factory()->active()->create(['title' => 'Desk Lamp', 'product_category_id' => $category->id]);
         $product->setTranslations('bg', ['title' => 'Настолна лампа', 'description' => 'Описание']);
@@ -76,7 +76,7 @@ class QueryCountTest extends TestCase
     private function seedCatalog(int $count): void
     {
         foreach (range(1, $count) as $i) {
-            $category = ProductCategory::factory()->create();
+            $category = Category::factory()->create();
             $category->setTranslations('bg', ['title' => "Категория {$category->id}"]);
             $product = Product::factory()->active()->create(['product_category_id' => $category->id]);
             $product->setTranslations('bg', ['title' => "Продукт {$product->id}"]);

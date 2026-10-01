@@ -44,7 +44,15 @@ trait Translatable
         /** @var class-string<Model> $model */
         $model = static::class.'Translation';
 
-        return $this->hasMany($model, $this->getForeignKey());
+        return $this->hasMany($model, $this->translationForeignKey());
+    }
+
+    /**
+     * Column on the translation table that points to this model.
+     */
+    protected function translationForeignKey(): string
+    {
+        return $this->getForeignKey();
     }
 
     /**
@@ -57,7 +65,7 @@ trait Translatable
 
     public function getAttribute($key)
     {
-        if (is_string($key) && in_array($key, $this->translatableAttributes(), true)) {
+        if (in_array($key, $this->translatableAttributes(), true)) {
             $translated = $this->translation($key);
 
             if ($translated !== null) {
@@ -119,6 +127,11 @@ trait Translatable
         }
 
         return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    public function hasTranslation(string $locale): bool
+    {
+        return $this->translations()->where('locale', $locale)->exists();
     }
 
     /**
@@ -198,7 +211,7 @@ trait Translatable
 
     private function slugTaken(string $locale, string $slug): bool
     {
-        $foreignKey = $this->getForeignKey();
+        $foreignKey = $this->translationForeignKey();
 
         return $this->translations()->getRelated()->newQuery()
             ->where('locale', $locale)

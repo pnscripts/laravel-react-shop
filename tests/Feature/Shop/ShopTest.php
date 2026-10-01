@@ -6,11 +6,11 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
-use App\Models\Product;
-use App\Models\ProductAttribute;
-use App\Models\ProductCategory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Models\ProductAttribute;
 use Tests\TestCase;
 
 class ShopTest extends TestCase
@@ -62,7 +62,7 @@ class ShopTest extends TestCase
 
     public function test_product_page_shows_selected_attribute_values(): void
     {
-        $category = ProductCategory::factory()->create();
+        $category = Category::factory()->create();
         $attribute = ProductAttribute::factory()->create(['key' => 'color', 'label' => 'Color']);
         $category->productAttributes()->attach($attribute);
         $blue = $attribute->values()->create(['value' => 'Blue']);

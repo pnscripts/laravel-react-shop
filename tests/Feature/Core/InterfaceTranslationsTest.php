@@ -4,9 +4,9 @@ namespace Tests\Feature\Core;
 
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
-use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PnShop\Catalog\Models\Product;
 use Tests\TestCase;
 
 class InterfaceTranslationsTest extends TestCase

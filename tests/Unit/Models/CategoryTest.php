@@ -2,13 +2,13 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\ProductCategory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Catalog\Models\Category;
 use Tests\TestCase;
 
-class ProductCategoryTest extends TestCase
+class CategoryTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -22,8 +22,8 @@ class ProductCategoryTest extends TestCase
     public function test_it_has_a_parent_category()
     {
         // Arrange
-        $parent = ProductCategory::create(['title' => 'Parent Category']);
-        $child = ProductCategory::create(['title' => 'Child Category', 'parent_id' => $parent->id]);
+        $parent = Category::create(['title' => 'Parent Category']);
+        $child = Category::create(['title' => 'Child Category', 'parent_id' => $parent->id]);
 
         // Act
         $parentRelation = $child->parent();
@@ -43,9 +43,9 @@ class ProductCategoryTest extends TestCase
     public function test_it_has_children_categories()
     {
         // Arrange
-        $parent = ProductCategory::create(['title' => 'Parent Category']);
-        $child1 = ProductCategory::create(['title' => 'Child Category 1', 'parent_id' => $parent->id]);
-        $child2 = ProductCategory::create(['title' => 'Child Category 2', 'parent_id' => $parent->id]);
+        $parent = Category::create(['title' => 'Parent Category']);
+        $child1 = Category::create(['title' => 'Child Category 1', 'parent_id' => $parent->id]);
+        $child2 = Category::create(['title' => 'Child Category 2', 'parent_id' => $parent->id]);
 
         // Act
         $children = $parent->children();
@@ -65,7 +65,7 @@ class ProductCategoryTest extends TestCase
     public function test_it_can_get_translated_attributes()
     {
         // Arrange
-        $category = ProductCategory::create(['title' => 'Uncategorized']);
+        $category = Category::create(['title' => 'Uncategorized']);
         $category->setTranslations('bg', ['title' => 'Некатегоризирани']);
 
         // Act

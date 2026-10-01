@@ -2,10 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProductAttribute;
-use App\Models\ProductAttributeValue;
-use App\Models\ProductCategory;
 use Illuminate\Database\Seeder;
+use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\ProductAttribute;
+use PnShop\Catalog\Models\ProductAttributeValue;
 
 class ProductAttributeSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class ProductAttributeSeeder extends Seeder
     public function run(): void
     {
         // Check if any product categories exist
-        $categories = ProductCategory::all();
+        $categories = Category::all();
 
         if ($categories->isEmpty()) {
             // If no categories exist, print a message and return

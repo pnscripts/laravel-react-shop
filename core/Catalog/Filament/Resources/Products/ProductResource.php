@@ -2,7 +2,6 @@
 
 namespace PnShop\Catalog\Filament\Resources\Products;
 
-use App\Models\Product;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +15,7 @@ use PnShop\Catalog\Filament\Resources\Products\Pages\EditProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\ListProducts;
 use PnShop\Catalog\Filament\Resources\Products\Schemas\ProductForm;
 use PnShop\Catalog\Filament\Resources\Products\Tables\ProductsTable;
+use PnShop\Catalog\Models\Product;
 use UnitEnum;
 
 class ProductResource extends Resource

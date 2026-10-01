@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use Inertia\Inertia;
 use Inertia\Response;
+use PnShop\Catalog\Models\Product;
 use PnShop\Money\MoneyPresenter;
 
 class HomeController extends Controller

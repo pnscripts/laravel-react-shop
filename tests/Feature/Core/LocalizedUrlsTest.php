@@ -2,10 +2,10 @@
 
 namespace Tests\Feature\Core;
 
-use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Inertia\Testing\AssertableInertia as Assert;
+use PnShop\Catalog\Models\Product;
 use PnShop\Localization\Http\Middleware\LocalizeRequest;
 use PnShop\Localization\Localization;
 use PnShop\Localization\Models\Language;

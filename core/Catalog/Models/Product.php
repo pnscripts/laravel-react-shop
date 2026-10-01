@@ -1,14 +1,16 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Catalog\Models;
 
-use App\Traits\HasSlug;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use PnShop\Catalog\Factories\ProductFactory;
+use PnShop\Foundation\Concerns\HasSlug;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
 use PnShop\Money\MoneyCast;
@@ -17,6 +19,7 @@ use Spatie\Activitylog\Support\LogOptions;
 
 class Product extends Model implements TranslatableModel
 {
+    /** @use HasFactory<ProductFactory> */
     use HasFactory, HasSlug, LogsActivity, SoftDeletes, Translatable;
 
     /**
@@ -41,6 +44,8 @@ class Product extends Model implements TranslatableModel
     /**
      * The attributes that support translations.
      */
+
+    /** @var list<string> */
     protected array $translatable = [
         'title',
         'slug',
@@ -57,19 +62,22 @@ class Product extends Model implements TranslatableModel
     /**
      * Scope: only products that are publicly visible.
      */
-    public function scopeActive($query)
+    /**
+     * @param  Builder<self>  $query
+     */
+    public function scopeActive(Builder $query): void
     {
-        return $query->where('is_active', true);
+        $query->where('is_active', true);
     }
 
     /**
      * Get the category this product belongs to.
      *
-     * @return BelongsTo<ProductCategory, $this>
+     * @return BelongsTo<Category, $this>
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(ProductCategory::class, 'product_category_id');
+        return $this->belongsTo(Category::class, 'product_category_id');
     }
 
     /**
@@ -87,6 +95,8 @@ class Product extends Model implements TranslatableModel
      * Get the attributes with their values for this product.
      * This method retrieves the attributes defined in the product's category and their corresponding values.
      * It also checks which values have been selected for this product.
+     *
+     * @return Collection<int, array{attribute: string, value: string|null}>
      */
     public function getProductAttributesWithValues(): Collection
     {
@@ -114,5 +124,10 @@ class Product extends Model implements TranslatableModel
             ->logOnly(['title', 'price', 'discount_price', 'stock', 'is_active', 'sku', 'product_category_id'])
             ->logOnlyDirty()
             ->dontLogEmptyChanges();
+    }
+
+    protected static function newFactory(): ProductFactory
+    {
+        return ProductFactory::new();
     }
 }

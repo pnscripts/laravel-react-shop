@@ -1,9 +1,7 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Catalog\Models;
 
-use App\Traits\HasSlug;
-use App\Traits\HasSortOrder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,11 +9,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Catalog\Factories\CategoryFactory;
+use PnShop\Foundation\Concerns\HasSlug;
+use PnShop\Foundation\Concerns\HasSortOrder;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
 
-class ProductCategory extends Model implements TranslatableModel
+class Category extends Model implements TranslatableModel
 {
+    /** @use HasFactory<CategoryFactory> */
     use HasFactory, HasSlug, HasSortOrder, SoftDeletes, Translatable;
 
     /**
@@ -26,12 +28,20 @@ class ProductCategory extends Model implements TranslatableModel
     /**
      * The attributes that support translations.
      */
+    protected $table = 'product_categories';
+
+    protected function translationForeignKey(): string
+    {
+        return 'product_category_id';
+    }
+
+    /** @var list<string> */
     protected array $translatable = ['title', 'slug'];
 
     /**
      * Relationship: Get all child categories (subcategories) of this category.
      *
-     * @return HasMany<ProductCategory, $this>
+     * @return HasMany<Category, $this>
      */
     public function children(): HasMany
     {
@@ -41,7 +51,7 @@ class ProductCategory extends Model implements TranslatableModel
     /**
      * Relationship: Get the parent category.
      *
-     * @return BelongsTo<ProductCategory, $this>
+     * @return BelongsTo<Category, $this>
      */
     public function parent(): BelongsTo
     {
@@ -49,37 +59,11 @@ class ProductCategory extends Model implements TranslatableModel
     }
 
     /**
-     * Scope: Filter categories by active status.
-     *
-     * @param  Builder  $query
+     * @param  Builder<self>  $query
      */
-    public function scopeWhereActive($query, bool $active = true): Builder
+    public function scopeActive(Builder $query): void
     {
-        return $query->where('is_active', $active);
-    }
-
-    /**
-     * Scope: Filter categories by a specific parent category.
-     */
-    public function scopeByParent($query, $parentId): Builder
-    {
-        return $query->where('parent_id', $parentId);
-    }
-
-    /**
-     * Scope: Filter categories by a specific slug.
-     */
-    public function scopeBySlug($query, $slug): Builder
-    {
-        return $query->where('slug', $slug);
-    }
-
-    /**
-     * Scope: Filter categories by a specific title.
-     */
-    public function scopeByTitle($query, $title): Builder
-    {
-        return $query->where('title', 'like', "%$title%");
+        $query->where('is_active', true);
     }
 
     /**
@@ -89,7 +73,7 @@ class ProductCategory extends Model implements TranslatableModel
      */
     public function productAttributes(): BelongsToMany
     {
-        return $this->belongsToMany(ProductAttribute::class)
+        return $this->belongsToMany(ProductAttribute::class, 'product_attribute_product_category', 'product_category_id', 'product_attribute_id')
             ->withTimestamps();
     }
 
@@ -100,6 +84,11 @@ class ProductCategory extends Model implements TranslatableModel
      */
     public function products(): HasMany
     {
-        return $this->hasMany(Product::class);
+        return $this->hasMany(Product::class, 'product_category_id');
+    }
+
+    protected static function newFactory(): CategoryFactory
+    {
+        return CategoryFactory::new();
     }
 }

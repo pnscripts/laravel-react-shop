@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Traits;
 
-use App\Traits\HasSortOrder;
 use Mockery;
+use PnShop\Foundation\Concerns\HasSortOrder;
 use Tests\TestCase;
 
 class HasSortOrderTest extends TestCase
@@ -106,62 +106,5 @@ class HasSortOrderTest extends TestCase
 
         // Assert: The next sort order should be 4 (3 + 1)
         $this->assertEquals(4, $nextSortOrder);
-    }
-
-    /**
-     * Test that scopeSortByOrder correctly orders by sort_order.
-     */
-    public function test_it_can_sort_by_sort_order()
-    {
-        // Simulate the query builder (without database interaction)
-        $mockQuery = Mockery::mock('Illuminate\Database\Eloquent\Builder');
-
-        // Create the mock class
-        $mockClass = Mockery::mock(get_class($this->dummyClass).'[scopeSortByOrder]')
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods();
-
-        // Expect the orderBy method to be called on the query builder
-        $mockQuery->shouldReceive('orderBy')
-            ->with('sort_order', 'asc')
-            ->once()
-            ->andReturnSelf();
-
-        // Act: Call the scopeSortByOrder method with 'asc' direction
-        $mockClass->scopeSortByOrder($mockQuery, 'asc');
-
-        // Assert: Ensure that orderBy was called with the correct parameters
-        $mockQuery->shouldHaveReceived('orderBy');
-    }
-
-    /**
-     * Test that scopeSortByOrder correctly handles secondary ordering.
-     */
-    public function test_it_can_sort_by_sort_order_with_secondary_order()
-    {
-        // Simulate the query builder (without database interaction)
-        $mockQuery = Mockery::mock('Illuminate\Database\Eloquent\Builder');
-
-        // Create the mock class
-        $mockClass = Mockery::mock(get_class($this->dummyClass).'[scopeSortByOrder]')
-            ->makePartial()
-            ->shouldAllowMockingProtectedMethods();
-
-        // Expect the orderBy method to be called for sort_order and secondary sorting by created_at
-        $mockQuery->shouldReceive('orderBy')
-            ->with('sort_order', 'asc')
-            ->once()
-            ->andReturnSelf();
-
-        $mockQuery->shouldReceive('orderBy')
-            ->with('created_at', 'desc')
-            ->once()
-            ->andReturnSelf();
-
-        // Act: Call the scopeSortByOrder method with 'asc' direction and secondary ordering by 'created_at'
-        $mockClass->scopeSortByOrder($mockQuery, 'asc', 'created_at', 'desc');
-
-        // Assert: Ensure that orderBy was called twice with the correct parameters
-        $mockQuery->shouldHaveReceived('orderBy')->twice();
     }
 }

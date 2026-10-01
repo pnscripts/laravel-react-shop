@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProductCategory;
 use Illuminate\Database\Seeder;
+use PnShop\Catalog\Models\Category;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
@@ -15,7 +15,7 @@ class ProductCategorySeeder extends Seeder
     public function run(): void
     {
         // Create the 'Uncategorized' category without translation
-        $uncategorized = ProductCategory::create([
+        $uncategorized = Category::create([
             'title' => 'Uncategorized',
         ]);
 
@@ -23,16 +23,16 @@ class ProductCategorySeeder extends Seeder
         $uncategorized->setTranslations('bg', ['title' => 'Некатегоризирани']);
 
         // Create parent categories without translations
-        $parentCategories = ProductCategory::factory(5)->create();
+        $parentCategories = Category::factory(5)->create();
 
         // Create child categories for each parent category without translations
         $parentCategories->each(function ($parentCategory) {
-            ProductCategory::factory(3)->create([
+            Category::factory(3)->create([
                 'parent_id' => $parentCategory->id,
             ]);
         });
 
         // Create random child categories without translations
-        ProductCategory::factory(5)->withParent()->create();
+        Category::factory(5)->withParent(Category::query()->inRandomOrder()->first())->create();
     }
 }

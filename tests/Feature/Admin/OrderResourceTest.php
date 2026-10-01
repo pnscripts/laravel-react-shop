@@ -5,8 +5,8 @@ namespace Tests\Feature\Admin;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
-use App\Models\Product;
 use Livewire\Livewire;
+use PnShop\Catalog\Models\Product;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ListOrders;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ViewOrder;
 

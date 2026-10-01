@@ -2,12 +2,12 @@
 
 namespace PnShop\Catalog\Filament\Widgets;
 
-use App\Models\Product;
 use Filament\Actions\Action;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
 use PnShop\Catalog\Filament\Resources\Products\ProductResource;
+use PnShop\Catalog\Models\Product;
 
 class LowStockProducts extends TableWidget
 {

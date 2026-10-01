@@ -2,12 +2,12 @@
 
 namespace Tests\Feature\Admin;
 
-use App\Models\Product;
-use App\Models\ProductCategory;
 use Livewire\Livewire;
 use PnShop\Catalog\Filament\Resources\Products\Pages\CreateProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\EditProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\ListProducts;
+use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\Product;
 
 class ProductResourceTest extends AdminTestCase
 {
@@ -22,7 +22,7 @@ class ProductResourceTest extends AdminTestCase
     public function test_a_product_can_be_created(): void
     {
         $this->actingAsAdministrator();
-        $category = ProductCategory::factory()->create();
+        $category = Category::factory()->create();
 
         Livewire::test(CreateProduct::class)
             ->fillForm([

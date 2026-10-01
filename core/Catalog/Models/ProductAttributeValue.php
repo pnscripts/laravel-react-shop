@@ -1,17 +1,19 @@
 <?php
 
-namespace App\Models;
+namespace PnShop\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Catalog\Factories\ProductAttributeValueFactory;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
 
 class ProductAttributeValue extends Model implements TranslatableModel
 {
+    /** @use HasFactory<ProductAttributeValueFactory> */
     use HasFactory, SoftDeletes, Translatable;
 
     /**
@@ -27,6 +29,8 @@ class ProductAttributeValue extends Model implements TranslatableModel
     /**
      * The attributes that support translations.
      */
+
+    /** @var list<string> */
     protected array $translatable = [
         'value',
     ];
@@ -53,5 +57,10 @@ class ProductAttributeValue extends Model implements TranslatableModel
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(Product::class)->withTimestamps();
+    }
+
+    protected static function newFactory(): ProductAttributeValueFactory
+    {
+        return ProductAttributeValueFactory::new();
     }
 }

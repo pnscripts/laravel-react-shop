@@ -5,8 +5,8 @@ namespace App\Services;
 use App\Exceptions\CheckoutException;
 use App\Models\Order;
 use App\Models\OrderStatus;
-use App\Models\Product;
 use Illuminate\Support\Facades\DB;
+use PnShop\Catalog\Models\Product;
 
 class OrderStatusService
 {

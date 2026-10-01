@@ -6,9 +6,9 @@ use App\Exceptions\CheckoutException;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
-use App\Models\Product;
 use App\Services\OrderStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Catalog\Models\Product;
 use Tests\TestCase;
 
 class OrderCancellationTest extends TestCase

@@ -6,9 +6,9 @@ use App\Exceptions\CheckoutException;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderStatus;
-use App\Models\Product;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use PnShop\Catalog\Models\Product;
 use PnShop\Localization\Localization;
 
 class CheckoutService
