@@ -9,7 +9,6 @@ use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\ProductAttribute;
 use App\Models\ProductCategory;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -158,40 +157,10 @@ class ShopTest extends TestCase
             );
     }
 
-    public function test_admin_cannot_set_a_discount_above_the_price(): void
-    {
-        $product = Product::factory()->active()->create();
-
-        $this->actingAs(User::factory()->admin()->create())
-            ->put(route('admin.products.update', $product), [
-                'product_category_id' => $product->product_category_id,
-                'title' => $product->title,
-                'price' => 100,
-                'discount_price' => 120,
-                'stock' => 5,
-            ])
-            ->assertSessionHasErrors('discount_price');
-    }
-
     public function test_factory_discounts_are_below_the_price(): void
     {
         Product::factory()->count(50)->create();
 
         $this->assertSame(0, Product::query()->whereColumn('discount_price', '>=', 'price')->count());
-    }
-
-    public function test_guest_cannot_access_admin(): void
-    {
-        $this->get(route('admin.products.index'))->assertRedirect(route('login'));
-        $this->get(route('admin.orders.index'))->assertRedirect(route('login'));
-    }
-
-    public function test_non_admin_cannot_access_admin(): void
-    {
-        $user = User::factory()->create(['is_admin' => false]);
-
-        $this->actingAs($user)
-            ->get(route('admin.products.index'))
-            ->assertForbidden();
     }
 }

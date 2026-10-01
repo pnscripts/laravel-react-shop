@@ -5,6 +5,9 @@ namespace Tests\Feature\Core;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use Livewire\Livewire;
+use PnShop\Acl\Models\AdminUser;
+use PnShop\Settings\Filament\Pages\ManageSettings;
 use PnShop\Settings\SettingDefinition;
 use PnShop\Settings\Settings;
 use PnShop\Settings\SettingsRegistry;
@@ -69,5 +72,22 @@ class SettingsTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         app(SettingsRegistry::class)->register(new SettingsSchema('store', 'Again'));
+    }
+
+    public function test_the_settings_page_saves_every_namespace(): void
+    {
+        $this->actingAs(AdminUser::factory()->administrator()->create(), 'admin');
+
+        Livewire::test(ManageSettings::class)
+            ->fillForm([
+                'store' => ['name' => 'Corner Shop', 'email' => 'hello@example.com'],
+                'plugin__acme__demo' => ['enabled' => true, 'limit' => 3, 'mode' => 'a'],
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('Corner Shop', app(Settings::class)->get('store.name'));
+        $this->assertSame(3, app(Settings::class)->get('plugin.acme.demo.limit'));
+        $this->assertDatabaseHas('activity_log', ['log_name' => 'settings']);
     }
 }

@@ -2,11 +2,12 @@
 
 namespace Tests\Feature\Orders;
 
+use App\Exceptions\CheckoutException;
 use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
 use App\Models\Product;
-use App\Models\User;
+use App\Services\OrderStatusService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -17,6 +18,8 @@ class OrderCancellationTest extends TestCase
     private Product $product;
 
     private Order $order;
+
+    private OrderStatusService $statuses;
 
     protected function setUp(): void
     {
@@ -36,15 +39,14 @@ class OrderCancellationTest extends TestCase
         ]);
 
         $this->order = Order::query()->sole();
+        $this->statuses = app(OrderStatusService::class);
     }
 
     public function test_cancelling_an_order_returns_its_stock(): void
     {
         $cancelled = OrderStatus::factory()->create(['name' => 'cancelled']);
 
-        $this->actingAs(User::factory()->admin()->create())
-            ->patch(route('admin.orders.update', $this->order), ['order_status_id' => $cancelled->id])
-            ->assertSessionHas('success');
+        $this->statuses->change($this->order, $cancelled);
 
         $this->assertSame(5, $this->product->fresh()->stock);
         $this->assertSame($cancelled->id, $this->order->fresh()->order_status_id);
@@ -54,13 +56,12 @@ class OrderCancellationTest extends TestCase
     {
         $cancelled = OrderStatus::factory()->create(['name' => 'cancelled']);
         $paid = OrderStatus::factory()->create(['name' => 'paid']);
-        $admin = User::factory()->admin()->create();
 
-        $this->actingAs($admin)->patch(route('admin.orders.update', $this->order), ['order_status_id' => $cancelled->id]);
-        $this->actingAs($admin)->patch(route('admin.orders.update', $this->order), ['order_status_id' => $cancelled->id]);
+        $this->statuses->change($this->order, $cancelled);
+        $this->statuses->change($this->order, $cancelled);
         $this->assertSame(5, $this->product->fresh()->stock);
 
-        $this->actingAs($admin)->patch(route('admin.orders.update', $this->order), ['order_status_id' => $paid->id]);
+        $this->statuses->change($this->order, $paid);
         $this->assertSame(2, $this->product->fresh()->stock);
     }
 
@@ -68,14 +69,16 @@ class OrderCancellationTest extends TestCase
     {
         $cancelled = OrderStatus::factory()->create(['name' => 'cancelled']);
         $paid = OrderStatus::factory()->create(['name' => 'paid']);
-        $admin = User::factory()->admin()->create();
 
-        $this->actingAs($admin)->patch(route('admin.orders.update', $this->order), ['order_status_id' => $cancelled->id]);
+        $this->statuses->change($this->order, $cancelled);
         $this->product->update(['stock' => 1]);
 
-        $this->actingAs($admin)
-            ->patch(route('admin.orders.update', $this->order), ['order_status_id' => $paid->id])
-            ->assertSessionHas('error');
+        try {
+            $this->statuses->change($this->order, $paid);
+            $this->fail('Reopening without stock should be refused.');
+        } catch (CheckoutException) {
+            //
+        }
 
         $this->assertSame(1, $this->product->fresh()->stock);
         $this->assertSame($cancelled->id, $this->order->fresh()->order_status_id);

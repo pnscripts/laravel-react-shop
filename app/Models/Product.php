@@ -10,10 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
 class Product extends Model
 {
-    use HasFactory, HasSlug, HasTranslations, SoftDeletes;
+    use HasFactory, HasSlug, HasTranslations, LogsActivity, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -101,5 +103,14 @@ class Product extends Model
                 'value' => $selectedValue?->value,
             ];
         });
+    }
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->useLogName('catalog')
+            ->logOnly(['title', 'price', 'discount_price', 'stock', 'is_active', 'sku', 'product_category_id'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 }

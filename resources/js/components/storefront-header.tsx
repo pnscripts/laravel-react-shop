@@ -40,11 +40,6 @@ export function StorefrontHeader() {
                                             <LayoutDashboard className="h-4 w-4" />
                                             Dashboard
                                         </Link>
-                                        {auth.user.is_admin && (
-                                            <Link href={route('admin.products.index')} className="flex items-center gap-2">
-                                                Admin
-                                            </Link>
-                                        )}
                                     </>
                                 ) : (
                                     <>

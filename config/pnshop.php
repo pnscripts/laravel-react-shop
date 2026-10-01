@@ -21,7 +21,12 @@ return [
     */
 
     'modules' => [
-        PnShop\Settings\SettingsServiceProvider::class,
+        SettingsServiceProvider::class,
+        AclServiceProvider::class,
+        SystemServiceProvider::class,
+        CatalogServiceProvider::class,
+        SalesServiceProvider::class,
+        AdminServiceProvider::class,
     ],
 
 ];

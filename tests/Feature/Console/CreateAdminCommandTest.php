@@ -6,6 +6,7 @@ use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use PnShop\Acl\Models\AdminUser;
 use Tests\TestCase;
 
 class CreateAdminCommandTest extends TestCase
@@ -18,20 +19,23 @@ class CreateAdminCommandTest extends TestCase
             ->expectsQuestion('Password', 'a-strong-password')
             ->assertSuccessful();
 
-        $user = User::query()->where('email', 'owner@example.com')->sole();
-        $this->assertTrue($user->isAdmin());
-        $this->assertTrue(Hash::check('a-strong-password', $user->password));
+        $admin = AdminUser::query()->where('email', 'owner@example.com')->sole();
+        $this->assertTrue($admin->isAdministrator());
+        $this->assertTrue(Hash::check('a-strong-password', $admin->password));
+        $this->assertSame(0, User::query()->count(), 'Staff accounts are not customer accounts.');
     }
 
-    public function test_it_promotes_an_existing_user(): void
+    public function test_it_resets_and_promotes_an_existing_staff_account(): void
     {
-        $user = User::factory()->create(['email' => 'staff@example.com']);
+        $admin = AdminUser::factory()->inactive()->create(['email' => 'staff@example.com']);
 
         $this->artisan('pnshop:create-admin', ['email' => 'staff@example.com', '--generate-password' => true])
             ->assertSuccessful();
 
-        $this->assertTrue($user->fresh()->isAdmin());
-        $this->assertSame(1, User::query()->count());
+        $admin->refresh();
+        $this->assertTrue($admin->isAdministrator());
+        $this->assertTrue($admin->is_active);
+        $this->assertSame(1, AdminUser::query()->count());
     }
 
     public function test_it_rejects_a_short_password(): void
@@ -40,7 +44,7 @@ class CreateAdminCommandTest extends TestCase
             ->expectsQuestion('Password', 'short')
             ->assertFailed();
 
-        $this->assertSame(0, User::query()->count());
+        $this->assertSame(0, AdminUser::query()->count());
     }
 
     public function test_seeding_creates_no_accounts(): void
@@ -48,5 +52,6 @@ class CreateAdminCommandTest extends TestCase
         $this->seed(DatabaseSeeder::class);
 
         $this->assertSame(0, User::query()->count());
+        $this->assertSame(0, AdminUser::query()->count());
     }
 }

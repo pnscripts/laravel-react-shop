@@ -2,9 +2,9 @@ import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
-import { type NavItem, type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Package, ShoppingBag, Store } from 'lucide-react';
+import { type NavItem } from '@/types';
+import { Link } from '@inertiajs/react';
+import { BookOpen, Folder, LayoutGrid, Store } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -20,23 +20,10 @@ const mainNavItems: NavItem[] = [
     },
 ];
 
-const adminNavItems: NavItem[] = [
-    {
-        title: 'Products',
-        href: '/admin/products',
-        icon: Package,
-    },
-    {
-        title: 'Orders',
-        href: '/admin/orders',
-        icon: ShoppingBag,
-    },
-];
-
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
-        href: 'https://github.com/Petar-V-Nikolov/laravel-react-shop',
+        href: 'https://github.com/pnscripts/laravel-react-shop',
         icon: Folder,
     },
     {
@@ -47,8 +34,6 @@ const footerNavItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-    const { auth } = usePage<SharedData>().props;
-    const items = auth.user?.is_admin ? [...mainNavItems, ...adminNavItems] : mainNavItems;
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -64,7 +49,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={items} />
+                <NavMain items={mainNavItems} />
             </SidebarContent>
 
             <SidebarFooter>

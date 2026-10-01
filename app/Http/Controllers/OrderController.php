@@ -15,7 +15,7 @@ class OrderController extends Controller
         $isOwner = $request->user() && (int) $order->user_id === (int) $request->user()->id;
         $isRecent = $recentIds->contains($order->id);
 
-        abort_unless($isOwner || $isRecent || $request->user()?->isAdmin(), 403);
+        abort_unless($isOwner || $isRecent, 403);
 
         $order->load(['items', 'orderStatus', 'paymentMethod']);
 
