@@ -21,7 +21,7 @@ class OrderController extends Controller
 
         abort_unless($isOwner || $isRecent, 403);
 
-        $order->load(['items', 'paymentMethod', 'shippingAddress', 'billingAddress', 'shipments.lines', 'refunds']);
+        $order->load(['items', 'paymentMethod', 'shippingAddress', 'billingAddress', 'shipments.lines', 'refunds', 'invoice']);
 
         return Inertia::render('orders/show', [
             'order' => [
@@ -36,6 +36,7 @@ class OrderController extends Controller
                 'payment_method' => $order->paymentMethod?->name,
                 'payment_instructions' => app(PaymentService::class)->instructions($order),
                 'shipping_method' => $order->shipping_method_name,
+                'invoice' => $order->invoice === null ? null : ['number' => $order->invoice->number, 'url' => route('invoices.show', $order->invoice)],
                 'refunds' => $order->refunds->where('status', Refund::COMPLETED)->values()->map(fn (Refund $refund) => [
                     'id' => $refund->id,
                     'amount' => MoneyPresenter::present($refund->amount),

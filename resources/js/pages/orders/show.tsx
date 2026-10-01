@@ -15,6 +15,7 @@ type OrderShow = OrderStates & {
     payment_method: string | null;
     payment_instructions: string | null;
     shipping_method: string | null;
+    invoice: { number: string; url: string } | null;
     refunds: { id: number; amount: Money; date: string | null }[];
     shipments: {
         id: number;
@@ -78,6 +79,13 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                     {order.shipping_method && <p>{t('Delivery: :method', { method: order.shipping_method })}</p>}
                     <p>{t('Payment: :method', { method: order.payment_method ?? '—' })}</p>
                     {order.created_at && <p>{t('Placed: :date', { date: order.created_at })}</p>}
+                    {order.invoice && (
+                        <p className="mt-2">
+                            <a href={order.invoice.url} target="_blank" rel="noopener" className="font-medium underline">
+                                {t('Invoice :number', { number: order.invoice.number })}
+                            </a>
+                        </p>
+                    )}
                 </div>
             </div>
 

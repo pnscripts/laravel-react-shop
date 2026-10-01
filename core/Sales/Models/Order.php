@@ -201,6 +201,14 @@ class Order extends Model
     }
 
     /**
+     * @return HasOne<Invoice, $this>
+     */
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class);
+    }
+
+    /**
      * The order's timeline, oldest first.
      *
      * @return HasMany<OrderHistory, $this>

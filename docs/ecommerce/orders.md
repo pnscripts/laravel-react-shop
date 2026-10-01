@@ -30,6 +30,20 @@ Rules applied on top of the state machines:
 
 Every change is written to the order's **History** tab with the old and new value, an optional note and who made it (staff member, customer or *System*). Checkout writes the first entry. Use *Add note* for anything else worth keeping.
 
+## Invoices
+
+Each order can have one invoice. When it is issued depends on Admin → Settings → Orders → *Issue invoices*: when the order is paid (default), when it is placed, or only when staff click *Issue invoice*.
+
+- **Numbering:** prefix plus a counter (`INV-000001`). The counter is locked while an invoice is created, so numbers are sequential without gaps or duplicates.
+- **Frozen content:** an invoice keeps a copy of the seller, buyer, lines, tax and totals. Changing the store details or the order later never changes an issued invoice.
+- **Seller details:** legal name (defaults to the store name), tax / VAT number and footer are set in the same settings. Address, email and phone come from the store settings.
+- **Who can open it:**
+  - customers open their invoice from the order page;
+  - staff open it from the admin with a link that is valid for 30 minutes;
+  - it is printed in the language the order was placed in.
+- **PDF:** the core renders printable HTML through `PnShop\Sales\Invoices\InvoiceRenderer`. A PDF extension binds its own renderer.
+- **Not yet covered:** credit notes for refunds are not issued yet. Refunds are listed on the order.
+
 ## For developers
 
 ```php
