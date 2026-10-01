@@ -28,7 +28,8 @@ This is **not** a full marketplace. Card payments come through the included Stri
   - Customers with address books and order history; customer groups
   - CMS pages built from content blocks (with revisions and scheduling), header and footer menus
   - SEO: meta tags, hreflang, JSON-LD, sitemaps, generated robots.txt, automatic 301 redirects
-  - Plugins: install / enable / update / disable / uninstall from the admin or CLI, safe mode, signatures; Stripe and a handling-fee reference plugin included
+  - Plugins: install / enable / update / disable / uninstall from the admin or CLI, safe mode, signatures; storefront slots and blocks for plugins; Stripe and a handling-fee reference plugin included
+  - Themes: prebuilt storefront bundles, child themes that override files by path, theme settings as CSS variables; the Aurora example theme
   - Payment methods (cash on delivery, bank transfer) with a payment ledger; shipping zones and methods (flat, free, pickup, by weight, by subtotal) with partial shipments and tracking; refunds with restocking; numbered invoices; order emails in the customer's language; tax classes, zones and rates (inclusive or exclusive prices)
   - Admin users, roles, store settings, activity log
 - Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)

@@ -1,4 +1,5 @@
 import { MenuLink } from '@/components/menu-link';
+import { Slot } from '@/components/slot';
 import { useTranslations } from '@/hooks/use-translations';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
@@ -12,6 +13,7 @@ export function StorefrontFooter() {
 
     return (
         <footer className="border-sidebar-border/80 mt-16 border-t">
+            <Slot name="footer.top" />
             <div className="mx-auto grid gap-8 px-4 py-10 text-sm md:max-w-7xl md:grid-cols-4">
                 {columns.map((column) => (
                     <nav key={column.label} aria-label={column.label}>

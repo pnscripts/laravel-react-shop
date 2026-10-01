@@ -61,6 +61,26 @@ final class PluginLoader
     }
 
     /**
+     * Storefront scripts of enabled plugins (public URLs with a version for cache busting).
+     *
+     * @return list<string>
+     */
+    public static function storefrontScripts(): array
+    {
+        $scripts = [];
+
+        foreach (self::enabled() as $id => $plugin) {
+            $script = $plugin['manifest']['storefront'] ?? null;
+
+            if (is_string($script) && is_file(public_path('extensions/'.$id.'/'.basename($script)))) {
+                $scripts[] = asset('extensions/'.$id.'/'.basename($script)).'?v='.rawurlencode((string) ($plugin['manifest']['version'] ?? ''));
+            }
+        }
+
+        return $scripts;
+    }
+
+    /**
      * Admin screen folders of enabled plugins: [directory, namespace].
      *
      * @return list<array{string, string}>

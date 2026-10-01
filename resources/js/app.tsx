@@ -3,8 +3,12 @@ import '../css/app.css';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
+import { installSdk } from './lib/extensions';
 import { resolvePage } from './lib/resolve-page';
 import { pageTitle, setStoreName } from './lib/store-name';
+
+// Plugins' storefront scripts load after this module and use window.PnShop.
+installSdk();
 
 createInertiaApp({
     title: pageTitle,

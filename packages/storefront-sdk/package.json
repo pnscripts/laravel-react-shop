@@ -1,0 +1,14 @@
+{
+    "name": "@pnshop/storefront-sdk",
+    "version": "1.0.0",
+    "description": "Write PN Shop plugin storefront code against the shop's own React and Inertia.",
+    "type": "module",
+    "exports": {
+        ".": "./index.js",
+        "./react": "./react.js",
+        "./jsx-runtime": "./jsx-runtime.js",
+        "./inertia": "./inertia.js"
+    },
+    "types": "./index.d.ts",
+    "license": "MIT"
+}

@@ -3,11 +3,13 @@
 namespace Tests\Feature\Extensions;
 
 use App\Models\User;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use PnShop\Catalog\Models\Product;
 use PnShop\Customer\Models\CustomerGroup;
 use PnShop\Extension\ExtensionManager;
 use PnShop\Extension\PackageIntegrity;
+use PnShop\Extension\PluginLoader;
 use PnShop\Plugins\HandlingFee\Models\Exemption;
 use PnShop\Settings\Settings;
 use Tests\Feature\Admin\AdminTestCase;
@@ -17,9 +19,14 @@ use Tests\Feature\Admin\AdminTestCase;
  */
 class HandlingFeePluginTest extends AdminTestCase
 {
+    private string $publicPath;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->publicPath = sys_get_temp_dir().'/pnshop-public-'.bin2hex(random_bytes(4));
+        $this->app->usePublicPath($this->publicPath);
 
         config([
             'pnshop.extensions.path' => base_path('extensions'),
@@ -30,6 +37,7 @@ class HandlingFeePluginTest extends AdminTestCase
     protected function tearDown(): void
     {
         @unlink((string) config('pnshop.extensions.cache'));
+        File::deleteDirectory($this->publicPath);
 
         parent::tearDown();
     }
@@ -56,6 +64,13 @@ class HandlingFeePluginTest extends AdminTestCase
         // Its settings work like core settings, and its label is translated.
         app(Settings::class)->set('plugin.pnshop_handling_fee', ['amount' => '4']);
         $this->get('/bg/cart')->assertInertia(fn ($page) => $page->where('cart.totals.lines.0.label', 'Такса обработка')->where('cart.totals.lines.0.amount.amount', '4.00'));
+
+        // The storefront slot gets its data and script, and the hint is translated.
+        $this->get(route('cart.index'))->assertInertia(fn ($page) => $page->where('handlingFee.missing.amount', '20.00'));
+        $this->assertFileExists(public_path('extensions/pnshop/handling-fee/storefront.js'));
+        $this->assertSame([url('extensions/pnshop/handling-fee/storefront.js').'?v=1.0.0'], PluginLoader::storefrontScripts());
+        $this->get(route('cart.index'))->assertSee('extensions/pnshop/handling-fee/storefront.js?v=1.0.0', false);
+        $this->get('/bg/cart')->assertInertia(fn ($page) => $page->where('translations', fn ($translations) => collect($translations)->get('Add :amount more to avoid the handling fee.') === 'Добавете още :amount, за да няма такса обработка.'));
 
         // Above the threshold there is no fee.
         $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 3]);

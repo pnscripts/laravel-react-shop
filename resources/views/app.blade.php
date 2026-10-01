@@ -71,6 +71,9 @@
             @viteReactRefresh
             @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         @endif
+        @foreach ($pluginScripts ?? [] as $pluginScript)
+            <script type="module" src="{{ $pluginScript }}"></script>
+        @endforeach
         @if (! empty($themeCss))
             <style>{!! $themeCss !!}</style>
         @endif

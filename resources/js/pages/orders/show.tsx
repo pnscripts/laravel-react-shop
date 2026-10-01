@@ -1,3 +1,4 @@
+import { Slot } from '@/components/slot';
 import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
@@ -146,6 +147,7 @@ export default function OrderShow({ order }: { order: OrderShow }) {
             <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_20rem]">
                 <div className="sm:col-start-2">
                     <TotalsBreakdown totals={order.totals} />
+                    <Slot name="order.after_totals" props={{ order }} />
                     {order.refunds.map((refund) => (
                         <p key={refund.id} className="text-muted-foreground -mt-4 mb-6 flex justify-between text-sm">
                             <span>{t('Refunded :date', { date: refund.date ?? '' })}</span>

@@ -1,17 +1,44 @@
 {
     "id": "pnshop/handling-fee",
     "name": "Handling fee",
-    "description": "Adds a handling fee to small orders. Reference plugin: settings, a permission, a migration, an admin screen, a cart totals stage and translations.",
+    "description": "Adds a handling fee to small orders. Reference plugin: settings, a permission, a migration, an admin screen, a cart totals stage, a storefront slot and translations.",
     "version": "1.0.0",
     "type": "plugin",
-    "requires": { "pnshop": ">=0.8", "php": ">=8.4" },
+    "requires": {
+        "pnshop": ">=0.8",
+        "php": ">=8.4"
+    },
     "provider": "PnShop\\Plugins\\HandlingFee\\HandlingFeePlugin",
-    "autoload": { "psr-4": { "PnShop\\Plugins\\HandlingFee\\": "src/" } },
-    "permissions": [{ "key": "handling_fee.manage", "label": "Manage handling fee exemptions", "group": "Extensions" }],
+    "autoload": {
+        "psr-4": {
+            "PnShop\\Plugins\\HandlingFee\\": "src/"
+        }
+    },
+    "permissions": [
+        {
+            "key": "handling_fee.manage",
+            "label": "Manage handling fee exemptions",
+            "group": "Extensions"
+        }
+    ],
     "settings": [
-        { "key": "amount", "type": "decimal", "label": "Fee", "default": "2.50", "required": true, "help": "Added to orders below the threshold." },
-        { "key": "threshold", "type": "decimal", "label": "No fee from this subtotal", "default": "30", "help": "Leave 0 to charge the fee on every order." }
+        {
+            "key": "amount",
+            "type": "decimal",
+            "label": "Fee",
+            "default": "2.50",
+            "required": true,
+            "help": "Added to orders below the threshold."
+        },
+        {
+            "key": "threshold",
+            "type": "decimal",
+            "label": "No fee from this subtotal",
+            "default": "30",
+            "help": "Leave 0 to charge the fee on every order."
+        }
     ],
     "author": "PN Scripts",
-    "license": "MIT"
+    "license": "MIT",
+    "storefront": "storefront/storefront.js"
 }

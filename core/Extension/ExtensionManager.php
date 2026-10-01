@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use PnShop\Acl\PermissionSynchronizer;
 use PnShop\Extension\Exceptions\ExtensionException;
 use PnShop\Extension\Models\Extension;
@@ -165,6 +166,7 @@ class ExtensionManager
 
         $this->assertNoProblems($manifest);
 
+        $this->publishStorefront($manifest);
         $extension->forceFill(['status' => ExtensionStatus::Enabled, 'enabled_at' => now(), 'error' => null])->save();
         $this->rebuildCache();
 
@@ -191,6 +193,7 @@ class ExtensionManager
         }
 
         $extension->forceFill(['status' => ExtensionStatus::Disabled])->save();
+        $this->unpublishStorefront($id);
         $this->rebuildCache();
         $this->audit('disabled', $extension, $actor);
 
@@ -233,6 +236,10 @@ class ExtensionManager
             'checksums' => PackageIntegrity::checksums($manifest->path),
         ])->save();
 
+        if ($extension->status === ExtensionStatus::Enabled) {
+            $this->publishStorefront($manifest);
+        }
+
         $this->rebuildCache();
         $this->audit('updated', $manifest, $actor, ['from' => $from]);
 
@@ -266,6 +273,7 @@ class ExtensionManager
         }
 
         DB::table('extension_migrations')->where('extension_id', $id)->delete();
+        $this->unpublishStorefront($id);
         $extension->delete();
         $this->rebuildCache();
         $this->audit('uninstalled', $extension, $actor, ['keep_data' => $keepData]);
@@ -279,6 +287,33 @@ class ExtensionManager
     public function verify(string $id): array
     {
         return PackageIntegrity::compare($this->installed($id)->checksums ?? [], $this->find($id)->path);
+    }
+
+    /**
+     * Copy the plugin's storefront script (and the files next to it, e.g. chunks) to
+     * public/extensions/<id>/, where the storefront loads it.
+     */
+    public function publishStorefront(Manifest $manifest): void
+    {
+        $this->unpublishStorefront($manifest->id);
+
+        if ($manifest->storefront === null) {
+            return;
+        }
+
+        $target = public_path('extensions/'.$manifest->id);
+        File::ensureDirectoryExists(dirname($target));
+
+        if (! File::copyDirectory(dirname($manifest->path.'/'.$manifest->storefront), $target)) {
+            throw new ExtensionException(__('Could not publish the storefront files of :id.', ['id' => $manifest->id]));
+        }
+    }
+
+    public function unpublishStorefront(string $id): void
+    {
+        if (preg_match(Manifest::ID_PATTERN, $id) === 1) {
+            File::deleteDirectory(public_path('extensions/'.$id));
+        }
     }
 
     /** Rewrite the list of enabled plugins that is booted on every request. */

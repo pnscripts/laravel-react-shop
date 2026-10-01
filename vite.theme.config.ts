@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
 import { readFileSync } from 'node:fs';
-import { relative, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import { themeChain, themeOverrides } from './scripts/vite-theme-overrides';
 
@@ -28,8 +28,8 @@ export default defineConfig({
         themeOverrides(root, chain),
         laravel({
             input: manifest.entries ?? ['resources/css/app.css', 'resources/js/app.tsx'],
-            publicDirectory: relative(root, themeDirectory),
-            buildDirectory: 'dist',
+            // URLs point where the bundle is published (public/themes/<id>/build) ...
+            buildDirectory: `themes/${themeId}/build`,
             refresh: false,
         }),
         react(),
@@ -41,6 +41,8 @@ export default defineConfig({
         },
     },
     build: {
+        // ... while the files are written into the theme, which ships them.
+        outDir: resolve(themeDirectory, 'dist'),
         emptyOutDir: true,
     },
 });

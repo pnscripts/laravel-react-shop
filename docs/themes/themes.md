@@ -62,4 +62,8 @@ php artisan pnshop:theme publish acme/aurora   # copy dist/ again after a rebuil
 - **Example:** `themes/pnshop/aurora` replaces only the product card and sets its own colour and corners.
 - **Server-side rendering:** SSR renders the built-in bundle, so it is switched off while another theme is active.
 
+## Slots and plugin blocks
+
+Themes keep the core's named slots (`<Slot name="cart.after_totals" props={{ cart }} />`, from `@/components/slot`), so plugins' storefront UI appears in every theme. A theme that redesigns a page should keep its slots in sensible places. See [plugins](../extensions/plugins.md#storefront-code-blocks-and-slots).
+
 > Themes run in visitors' browsers with the shop's permissions there. Install only themes you trust.

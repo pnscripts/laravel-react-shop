@@ -2,10 +2,15 @@
 
 namespace PnShop\Plugins\HandlingFee;
 
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use PnShop\Cart\ShoppingCartService;
 use PnShop\Cart\Totals\CartCalculator;
 use PnShop\Extension\Plugin;
 use PnShop\Foundation\Extension\PipelineRegistry;
+use PnShop\Money\MoneyPresenter;
 use PnShop\Plugins\HandlingFee\Models\Exemption;
 use PnShop\Plugins\HandlingFee\Policies\ExemptionPolicy;
 
@@ -16,6 +21,24 @@ class HandlingFeePlugin extends Plugin
         $this->app->make(PipelineRegistry::class)->stage(CartCalculator::PIPELINE, ApplyHandlingFee::class, 300);
 
         Gate::policy(Exemption::class, ExemptionPolicy::class);
+
+        // Data for the storefront slot (storefront/storefront.js): how much more avoids the fee.
+        Inertia::share('handlingFee', fn () => request()->routeIs('cart.*') ? $this->hint() : null);
+    }
+
+    /**
+     * @return array{missing: array<string, mixed>|null}|null
+     */
+    private function hint(): ?array
+    {
+        $totals = $this->app->make(ShoppingCartService::class)->totals();
+        $threshold = Money::of((string) ($this->setting('threshold') ?: '0'), $totals->currency(), roundingMode: RoundingMode::HalfUp);
+
+        if ($totals->line('handling_fee') === null || $threshold->isZero()) {
+            return null;
+        }
+
+        return ['missing' => MoneyPresenter::present($threshold->minus($totals->subtotal))];
     }
 
     public function uninstall(bool $keepData): void

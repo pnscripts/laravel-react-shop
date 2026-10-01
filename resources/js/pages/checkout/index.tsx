@@ -1,6 +1,7 @@
 import { AddressFields, emptyAddress, type AddressData, type Country } from '@/components/address-fields';
 import { BotTrapFields, type BotTrapData } from '@/components/bot-trap';
 import InputError from '@/components/input-error';
+import { Slot } from '@/components/slot';
 import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -271,6 +272,7 @@ export default function Checkout({
                         ))}
                     </ul>
                     <TotalsBreakdown totals={delivery.totals} />
+                    <Slot name="checkout.before_submit" props={{ cart, totals: delivery.totals }} />
                     <Button type="submit" className="w-full" disabled={processing || (shippingRequired && data.shipping_method_id === '')}>
                         {t('Place order')}
                     </Button>

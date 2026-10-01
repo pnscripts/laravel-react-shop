@@ -1,4 +1,5 @@
 import { ProductCard } from '@/components/product-card';
+import { Slot } from '@/components/slot';
 import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -81,6 +82,7 @@ export default function CartIndex({ cart, suggestions }: { cart: CartSummary; su
                             <span>{cart.total_quantity}</span>
                         </div>
                         <TotalsBreakdown totals={cart.totals} />
+                        <Slot name="cart.after_totals" props={{ cart }} />
                         <Button className="w-full" asChild>
                             <Link href={route('checkout.create')}>{t('Checkout')}</Link>
                         </Button>

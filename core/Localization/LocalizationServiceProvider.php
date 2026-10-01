@@ -90,14 +90,11 @@ class LocalizationServiceProvider extends ModuleServiceProvider
      */
     private function interfaceTranslations(string $locale): array
     {
-        $path = lang_path("{$locale}.json");
-
-        if ($locale === 'en' || ! is_file($path)) {
+        if ($locale === 'en') {
             return [];
         }
 
-        $translations = json_decode((string) file_get_contents($path), true);
-
-        return is_array($translations) ? $translations : [];
+        // lang/<locale>.json plus the JSON translations of plugins (loadJsonTranslationsFrom).
+        return app('translator')->getLoader()->load($locale, '*', '*');
     }
 }

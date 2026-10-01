@@ -1,5 +1,6 @@
 import InputError from '@/components/input-error';
 import { ProductCard } from '@/components/product-card';
+import { Slot } from '@/components/slot';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -136,6 +137,7 @@ export default function ShopShow({ product, related }: { product: ProductShow; r
                     ) : (
                         <p className="text-muted-foreground mb-6">{t('This combination is not available.')}</p>
                     )}
+                    <Slot name="product.after_price" props={{ product, variant }} />
                     {product.description && <p className="text-muted-foreground mb-6 whitespace-pre-line">{product.description}</p>}
                     {variant?.sku && <p className="text-muted-foreground mb-4 text-sm">{t('SKU: :sku', { sku: variant.sku })}</p>}
 

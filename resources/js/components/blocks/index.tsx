@@ -1,5 +1,5 @@
+import { blockComponent, registerBlock, useExtensionRegistry } from '@/lib/extensions';
 import { type ContentBlock } from '@/types';
-import { type ComponentType } from 'react';
 import { CallToActionBlock } from './call-to-action-block';
 import { CategoryGridBlock } from './category-grid-block';
 import { HeroBlock } from './hero-block';
@@ -9,14 +9,8 @@ import { ProductGridBlock } from './product-grid-block';
 import { RichTextBlock } from './rich-text-block';
 import { VideoBlock } from './video-block';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type BlockComponent = ComponentType<any>;
-
-/**
- * React components for block types (PnShop\Cms\Blocks\BlockRegistry keys). Themes and
- * extensions add theirs with registerBlock(); unknown types render nothing.
- */
-const components: Record<string, BlockComponent> = {
+// The core block renderers; themes and plugins add theirs with registerBlock().
+const core = {
     hero: HeroBlock,
     rich_text: RichTextBlock,
     image: ImageBlock,
@@ -27,15 +21,18 @@ const components: Record<string, BlockComponent> = {
     html: HtmlBlock,
 };
 
-export function registerBlock(type: string, component: BlockComponent): void {
-    components[type] = component;
-}
+Object.entries(core).forEach(([type, component]) => registerBlock(type, component));
+
+export { registerBlock };
 
 export function Blocks({ blocks }: { blocks: ContentBlock[] }) {
+    // Plugin renderers may register after the first render.
+    useExtensionRegistry();
+
     return (
         <div className="space-y-12">
             {blocks.map((block, index) => {
-                const Component = components[block.type];
+                const Component = blockComponent(block.type);
 
                 return Component ? <Component key={`${block.type}-${index}`} {...block.props} /> : null;
             })}

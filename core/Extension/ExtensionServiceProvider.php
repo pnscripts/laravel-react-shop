@@ -2,6 +2,7 @@
 
 namespace PnShop\Extension;
 
+use Illuminate\Support\Facades\View;
 use PnShop\Extension\Console\PluginCommand;
 use PnShop\Extension\Console\PluginKeygenCommand;
 use PnShop\Extension\Console\PluginListCommand;
@@ -26,5 +27,8 @@ class ExtensionServiceProvider extends ModuleServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([PluginListCommand::class, PluginCommand::class, PluginSignCommand::class, PluginKeygenCommand::class]);
         }
+
+        // Plugins' storefront scripts, loaded by the root template after the app.
+        View::composer('app', fn ($view) => $view->with('pluginScripts', PluginLoader::storefrontScripts()));
     }
 }

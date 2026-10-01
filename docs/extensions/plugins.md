@@ -99,6 +99,32 @@ php artisan pnshop:plugin:sign extensions/acme/store-notice --key-id=acme-2026 -
 
 Read its README, then install it from Admin → Extensions to try it.
 
+## Storefront code (blocks and slots)
+
+A plugin can add UI to the storefront with a prebuilt ES module, declared as `"storefront": "dist/storefront.js"` in `pnshop.json`.
+
+- **Loading:** on enable or update the file's folder is published to `public/extensions/<id>/`, and the module is loaded on every storefront page after the app, with the plugin version as cache buster.
+- **What it uses:** the module uses the shop's own React and Inertia through `window.PnShop`.
+- **Without a bundler:** see `extensions/pnshop/handling-fee/storefront/storefront.js`.
+- **With a bundler:** alias React and Inertia to `@pnshop/storefront-sdk` (`packages/storefront-sdk`).
+
+```js
+window.PnShop.registerSlot('cart.after_totals', ({ cart }) => …);   // add UI to a named slot
+window.PnShop.registerBlock('testimonial', ({ quote }) => …);       // render a CMS block type
+```
+
+| Slot | Props |
+|---|---|
+| `product.after_price` | `product`, `variant` |
+| `cart.after_totals` | `cart` |
+| `checkout.before_submit` | `cart`, `totals` |
+| `order.after_totals` | `order` |
+| `footer.top` | — |
+
+- **Errors:** a component that throws is caught and left out.
+- **Data:** plugins share their own data with `Inertia::share()` in `bootPlugin()`.
+- **Translations:** a plugin's `lang/<locale>.json` strings reach the storefront's `t()`.
+
 ## Stripe
 
 `extensions/pnshop/stripe` is the first official payment plugin. It provides card and wallet payments through Stripe Checkout:

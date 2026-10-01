@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use PnShop\Extension\Exceptions\ExtensionException;
 use PnShop\Extension\ExtensionStatus;
+use PnShop\Extension\Manifest;
 use PnShop\Extension\Models\Extension;
 use PnShop\Extension\PluginLoader;
 use PnShop\Settings\Settings;
@@ -168,5 +169,22 @@ class ExtensionLifecycleTest extends ExtensionTestCase
         $this->manager()->enable('acme/good');
 
         $this->assertSame(['installed', 'enabled'], DB::table('activity_log')->where('log_name', 'extensions')->orderBy('id')->pluck('event')->all());
+    }
+
+    public function test_storefront_scripts_must_be_built_files_inside_the_plugin(): void
+    {
+        $manifest = json_decode(File::get($this->extensions.'/acme/good/pnshop.json'), true);
+
+        foreach (['../../evil.js', '/etc/passwd.js', 'src/GoodPlugin.php', 'dist/missing.js'] as $script) {
+            try {
+                Manifest::fromArray([...$manifest, 'storefront' => $script], $this->extensions.'/acme/good');
+                $this->fail("{$script} should be refused.");
+            } catch (ExtensionException $e) {
+                $this->assertStringContainsString('storefront must be', $e->getMessage());
+            }
+        }
+
+        File::put($this->extensions.'/acme/good/storefront.js', 'window.PnShop.registerSlot("footer.top", () => null);');
+        $this->assertSame('storefront.js', Manifest::fromArray([...$manifest, 'storefront' => 'storefront.js'], $this->extensions.'/acme/good')->storefront);
     }
 }

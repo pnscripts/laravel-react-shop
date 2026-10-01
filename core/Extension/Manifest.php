@@ -19,8 +19,12 @@ use Throwable;
  *       "provider": "Acme\\StoreNotice\\StoreNoticePlugin",
  *       "autoload": { "psr-4": { "Acme\\StoreNotice\\": "src/" } },
  *       "permissions": [{ "key": "store_notice.manage", "label": "Manage the store notice" }],
- *       "settings": [{ "key": "text", "type": "string", "label": "Notice text" }]
+ *       "settings": [{ "key": "text", "type": "string", "label": "Notice text" }],
+ *       "storefront": "dist/storefront.js"
  *     }
+ *
+ * "storefront" is a prebuilt ES module loaded on every storefront page after the app; it
+ * uses window.PnShop (React, Inertia, registerBlock, registerSlot) instead of bundling React.
  */
 final readonly class Manifest
 {
@@ -49,6 +53,7 @@ final readonly class Manifest
         public array $settings = [],
         public ?string $author = null,
         public ?string $license = null,
+        public ?string $storefront = null,
     ) {}
 
     /**
@@ -164,6 +169,11 @@ final readonly class Manifest
             $settings[] = $setting;
         }
 
+        $storefront = $string('storefront');
+        if ($storefront !== null && (! str_ends_with($storefront, '.js') || str_contains($storefront, '..') || str_starts_with($storefront, '/') || ! is_file(rtrim($path, '/').'/'.$storefront) && $path !== 'archive')) {
+            $errors[] = 'storefront must be the path of a built .js file inside the plugin.';
+        }
+
         if ($errors !== []) {
             throw new ExtensionException(__('The manifest of :id is invalid: :errors', ['id' => $id ?? $path, 'errors' => implode(' ', array_unique($errors))]));
         }
@@ -183,6 +193,7 @@ final readonly class Manifest
             settings: $settings,
             author: is_string($data['author'] ?? null) ? $data['author'] : null,
             license: $string('license'),
+            storefront: $storefront,
         );
     }
 
