@@ -5,6 +5,7 @@ namespace PnShop\Shipping\Testing;
 use Brick\Money\Money;
 use PnShop\Cart\CartItemDTO;
 use PnShop\Settings\SettingDefinition;
+use PnShop\Settings\SettingType;
 use PnShop\Shipping\Contracts\ShippingCarrier;
 use PnShop\Shipping\Models\ShippingMethod;
 use PnShop\Shipping\Models\ShippingZone;
@@ -50,6 +51,8 @@ trait ShippingCarrierContractTests
         $this->assertSame(array_values(array_unique($keys)), $keys, 'Setting keys must be unique.');
 
         foreach ($this->carrier()->settings() as $definition) {
+            $this->assertNotSame(SettingType::Secret, $definition->type, "Store [{$definition->key}] in plugin settings (type secret), not in method settings.");
+
             if ($definition->default !== null) {
                 $this->assertTrue(validator(['value' => $definition->default], ['value' => $definition->validationRules()])->passes(), "The default of [{$definition->key}] fails its own rules.");
             }

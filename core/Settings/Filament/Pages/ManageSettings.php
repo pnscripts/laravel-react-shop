@@ -60,7 +60,10 @@ class ManageSettings extends Page
     {
         $tabs = [];
 
-        foreach (app(SettingsRegistry::class)->all() as $namespace => $settingsSchema) {
+        // Core settings first, then the plugins' tabs.
+        $schemas = collect(app(SettingsRegistry::class)->all())->sortBy(fn ($settingsSchema, string $namespace) => str_starts_with($namespace, 'plugin.') ? 1 : 0, SORT_NUMERIC);
+
+        foreach ($schemas as $namespace => $settingsSchema) {
             $tabs[] = Tab::make($settingsSchema->label)
                 ->statePath(self::stateKey($namespace))
                 ->schema(array_values(array_map(

@@ -1,0 +1,17 @@
+# Stripe for PN Shop
+
+Card and wallet payments through [Stripe Checkout](https://stripe.com/payments/checkout).
+
+1. Install and enable the plugin in Admin → Extensions.
+2. In Admin → Settings → Stripe, paste your **secret key** (start with a test key, `sk_test_…`). Keys are stored encrypted and never shown again.
+3. In the Stripe dashboard create a webhook to `https://<your shop>/stripe/webhook` for the events `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed` and `checkout.session.expired`, and paste its **signing secret** (`whsec_…`) in the settings.
+4. In Admin → Store → Payment methods, add a method using the gateway *Stripe (cards and wallets)*.
+
+How it works:
+
+- At checkout the customer is sent to Stripe's payment page. The amount is the order total in the order currency.
+- The order becomes *paid* when the customer returns (the session is read back from Stripe's API, never trusted from the URL) or when the signed webhook arrives, whichever is first. A paid amount that does not match the order is refused.
+- Refunds from the order page are sent to Stripe for the payment.
+- Requests to Stripe use idempotency keys, so retries never charge or refund twice.
+
+Test locally with the Stripe CLI: `stripe listen --forward-to localhost:8000/stripe/webhook` and the card 4242 4242 4242 4242.

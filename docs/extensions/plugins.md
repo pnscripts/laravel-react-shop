@@ -99,6 +99,28 @@ php artisan pnshop:plugin:sign extensions/acme/store-notice --key-id=acme-2026 -
 
 Read its README, then install it from Admin → Extensions to try it.
 
+## Stripe
+
+`extensions/pnshop/stripe` is the first official payment plugin. It provides card and wallet payments through Stripe Checkout:
+
+- a redirect to Stripe;
+- confirmation from Stripe's API on return and by signed webhook;
+- a check that the amount matches the order;
+- refunds from the admin;
+- idempotency keys on every request.
+
+Setup steps are in its README.
+
+## Secrets
+
+Plugin settings of type `secret` (API keys, passwords) are:
+
+- stored encrypted;
+- never sent back to the browser;
+- kept when the field is left empty.
+
+Gateway and carrier settings are stored as plain JSON on payment and shipping methods, so they must not hold secrets; the contract test kits check this.
+
 ## Writing a plugin
 
 ```php

@@ -98,8 +98,11 @@ class PaymentService
                 default => null,
             };
 
-            if ($state !== null) {
-                $payment->forceFill(['status' => $state, 'reference' => $result->reference ?? $payment->reference])->save();
+            // The gateway's id (a session on redirect, a charge when paid) is kept as soon as it is known.
+            $changes = array_filter(['status' => $state, 'reference' => $result->reference], fn (mixed $value) => $value !== null);
+
+            if ($changes !== []) {
+                $payment->forceFill($changes)->save();
             }
         });
 

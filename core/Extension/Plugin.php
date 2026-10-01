@@ -64,6 +64,10 @@ abstract class Plugin extends ServiceProvider
 
         if (is_file($routes = $this->path('routes/web.php')) && ! $this->app->routesAreCached()) {
             Route::middleware('web')->group($routes);
+
+            // Plugins enabled while the app is running add routes after the name index was built.
+            Route::getRoutes()->refreshNameLookups();
+            Route::getRoutes()->refreshActionLookups();
         }
 
         $this->bootPlugin();

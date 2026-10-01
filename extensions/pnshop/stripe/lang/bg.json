@@ -1,0 +1,12 @@
+{
+    "Stripe is not configured.": "Stripe не е настроен.",
+    "Stripe could not be reached. Please try again.": "Няма връзка със Stripe. Моля, опитайте отново.",
+    "The card payment could not be started. Please try again or choose another payment method.": "Плащането с карта не можа да започне. Опитайте отново или изберете друг начин на плащане.",
+    "This payment has not been completed on Stripe.": "Това плащане не е завършено в Stripe.",
+    "Stripe did not accept the refund.": "Stripe не прие възстановяването.",
+    "The amount paid on Stripe does not match the order.": "Платената в Stripe сума не съвпада с поръчката.",
+    "The Stripe checkout expired before payment.": "Плащането в Stripe изтече преди да бъде завършено.",
+    "The order for this payment was not found.": "Поръчката за това плащане не беше намерена.",
+    "Thank you! Your payment was received.": "Благодарим Ви! Плащането е получено.",
+    "The payment is not confirmed yet. If you completed it, it will appear shortly.": "Плащането все още не е потвърдено. Ако сте го завършили, ще се появи скоро."
+}

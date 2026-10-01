@@ -27,7 +27,13 @@ final class SettingField
             SettingType::Integer => TextInput::make($definition->key)->integer(),
             SettingType::Decimal => TextInput::make($definition->key)->numeric(),
             SettingType::String => TextInput::make($definition->key),
+            SettingType::Secret => TextInput::make($definition->key)->password()->autocomplete('new-password')->placeholder(__('Saved values are hidden; leave empty to keep.')),
         };
+
+        if ($definition->type === SettingType::Secret) {
+            // Never send the saved value to the browser.
+            $field->formatStateUsing(fn () => null)->required(false);
+        }
 
         return $field
             ->label($definition->label)

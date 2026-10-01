@@ -11,6 +11,7 @@ use PnShop\Payment\PaymentOutcome;
 use PnShop\Payment\PaymentResult;
 use PnShop\Sales\Models\Order;
 use PnShop\Settings\SettingDefinition;
+use PnShop\Settings\SettingType;
 use Tests\TestCase;
 
 /**
@@ -54,6 +55,8 @@ trait PaymentGatewayContractTests
 
         foreach ($settings as $definition) {
             $this->assertMatchesRegularExpression('/^[a-z][a-z0-9_]*$/', $definition->key);
+            // Method settings are stored as plain JSON: keys and passwords belong in the plugin's settings.
+            $this->assertNotSame(SettingType::Secret, $definition->type, "Store [{$definition->key}] in plugin settings (type secret), not in method settings.");
 
             if ($definition->default !== null) {
                 $this->assertTrue(validator(['value' => $definition->default], ['value' => $definition->validationRules()])->passes(), "The default of [{$definition->key}] fails its own rules.");
