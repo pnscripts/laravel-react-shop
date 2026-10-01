@@ -1,8 +1,9 @@
 import { createInertiaApp } from '@inertiajs/react';
 import createServer from '@inertiajs/react/server';
 import ReactDOMServer from 'react-dom/server';
-import { type RouteName, route } from 'ziggy-js';
+import { route } from 'ziggy-js';
 import { resolvePage } from './lib/resolve-page';
+import type { SharedData } from './types';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -13,16 +14,14 @@ createServer((page) =>
         title: (title) => `${title} - ${appName}`,
         resolve: resolvePage,
         setup: ({ App, props }) => {
-            /* eslint-disable */
-            // @ts-expect-error
-            global.route<RouteName> = (name, params, absolute) =>
-                route(name, params as any, absolute, {
-                    // @ts-expect-error
-                    ...page.props.ziggy,
-                    // @ts-expect-error
-                    location: new URL(page.props.ziggy.location),
-                });
-            /* eslint-enable */
+            const { ziggy } = page.props as unknown as SharedData;
+
+            // Ziggy's global route() helper must know the current URL during SSR. Call sites are
+            // typed by the global declaration in types/global.d.ts; this wrapper only forwards arguments.
+            const config = { ...ziggy, location: new URL(ziggy.location) };
+            const forward = route as (...args: unknown[]) => unknown;
+            (globalThis as { route?: unknown }).route = (name?: unknown, params?: unknown, absolute?: unknown) =>
+                forward(name, params, absolute, config);
 
             return <App {...props} />;
         },
