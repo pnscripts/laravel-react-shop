@@ -30,7 +30,35 @@
             }
         </style>
 
-        <title data-inertia>{{ app(\PnShop\Settings\Settings::class)->get('store.name') }}</title>
+        <title data-inertia>{{ $seo['title'] ?? app(\PnShop\Settings\Settings::class)->get('store.name') }}</title>
+        @isset($seo)
+            @if ($seo['description'])
+                <meta name="description" content="{{ $seo['description'] }}">
+            @endif
+            <meta name="robots" content="{{ $seo['robots'] }}">
+            <link rel="canonical" href="{{ $seo['canonical'] }}">
+            @foreach ($seo['alternates'] as $hreflang => $href)
+                <link rel="alternate" hreflang="{{ $hreflang }}" href="{{ $href }}">
+            @endforeach
+            @if ($seo['alternates'] !== [])
+                <link rel="alternate" hreflang="x-default" href="{{ reset($seo['alternates']) }}">
+            @endif
+            <meta property="og:site_name" content="{{ $seo['site_name'] }}">
+            <meta property="og:title" content="{{ $seo['title'] }}">
+            <meta property="og:type" content="{{ $seo['type'] }}">
+            <meta property="og:url" content="{{ $seo['canonical'] }}">
+            <meta property="og:locale" content="{{ $seo['locale'] }}">
+            @if ($seo['description'])
+                <meta property="og:description" content="{{ $seo['description'] }}">
+            @endif
+            @if ($seo['image'])
+                <meta property="og:image" content="{{ $seo['image'] }}">
+                <meta name="twitter:card" content="summary_large_image">
+            @endif
+            @if ($seo['json_ld_script'] !== null)
+                <script type="application/ld+json">{!! $seo['json_ld_script'] !!}</script>
+            @endif
+        @endisset
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />

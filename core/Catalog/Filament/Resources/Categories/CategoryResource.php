@@ -24,6 +24,7 @@ use PnShop\Catalog\Filament\Resources\Categories\Pages\EditCategory;
 use PnShop\Catalog\Filament\Resources\Categories\Pages\ListCategories;
 use PnShop\Catalog\Models\Category;
 use PnShop\Localization\Filament\TranslationsSection;
+use PnShop\Seo\Filament\SeoFields;
 use UnitEnum;
 
 class CategoryResource extends Resource
@@ -54,10 +55,12 @@ class CategoryResource extends Resource
                 Toggle::make('is_active')->label('Visible in the store')->default(true),
                 Textarea::make('description')->rows(4)->columnSpanFull(),
             ]),
+            SeoFields::section(),
             TranslationsSection::make([
                 'title' => fn (string $name) => TextInput::make($name)->label('Title')->maxLength(255),
                 'slug' => fn (string $name) => TextInput::make($name)->label('URL slug')->maxLength(255),
                 'description' => fn (string $name) => Textarea::make($name)->label('Description')->rows(3),
+                ...SeoFields::translations(),
             ]),
         ]);
     }

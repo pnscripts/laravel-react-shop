@@ -24,6 +24,9 @@ final class Localization
     /** @var array{languages: list<array<string, mixed>>, currency: array<string, mixed>|null}|null */
     private ?array $data = null;
 
+    /** @var (\Closure(string): ?string)|null */
+    private ?\Closure $alternateResolver = null;
+
     public function __construct(private Cache $cache) {}
 
     /**
@@ -70,6 +73,22 @@ final class Localization
         }
 
         return rtrim($origin, '/').$path.($query ? '?'.$query : '');
+    }
+
+    /**
+     * Let another module (SEO) supply the current page's address in a language, for pages
+     * whose path differs per language (translated slugs).
+     *
+     * @param  \Closure(string): ?string  $resolver  locale => absolute URL or null
+     */
+    public function resolveAlternatesUsing(\Closure $resolver): void
+    {
+        $this->alternateResolver = $resolver;
+    }
+
+    public function alternateFor(string $locale): ?string
+    {
+        return $this->alternateResolver === null ? null : ($this->alternateResolver)($locale);
     }
 
     public function defaultCurrency(): Currency

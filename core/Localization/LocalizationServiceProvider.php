@@ -79,7 +79,7 @@ class LocalizationServiceProvider extends ModuleServiceProvider
             'languages' => $localization->languages()->map(fn (Language $language) => [
                 'code' => $language->code,
                 'name' => $language->native_name,
-                'url' => $localization->switchUrl($language->code, $origin, $request->getPathInfo(), $request->getQueryString()),
+                'url' => $localization->alternateFor($language->code) ?? $localization->switchUrl($language->code, $origin, $request->getPathInfo(), $request->getQueryString()),
                 'active' => $language->code === $locale,
             ])->values()->all(),
         ];

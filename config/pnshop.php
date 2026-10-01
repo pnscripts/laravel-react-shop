@@ -12,6 +12,7 @@ use PnShop\Media\MediaServiceProvider;
 use PnShop\Payment\PaymentServiceProvider;
 use PnShop\Sales\SalesServiceProvider;
 use PnShop\Security\SecurityServiceProvider;
+use PnShop\Seo\SeoServiceProvider;
 use PnShop\Settings\SettingsServiceProvider;
 use PnShop\Shipping\ShippingServiceProvider;
 use PnShop\System\SystemServiceProvider;
@@ -46,6 +47,7 @@ return [
         ShippingServiceProvider::class,
         TaxServiceProvider::class,
         CmsServiceProvider::class,
+        SeoServiceProvider::class,
         AdminServiceProvider::class,
     ],
 

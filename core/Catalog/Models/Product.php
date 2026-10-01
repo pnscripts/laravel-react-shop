@@ -65,6 +65,8 @@ class Product extends Model implements TranslatableModel
         'title',
         'slug',
         'description',
+        'meta_title',
+        'meta_description',
         'is_active',
         'image',
         'price',
@@ -76,7 +78,7 @@ class Product extends Model implements TranslatableModel
     ];
 
     /** @var list<string> */
-    protected array $translatable = ['title', 'slug', 'description'];
+    protected array $translatable = ['title', 'slug', 'description', 'meta_title', 'meta_description'];
 
     /** @var array<string, mixed> values to write to the default variant on save */
     private array $pendingVariant = [];

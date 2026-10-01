@@ -34,10 +34,10 @@ class Category extends Model implements TranslatableModel
     protected $table = 'product_categories';
 
     /** @var list<string> */
-    protected $fillable = ['title', 'slug', 'description', 'parent_id', 'is_active'];
+    protected $fillable = ['title', 'slug', 'description', 'meta_title', 'meta_description', 'parent_id', 'is_active'];
 
     /** @var list<string> */
-    protected array $translatable = ['title', 'slug', 'description'];
+    protected array $translatable = ['title', 'slug', 'description', 'meta_title', 'meta_description'];
 
     /**
      * @return array<string, string>

@@ -11,8 +11,14 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ShopController;
 use Illuminate\Support\Facades\Route;
+use PnShop\Seo\Http\RobotsController;
+use PnShop\Seo\Http\SitemapController;
 
 Route::get('/', HomeController::class)->name('home');
+
+Route::get('/robots.txt', RobotsController::class)->name('robots');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemaps/{file}.xml', [SitemapController::class, 'show'])->name('sitemap.file');
 
 Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/shop/{product:slug}', [ShopController::class, 'show'])->name('shop.show');

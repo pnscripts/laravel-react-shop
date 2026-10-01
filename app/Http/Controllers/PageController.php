@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Cms\ContentRenderer;
 use PnShop\Cms\Models\Page;
+use PnShop\Seo\CatalogSeo;
+use PnShop\Seo\Seo;
 
 class PageController extends Controller
 {
@@ -26,6 +28,8 @@ class PageController extends Controller
 
         abort_if($page === null, 404);
 
+        app(CatalogSeo::class)->page($request, $page);
+
         return $this->render($page);
     }
 
@@ -34,6 +38,8 @@ class PageController extends Controller
      */
     public function preview(Page $page): Response
     {
+        app(Seo::class)->noindex();
+
         return $this->render($page, preview: ! $page->isLive());
     }
 

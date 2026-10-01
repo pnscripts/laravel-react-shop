@@ -22,6 +22,7 @@ use PnShop\Catalog\ProductType;
 use PnShop\Localization\Filament\TranslationsSection;
 use PnShop\Media\MediaLibrary;
 use PnShop\Media\Models\Media;
+use PnShop\Seo\Filament\SeoFields;
 
 class ProductForm
 {
@@ -176,11 +177,13 @@ class ProductForm
                         ->saveRelationshipsUsing(fn (Product $record, ?array $state) => $record->{$type->relationName()}()->sync(
                             collect($state ?? [])->values()->mapWithKeys(fn (mixed $id, int $position) => [(int) $id => ['position' => $position]])->all(),
                         )), ProductRelationType::cases())),
+                SeoFields::section()->columnSpanFull(),
                 TranslationsSection::make([
                     'title' => fn (string $name) => TextInput::make($name)->label('Title')->maxLength(255),
                     'slug' => fn (string $name) => TextInput::make($name)->label('URL slug')->maxLength(255)
                         ->helperText('Generated from the title when empty.'),
                     'description' => fn (string $name) => Textarea::make($name)->label('Description')->rows(6),
+                    ...SeoFields::translations(),
                 ])->columnSpanFull(),
             ]);
     }

@@ -18,6 +18,7 @@ use PnShop\Catalog\Presenters\ProductCardPresenter;
 use PnShop\Media\MediaPresenter;
 use PnShop\Media\Models\Media;
 use PnShop\Money\MoneyPresenter;
+use PnShop\Seo\CatalogSeo;
 
 class ShopController extends Controller
 {
@@ -55,6 +56,9 @@ class ShopController extends Controller
             ->withQueryString()
             ->through(fn (Product $product) => ProductCardPresenter::present($product));
 
+        $trail = $category ? Category::query()->whereAncestorOf($category, andSelf: true)->defaultOrder()->get()->all() : [];
+        app(CatalogSeo::class)->listing($request, $category, $brand, $trail);
+
         $categories = Category::query()->active()->defaultOrder()->get(['id', 'title', 'slug', 'parent_id', '_lft', '_rgt']);
         $link = fn (Category $category): array => ['id' => $category->id, 'title' => $category->title, 'slug' => $category->slug];
 
@@ -68,14 +72,14 @@ class ShopController extends Controller
             'facets' => $this->facets($base),
             'filters' => [
                 'category' => $category?->slug,
-                'category_path' => $category ? Category::query()->whereAncestorOf($category, andSelf: true)->defaultOrder()->pluck('slug') : [],
+                'category_path' => array_map(fn (Category $item) => $item->slug, $trail),
                 'brand' => $brand?->slug,
                 'attributes' => (object) $attributeFilters,
             ],
         ]);
     }
 
-    public function show(Product $product): Response
+    public function show(Request $request, Product $product): Response
     {
         abort_unless($product->is_active, 404);
 
@@ -95,6 +99,12 @@ class ShopController extends Controller
                 ->map(fn (Category $category) => ['title' => $category->title, 'slug' => $category->slug])
                 ->values()
             : [];
+
+        app(CatalogSeo::class)->product(
+            $request,
+            $product,
+            $product->category ? Category::query()->whereAncestorOf($product->category, andSelf: true)->defaultOrder()->get()->all() : [],
+        );
 
         $usedValueIds = $product->variants->flatMap(fn (ProductVariant $variant) => $variant->optionValues->modelKeys())->unique();
 
