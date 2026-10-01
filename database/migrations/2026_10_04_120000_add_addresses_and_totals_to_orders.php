@@ -45,7 +45,8 @@ return new class extends Migration
             $sums = [];
 
             foreach (DB::table('order_items')->whereIn('order_id', $orders->pluck('id'))->get(['order_id', 'price', 'sale_price', 'quantity']) as $item) {
-                $unit = $item->sale_price !== null && (int) $item->sale_price < (int) $item->price ? (int) $item->sale_price : (int) $item->price;
+                // Same rule as OrderItem::unitPrice(): a stored sale price is what was charged.
+                $unit = $item->sale_price !== null && (int) $item->sale_price > 0 ? (int) $item->sale_price : (int) $item->price;
                 $sums[$item->order_id] = ($sums[$item->order_id] ?? 0) + $unit * (int) $item->quantity;
             }
 
