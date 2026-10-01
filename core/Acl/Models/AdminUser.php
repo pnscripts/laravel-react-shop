@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Laravel\Sanctum\Contracts\HasAbilities;
+use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\PersonalAccessToken;
 use PnShop\Acl\Factories\AdminUserFactory;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
+use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -26,8 +30,16 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class AdminUser extends Authenticatable implements FilamentUser, HasName
 {
+    /** @use HasApiTokens<HasAbilities> */
+    use HasApiTokens;
+
     /** @use HasFactory<AdminUserFactory> */
-    use HasFactory, HasRoles, LogsActivity, Notifiable;
+    use HasFactory;
+
+    use HasRoles {
+        hasPermissionTo as protected roleHasPermissionTo;
+    }
+    use LogsActivity, Notifiable;
 
     public const ADMINISTRATOR_ROLE = 'administrator';
 
@@ -59,6 +71,31 @@ class AdminUser extends Authenticatable implements FilamentUser, HasName
     public function getFilamentName(): string
     {
         return $this->name;
+    }
+
+    /**
+     * Permissions through roles, narrowed to the abilities of the API token in use: a token
+     * never grants more than its owner holds, and the owner's other permissions stay off.
+     *
+     * @param  string|int|Permission|\BackedEnum  $permission
+     */
+    public function hasPermissionTo($permission, ?string $guardName = null): bool
+    {
+        if (is_string($permission) && ! $this->tokenAllows($permission)) {
+            return false;
+        }
+
+        return $this->roleHasPermissionTo($permission, $guardName);
+    }
+
+    /**
+     * Whether the API token this request runs with (if any) carries the permission.
+     */
+    public function tokenAllows(string $permission): bool
+    {
+        $token = $this->currentAccessToken();
+
+        return ! $token instanceof PersonalAccessToken || $token->can($permission);
     }
 
     public function isAdministrator(): bool

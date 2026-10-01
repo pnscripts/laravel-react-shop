@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use PnShop\Customer\Models\CustomerAddress;
 use PnShop\Customer\Models\CustomerGroup;
 use PnShop\Sales\Models\Order;
@@ -27,7 +28,7 @@ use Spatie\Activitylog\Support\LogOptions;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, LogsActivity, Notifiable;
+    use HasApiTokens, HasFactory, LogsActivity, Notifiable;
 
     /**
      * The attributes that are mass assignable.

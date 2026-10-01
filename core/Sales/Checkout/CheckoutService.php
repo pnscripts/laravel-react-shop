@@ -55,7 +55,9 @@ class CheckoutService
      * The order keeps copies of the shipping and billing addresses and its totals from
      * the cart.totals pipeline, computed from the locked variant rows.
      *
-     * @param  array{email: string, shipping: array<string, mixed>, billing?: array<string, mixed>, billing_same_as_shipping?: bool, save_address?: bool, payment_method_id: int|string}  $data
+     * @param  array<string, mixed>  $data  input validated with CheckoutRules: email, shipping (address),
+     *                                      billing + billing_same_as_shipping, save_address, shipping_method_id,
+     *                                      payment_method_id
      *
      * @throws CheckoutException when the cart is empty or a product is unavailable.
      */
@@ -146,7 +148,7 @@ class CheckoutService
                 'user' => $user,
             ]);
 
-            $method = PaymentMethod::query()->find($data['payment_method_id']);
+            $method = PaymentMethod::query()->find((int) $data['payment_method_id']);
 
             if ($method === null || ! $this->payments->accepts($method, new PaymentContext($totals->total(), $shipping->country_code, $user))) {
                 throw new CheckoutException(__('This payment method is not available for your order. Please choose another one.'));

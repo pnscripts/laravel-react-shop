@@ -16,6 +16,9 @@ use PnShop\Cart\Models\CartLine;
  * otherwise the guest cart whose token is kept in the session and in a long-lived
  * cookie (so the cart outlives the session). A cart row is only created on the first
  * change, so browsing never writes to the database.
+ *
+ * Store API requests are stateless: the client sends the guest token in the X-Cart-Token
+ * header (see useStatelessToken()), and a new cart's token is returned in the response.
  */
 final class CartRepository
 {
@@ -29,6 +32,9 @@ final class CartRepository
     private const SESSION_TOKEN = 'cart.token';
 
     private const LINES_ATTRIBUTE = 'pnshop.cart.lines';
+
+    /** Request attribute holding the guest token of a stateless (API) request. */
+    private const STATELESS_TOKEN = 'pnshop.cart.stateless_token';
 
     /**
      * @return array<int, int> variant id => quantity
@@ -106,6 +112,11 @@ final class CartRepository
         if ($this->request()->hasSession()) {
             $this->request()->session()->forget(self::SESSION_TOKEN);
         }
+
+        if ($this->request()->attributes->has(self::STATELESS_TOKEN)) {
+            $this->request()->attributes->set(self::STATELESS_TOKEN, null);
+        }
+
         $this->forgetLines();
     }
 
@@ -130,9 +141,23 @@ final class CartRepository
         return $cart;
     }
 
+    /**
+     * Use the given guest token for this request instead of the session and cookie, and keep
+     * a newly created cart's token on the request (read it back with guestToken()).
+     */
+    public function useStatelessToken(?string $token): void
+    {
+        $this->request()->attributes->set(self::STATELESS_TOKEN, is_string($token) && Str::isUuid($token) ? $token : null);
+        $this->forgetLines();
+    }
+
     public function guestToken(): ?string
     {
         $request = $this->request();
+
+        if ($request->attributes->has(self::STATELESS_TOKEN)) {
+            return $request->attributes->get(self::STATELESS_TOKEN);
+        }
 
         foreach ([$request->hasSession() ? $request->session()->get(self::SESSION_TOKEN) : null, $request->cookie(self::COOKIE)] as $token) {
             if (is_string($token) && Str::isUuid($token)) {
@@ -146,6 +171,12 @@ final class CartRepository
     private function rememberGuestToken(string $token): void
     {
         $request = $this->request();
+
+        if ($request->attributes->has(self::STATELESS_TOKEN)) {
+            $request->attributes->set(self::STATELESS_TOKEN, $token);
+
+            return;
+        }
 
         if ($request->hasSession()) {
             $request->session()->put(self::SESSION_TOKEN, $token);

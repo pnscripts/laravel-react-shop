@@ -2,6 +2,7 @@
 
 use PnShop\Acl\AclServiceProvider;
 use PnShop\Admin\AdminServiceProvider;
+use PnShop\Api\ApiServiceProvider;
 use PnShop\Cart\CartServiceProvider;
 use PnShop\Catalog\CatalogServiceProvider;
 use PnShop\Cms\CmsServiceProvider;
@@ -52,6 +53,7 @@ return [
         ExtensionServiceProvider::class,
         ThemeServiceProvider::class,
         SeoServiceProvider::class,
+        ApiServiceProvider::class,
         AdminServiceProvider::class,
     ],
 
@@ -129,6 +131,21 @@ return [
 
     'themes' => [
         'path' => env('PNSHOP_THEMES_PATH', base_path('themes')),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | APIs
+    |--------------------------------------------------------------------------
+    |
+    | Requests per minute for each token (or IP address without a token) on
+    | the Store API (/api/store/v1) and the Admin API (/api/admin/v1).
+    |
+    */
+
+    'api' => [
+        'store_rate_limit' => (int) env('PNSHOP_STORE_API_RATE_LIMIT', 120),
+        'admin_rate_limit' => (int) env('PNSHOP_ADMIN_API_RATE_LIMIT', 300),
     ],
 
 ];

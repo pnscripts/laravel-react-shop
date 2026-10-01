@@ -40,10 +40,19 @@ class AclServiceProvider extends ModuleServiceProvider
 
         // Administrators hold every permission, including ones registered later. Only permission
         // keys (always dotted) are granted here; policy abilities such as "delete" still run their
-        // own rules (e.g. nobody may delete the last administrator).
-        Gate::before(fn (mixed $user, string $ability) => $user instanceof AdminUser
-            && str_contains($ability, '.')
-            && $user->isAdministrator() ? true : null);
+        // own rules (e.g. nobody may delete the last administrator). Over the Admin API a token
+        // only carries the permissions it was created with, administrators included.
+        Gate::before(function (mixed $user, string $ability): ?bool {
+            if (! $user instanceof AdminUser || ! str_contains($ability, '.')) {
+                return null;
+            }
+
+            if (! $user->tokenAllows($ability)) {
+                return false;
+            }
+
+            return $user->isAdministrator() ? true : null;
+        });
 
         // Keep permissions in step with the code after every migrate (install, update, tests).
         Event::listen(MigrationsEnded::class, function (): void {

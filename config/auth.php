@@ -48,6 +48,18 @@ return [
             'driver' => 'session',
             'provider' => 'admin_users',
         ],
+
+        // Bearer tokens of the Store API (customers) and the Admin API (staff). The provider
+        // makes Sanctum refuse a token that belongs to the other kind of account.
+        'store-api' => [
+            'driver' => 'sanctum',
+            'provider' => 'users',
+        ],
+
+        'admin-api' => [
+            'driver' => 'sanctum',
+            'provider' => 'admin_users',
+        ],
     ],
 
     /*

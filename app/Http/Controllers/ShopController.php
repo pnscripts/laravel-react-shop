@@ -8,49 +8,25 @@ use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Catalog\Models\Brand;
 use PnShop\Catalog\Models\Category;
-use PnShop\Catalog\Models\Option;
-use PnShop\Catalog\Models\OptionValue;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductAttribute;
 use PnShop\Catalog\Models\ProductAttributeValue;
-use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Catalog\Presenters\ProductCardPresenter;
-use PnShop\Media\MediaPresenter;
-use PnShop\Media\Models\Media;
-use PnShop\Money\MoneyPresenter;
+use PnShop\Catalog\Presenters\ProductDetailPresenter;
+use PnShop\Catalog\ProductBrowser;
 use PnShop\Seo\CatalogSeo;
 
 class ShopController extends Controller
 {
     public function index(Request $request): Response
     {
-        $categorySlug = $request->string('category')->toString();
-        $brandSlug = $request->string('brand')->toString();
+        $browser = ProductBrowser::fromInput($request->only(['category', 'brand', 'filter']));
+        $category = $browser->category;
+        $brand = $browser->brand;
+        $base = $browser->base();
 
-        $category = $categorySlug !== '' ? Category::query()->active()->whereTranslated('slug', $categorySlug)->first() : null;
-        $brand = $brandSlug !== '' ? Brand::query()->active()->whereTranslated('slug', $brandSlug)->first() : null;
-
-        /** @var array<int, list<int>> $attributeFilters attribute id => chosen value ids */
-        $attributeFilters = collect((array) $request->input('filter', []))
-            ->mapWithKeys(fn (mixed $values, mixed $attributeId) => [(int) $attributeId => array_values(array_filter(array_map('intval', (array) $values)))])
-            ->filter()
-            ->all();
-
-        $base = Product::query()
-            ->active()
-            ->when($categorySlug !== '', fn (Builder $query) => $category
-                ? $query->whereHas('categories', fn (Builder $categories) => $categories->whereKey($category->subtreeIds()))
-                : $query->whereRaw('1 = 0'))
-            ->when($brandSlug !== '', fn (Builder $query) => $query->where('brand_id', $brand->id ?? 0));
-
-        $products = (clone $base)
+        $products = $browser->query()
             ->with(ProductCardPresenter::RELATIONS)
-            // Values of one attribute are alternatives (OR); different attributes narrow down (AND).
-            ->tap(function (Builder $query) use ($attributeFilters): void {
-                foreach ($attributeFilters as $valueIds) {
-                    $query->whereHas('selectedAttributeValues', fn (Builder $values) => $values->whereIn('product_attribute_values.id', $valueIds));
-                }
-            })
             ->latest()
             ->paginate(12)
             ->withQueryString()
@@ -74,7 +50,7 @@ class ShopController extends Controller
                 'category' => $category?->slug,
                 'category_path' => array_map(fn (Category $item) => $item->slug, $trail),
                 'brand' => $brand?->slug,
-                'attributes' => (object) $attributeFilters,
+                'attributes' => (object) $browser->attributeFilters,
             ],
         ]);
     }
@@ -83,70 +59,16 @@ class ShopController extends Controller
     {
         abort_unless($product->is_active, 404);
 
-        $product->load([
-            'category:id,title,slug,parent_id,_lft,_rgt',
-            'brand:id,name,slug',
-            'selectedAttributeValues',
-            'media',
-            'options.values',
-            'variants' => fn ($variants) => $variants->where('is_active', true)->with(['optionValues', 'stockLevels']),
-        ]);
+        ProductDetailPresenter::load($product);
 
         abort_if($product->variants->isEmpty(), 404);
 
-        $breadcrumbs = $product->category
-            ? Category::query()->whereAncestorOf($product->category, andSelf: true)->defaultOrder()->get(['id', 'title', 'slug', '_lft', '_rgt'])
-                ->map(fn (Category $category) => ['title' => $category->title, 'slug' => $category->slug])
-                ->values()
-            : [];
-
-        app(CatalogSeo::class)->product(
-            $request,
-            $product,
-            $product->category ? Category::query()->whereAncestorOf($product->category, andSelf: true)->defaultOrder()->get()->all() : [],
-        );
-
-        $usedValueIds = $product->variants->flatMap(fn (ProductVariant $variant) => $variant->optionValues->modelKeys())->unique();
+        $trail = ProductDetailPresenter::trail($product);
+        app(CatalogSeo::class)->product($request, $product, $trail);
 
         return Inertia::render('shop/show', [
-            'product' => [
-                'id' => $product->id,
-                'type' => $product->type->value,
-                'title' => $product->title,
-                'slug' => $product->slug,
-                'description' => $product->description,
-                'image' => ProductCardPresenter::mainImage($product),
-                'gallery' => $product->mediaIn('gallery')->map(fn (Media $media) => MediaPresenter::present($media, $product->title))->values()->all(),
-                'brand' => $product->brand ? ['name' => $product->brand->name, 'slug' => $product->brand->slug] : null,
-                'category' => $product->category ? [
-                    'id' => $product->category->id,
-                    'title' => $product->category->title,
-                    'slug' => $product->category->slug,
-                ] : null,
-                'breadcrumbs' => $breadcrumbs,
-                'attributes' => $product->category
-                    ? $product->getProductAttributesWithValues()
-                    : [],
-                'options' => $product->options->map(fn (Option $option) => [
-                    'id' => $option->id,
-                    'name' => $option->name,
-                    'values' => $option->values
-                        ->filter(fn (OptionValue $value) => $usedValueIds->contains($value->id))
-                        ->map(fn (OptionValue $value) => ['id' => $value->id, 'value' => $value->value])
-                        ->values(),
-                ])->values(),
-                'variants' => $product->variants->map(fn (ProductVariant $variant) => [
-                    'id' => $variant->id,
-                    'sku' => $variant->sku,
-                    'option_value_ids' => $variant->optionValues->modelKeys(),
-                    'price' => MoneyPresenter::present($variant->price),
-                    'sale_price' => $variant->isOnSale() ? MoneyPresenter::present($variant->sale_price) : null,
-                    'stock' => $variant->available(),
-                    'can_backorder' => $variant->allow_backorder,
-                ])->values(),
-                'default_variant_id' => $product->defaultVariant()?->id,
-            ],
-            'related' => $this->relatedProducts($product),
+            'product' => ProductDetailPresenter::present($product, $trail),
+            'related' => ProductDetailPresenter::related($product),
         ]);
     }
 
@@ -171,26 +93,6 @@ class ShopController extends Controller
                 'label' => $attribute->label,
                 'values' => $attribute->values->map(fn (ProductAttributeValue $value) => ['id' => $value->id, 'value' => $value->value])->values()->all(),
             ])
-            ->values()
-            ->all();
-    }
-
-    /**
-     * Upsells first, then related products; only purchasable ones.
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function relatedProducts(Product $product): array
-    {
-        $load = fn ($query) => $query->active()->with(ProductCardPresenter::RELATIONS);
-
-        $product->load(['upsellProducts' => $load, 'relatedProducts' => $load]);
-
-        return $product->upsellProducts
-            ->concat($product->relatedProducts)
-            ->unique('id')
-            ->take(8)
-            ->map(fn (Product $related) => ProductCardPresenter::present($related))
             ->values()
             ->all();
     }
