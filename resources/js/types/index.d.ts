@@ -126,6 +126,12 @@ export interface OrderStates {
     fulfillment_status: string;
 }
 
+/** A content block from the CMS: the type picks the component, props come from the server. */
+export interface ContentBlock {
+    type: string;
+    props: Record<string, unknown>;
+}
+
 export interface CartSummary {
     items: CartItem[];
     total_quantity: number;

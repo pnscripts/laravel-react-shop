@@ -4,6 +4,7 @@ use PnShop\Acl\AclServiceProvider;
 use PnShop\Admin\AdminServiceProvider;
 use PnShop\Cart\CartServiceProvider;
 use PnShop\Catalog\CatalogServiceProvider;
+use PnShop\Cms\CmsServiceProvider;
 use PnShop\Customer\CustomerServiceProvider;
 use PnShop\Inventory\InventoryServiceProvider;
 use PnShop\Localization\LocalizationServiceProvider;
@@ -44,6 +45,7 @@ return [
         PaymentServiceProvider::class,
         ShippingServiceProvider::class,
         TaxServiceProvider::class,
+        CmsServiceProvider::class,
         AdminServiceProvider::class,
     ],
 

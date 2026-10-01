@@ -23,6 +23,7 @@ core/
 ├── Payment/                 gateways (PaymentGatewayManager), payment methods, payments, contract test kit
 ├── Shipping/                zones, methods, carriers (ShippingCarrierManager), shipments, cart.totals stage, contract test kit
 ├── Tax/                     tax classes, zones, rates, TaxProvider (rate tables by default), cart.totals stage
+├── Cms/                     pages, revisions, content blocks (BlockRegistry, HasContentBlocks, ContentEditor)
 └── Admin/                   the Filament panel (/admin)
 ```
 

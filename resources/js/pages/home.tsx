@@ -1,12 +1,23 @@
+import { Blocks } from '@/components/blocks';
 import { ProductCard } from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { type ProductCard as ProductCardType } from '@/types';
+import { type ContentBlock, type ProductCard as ProductCardType } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
-export default function Home({ products }: { products: ProductCardType[] }) {
+export default function Home({ products, blocks, title }: { products: ProductCardType[]; blocks: ContentBlock[] | null; title: string | null }) {
     const t = useTranslations();
+
+    // A CMS page marked as the homepage replaces the default home.
+    if (blocks) {
+        return (
+            <StorefrontLayout>
+                <Head title={title ?? t('Shop')} />
+                <Blocks blocks={blocks} />
+            </StorefrontLayout>
+        );
+    }
 
     return (
         <StorefrontLayout>
