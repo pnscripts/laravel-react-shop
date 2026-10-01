@@ -78,6 +78,27 @@ final class CartRepository
         $this->forgetLines();
     }
 
+    /**
+     * The cart's lines read under a row lock (call inside a transaction). A second checkout
+     * of the same cart waits here and then sees the lines the first one removed.
+     *
+     * @return array<int, int> variant id => quantity
+     */
+    public function lockedLines(): array
+    {
+        $cart = $this->current();
+
+        if ($cart === null || Cart::query()->whereKey($cart->id)->lockForUpdate()->first() === null) {
+            return [];
+        }
+
+        $this->forgetLines();
+
+        return CartLine::query()->where('cart_id', $cart->id)->pluck('quantity', 'product_variant_id')
+            ->map(fn (mixed $quantity) => (int) $quantity)
+            ->all();
+    }
+
     /** The coupon code entered for the current cart, if any. */
     public function couponCode(): ?string
     {

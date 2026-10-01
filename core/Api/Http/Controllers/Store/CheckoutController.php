@@ -16,6 +16,7 @@ use PnShop\Payment\PaymentOutcome;
 use PnShop\Payment\PaymentService;
 use PnShop\Sales\Checkout\CheckoutRules;
 use PnShop\Sales\Checkout\CheckoutService;
+use PnShop\Sales\OrderLinks;
 use PnShop\Shipping\ShippingQuote;
 use PnShop\Shipping\ShippingRequest;
 use PnShop\Shipping\ShippingService;
@@ -101,7 +102,7 @@ class CheckoutController extends ApiController
                 'redirect_url' => $payment->outcome === PaymentOutcome::Redirect ? $payment->redirectUrl : null,
                 'message' => $payment->outcome === PaymentOutcome::Failed ? $payment->message : null,
             ],
-            'links' => ['order' => URL::signedRoute('api.store.orders.show', ['order' => $order])],
+            'links' => ['order' => URL::temporarySignedRoute('api.store.orders.show', now()->addDays(OrderLinks::days()), ['order' => $order])],
         ], 201);
     }
 }

@@ -3,6 +3,7 @@
 namespace PnShop\Promotion;
 
 use Brick\Math\BigDecimal;
+use Brick\Math\BigInteger;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Support\Collection;
@@ -60,7 +61,8 @@ final class Discounts
             $share = $index === $items->count() - 1
                 ? $amount->minus($given)
                 : Money::ofMinor(
-                    intdiv($amount->getMinorAmount()->toInt() * $this->left($item)->getMinorAmount()->toInt(), $baseMinor),
+                    // Big integers: amount × line can exceed 64 bits in zero-decimal currencies.
+                    BigInteger::of($amount->getMinorAmount()->toInt())->multipliedBy($this->left($item)->getMinorAmount()->toInt())->quotient($baseMinor),
                     $this->context->currency(),
                 );
 

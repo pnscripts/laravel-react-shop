@@ -24,25 +24,59 @@ final class Installation
         return (string) config('pnshop.installer.lock', storage_path('app/pnshop-installed.json'));
     }
 
+    public const INSTALLED = 'installed';
+
+    public const FRESH = 'fresh';
+
+    /** The database cannot be reached, so whether the shop is installed is not known. */
+    public const UNKNOWN = 'unknown';
+
     public function isInstalled(): bool
     {
+        return $this->state() === self::INSTALLED;
+    }
+
+    /**
+     * installed, fresh (a reachable empty database, or no SQLite file yet), or unknown (the
+     * database cannot be reached). Unknown must never open the installer: an outage on a
+     * live shop would otherwise let anyone re-run the installation.
+     */
+    public function state(): string
+    {
         if ($this->installed === true || is_file(self::lockPath())) {
-            return $this->installed = true;
+            $this->installed = true;
+
+            return self::INSTALLED;
         }
 
         try {
             $recorded = (Schema::hasTable('system_versions') && DB::table('system_versions')->exists())
                 || (Schema::hasTable('admin_users') && DB::table('admin_users')->exists());
         } catch (Throwable) {
-            // No database (yet): a fresh copy.
-            return false;
+            return $this->sqliteFileIsNew() ? self::FRESH : self::UNKNOWN;
         }
 
         if ($recorded) {
             $this->writeLock($this->installedVersion() ?? PnShop::VERSION);
+            $this->installed = true;
+
+            return self::INSTALLED;
         }
 
-        return $this->installed = $recorded;
+        return self::FRESH;
+    }
+
+    private function sqliteFileIsNew(): bool
+    {
+        $connection = (string) config('database.default');
+
+        if (config("database.connections.{$connection}.driver") !== 'sqlite') {
+            return false;
+        }
+
+        $file = (string) config("database.connections.{$connection}.database");
+
+        return $file !== ':memory:' && (! is_file($file) || filesize($file) === 0);
     }
 
     /**

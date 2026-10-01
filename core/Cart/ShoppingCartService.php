@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
 use PnShop\Cart\Exceptions\CartException;
 use PnShop\Cart\Totals\CartCalculator;
 use PnShop\Cart\Totals\CartTotals;
@@ -158,6 +159,13 @@ class ShoppingCartService
      */
     public function applyCoupon(string $code): array
     {
+        // Guessing codes: 10 wrong codes per 10 minutes per visitor.
+        $attempts = 'pnshop:coupon-attempts:'.$this->request()->ip();
+
+        if (RateLimiter::tooManyAttempts($attempts, 10)) {
+            throw new CartException(__('Too many coupon codes tried. Please wait a few minutes.'));
+        }
+
         $previous = $this->couponCode();
         $this->setCouponCode(trim($code));
 
@@ -165,6 +173,7 @@ class ShoppingCartService
 
         if (! is_array($coupon) || empty($coupon['valid'])) {
             $this->setCouponCode($previous);
+            RateLimiter::hit($attempts, 600);
 
             throw new CartException(__('This coupon code is not valid.'));
         }
@@ -196,6 +205,14 @@ class ShoppingCartService
     public function getTotalQuantity(): int
     {
         return array_sum($this->getLines());
+    }
+
+    /**
+     * @return array<int, int> variant id => quantity, read under a row lock (see CartRepository)
+     */
+    public function lockedLines(): array
+    {
+        return $this->carts->lockedLines();
     }
 
     public function clearCart(): void

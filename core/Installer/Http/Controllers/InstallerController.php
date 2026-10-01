@@ -73,8 +73,9 @@ class InstallerController
 
         try {
             DB::connection('pnshop_install_check')->getPdo();
-        } catch (Throwable $e) {
-            throw ValidationException::withMessages(['connection' => 'Cannot connect: '.$e->getMessage()]);
+        } catch (Throwable) {
+            // Generic on purpose: raw driver errors would let visitors map hosts and ports.
+            throw ValidationException::withMessages(['connection' => 'Cannot connect to the database. Check the host, port, database name, user and password.']);
         } finally {
             DB::purge('pnshop_install_check');
         }

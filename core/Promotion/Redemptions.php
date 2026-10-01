@@ -42,10 +42,15 @@ class Redemptions
 
             // The cart could not know a guest's email: check the per-customer limit again.
             if ($promotion->usage_limit_per_customer !== null) {
-                $used = PromotionRedemption::query()
+                // A locking read sees redemptions committed by a concurrent checkout (MySQL's
+                // REPEATABLE READ snapshot would not); the promotion row lock above orders them.
+                // Ids are counted here: PostgreSQL refuses FOR UPDATE with COUNT().
+                $used = count(PromotionRedemption::query()
                     ->where('promotion_id', $promotion->id)
                     ->where(fn (Builder $query) => $query->where('email', $email)->when($event->customer !== null, fn (Builder $query) => $query->orWhere('user_id', $event->customer?->id)))
-                    ->count();
+                    ->lockForUpdate()
+                    ->pluck('id')
+                    ->all());
 
                 if ($used >= $promotion->usage_limit_per_customer) {
                     throw new CheckoutException(__('You have already used the offer ":offer".', ['offer' => $applied->label]));

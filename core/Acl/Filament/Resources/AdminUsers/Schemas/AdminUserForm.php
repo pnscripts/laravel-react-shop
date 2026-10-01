@@ -10,6 +10,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Validation\Rules\Password;
 use PnShop\Acl\Models\AdminUser;
+use Spatie\Permission\Models\Role;
 
 class AdminUserForm
 {
@@ -29,14 +30,37 @@ class AdminUserForm
                         ->dehydrated(fn (?string $state) => filled($state))
                         ->helperText(fn ($livewire) => $livewire instanceof CreateRecord ? null : 'Leave empty to keep the current password.'),
                     Select::make('roles')
-                        ->relationship('roles', 'name', fn ($query) => $query->where('guard_name', 'admin'))
+                        // Only roles the signed-in staff member may hand out (no privilege escalation).
+                        ->relationship('roles', 'name', fn ($query) => $query->where('guard_name', 'admin')->whereIn('id', self::assignableRoleIds()))
                         ->multiple()
-                        ->preload(),
+                        ->preload()
+                        ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail): void {
+                            if (array_diff(array_map('intval', (array) $value), self::assignableRoleIds()) !== []) {
+                                $fail('You may only assign roles whose permissions you hold yourself.');
+                            }
+                        }),
                     Toggle::make('is_active')
                         ->label('Can sign in')
                         ->default(true)
                         ->disabled(fn (?AdminUser $record) => $record !== null && $record->is(auth('admin')->user())),
                 ]),
         ]);
+    }
+
+    /**
+     * @return list<int>
+     */
+    public static function assignableRoleIds(): array
+    {
+        $actor = auth('admin')->user();
+
+        if (! $actor instanceof AdminUser) {
+            return [];
+        }
+
+        return array_values(Role::query()->where('guard_name', 'admin')->with('permissions')->get()
+            ->filter(fn (Role $role) => $actor->mayAssign($role))
+            ->map(fn (Role $role) => (int) $role->id)
+            ->all());
     }
 }

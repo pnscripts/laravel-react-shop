@@ -8,6 +8,7 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use PnShop\Cms\Exceptions\LockedBlocksException;
 use PnShop\Cms\Filament\Resources\Pages\PageResource;
 use PnShop\Cms\Models\PageRevision;
 use PnShop\Cms\PageRevisions;
@@ -42,7 +43,13 @@ class RevisionsRelationManager extends RelationManager
                     ->requiresConfirmation()
                     ->modalDescription('The page goes back to this version. The current version is kept as a revision.')
                     ->action(function (PageRevision $record): void {
-                        app(PageRevisions::class)->restore($record, auth('admin')->user());
+                        try {
+                            app(PageRevisions::class)->restore($record, auth('admin')->user());
+                        } catch (LockedBlocksException $e) {
+                            Notification::make()->danger()->title($e->getMessage())->send();
+
+                            return;
+                        }
 
                         Notification::make()->success()->title('Revision restored.')->send();
                         $this->redirect(PageResource::getUrl('edit', ['record' => $this->getOwnerRecord()]));

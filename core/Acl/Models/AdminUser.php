@@ -16,6 +16,7 @@ use PnShop\Acl\Factories\AdminUserFactory;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Contracts\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -96,6 +97,37 @@ class AdminUser extends Authenticatable implements FilamentUser, HasName
         $token = $this->currentAccessToken();
 
         return ! $token instanceof PersonalAccessToken || $token->can($permission);
+    }
+
+    /**
+     * Whether this staff member may hand out all of these permissions: administrators may
+     * grant anything, others only what they hold themselves (no privilege escalation).
+     *
+     * @param  iterable<string>  $permissions
+     */
+    public function mayGrant(iterable $permissions): bool
+    {
+        if ($this->isAdministrator()) {
+            return true;
+        }
+
+        foreach ($permissions as $permission) {
+            if (! $this->checkPermissionTo($permission)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /** Whether this staff member may give someone the role. */
+    public function mayAssign(Role $role): bool
+    {
+        if ($role->name === self::ADMINISTRATOR_ROLE) {
+            return $this->isAdministrator();
+        }
+
+        return $this->mayGrant($role->permissions->pluck('name'));
     }
 
     public function isAdministrator(): bool

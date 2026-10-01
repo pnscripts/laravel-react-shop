@@ -27,7 +27,10 @@ class RolePolicy
      */
     public function update(AdminUser $admin, Role $role): bool
     {
-        return $admin->can('system.roles.manage') && $role->name !== AdminUser::ADMINISTRATOR_ROLE;
+        return $admin->can('system.roles.manage')
+            && $role->name !== AdminUser::ADMINISTRATOR_ROLE
+            // Nobody edits a role that holds permissions they do not have themselves.
+            && $admin->mayGrant($role->permissions->pluck('name'));
     }
 
     public function delete(AdminUser $admin, Role $role): bool

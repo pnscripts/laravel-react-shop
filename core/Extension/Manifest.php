@@ -170,8 +170,9 @@ final readonly class Manifest
         }
 
         $storefront = $string('storefront');
-        if ($storefront !== null && (! str_ends_with($storefront, '.js') || str_contains($storefront, '..') || str_starts_with($storefront, '/') || ! is_file(rtrim($path, '/').'/'.$storefront) && $path !== 'archive')) {
-            $errors[] = 'storefront must be the path of a built .js file inside the plugin.';
+        // In a folder of its own (e.g. dist/), which is published to public/: never the plugin root.
+        if ($storefront !== null && (! str_ends_with($storefront, '.js') || ! str_contains($storefront, '/') || str_contains($storefront, '..') || str_starts_with($storefront, '/') || ! is_file(rtrim($path, '/').'/'.$storefront) && $path !== 'archive')) {
+            $errors[] = 'storefront must be the path of a built .js file in a subfolder of the plugin (e.g. dist/storefront.js).';
         }
 
         if ($errors !== []) {

@@ -30,7 +30,16 @@ class InstallGate
             return $next($request);
         }
 
-        $installed = $this->installation->isInstalled();
+        $state = $this->installation->state();
+
+        // Never guess: an unreachable database on a live shop must not open the installer.
+        if ($state === Installation::UNKNOWN) {
+            return $request->expectsJson() && ! $installerPage
+                ? response()->json(['message' => 'The database is not reachable.'], 503)
+                : response(view('pnshop-installer::unavailable'), 503);
+        }
+
+        $installed = $state === Installation::INSTALLED;
 
         if ($installerPage) {
             abort_if($installed, 404);
@@ -39,8 +48,9 @@ class InstallGate
             // Sessions and the rate limiter must not need the database. The limiter was built at
             // boot with the default (possibly database) store; the installer's own throttles
             // need no named limiters, so a file-based one replaces it.
-            config(['session.driver' => 'file', 'cache.limiter' => 'file']);
-            app()->instance(RateLimiter::class, new RateLimiter(app('cache')->store('file')));
+            $store = (string) config('pnshop.installer.cache_store', 'file');
+            config(['session.driver' => 'file', 'cache.limiter' => $store]);
+            app()->instance(RateLimiter::class, new RateLimiter(app('cache')->store($store)));
             Facade::clearResolvedInstance(RateLimiter::class);
 
             return $next($request);

@@ -70,13 +70,20 @@ class CheckoutService
             throw new CheckoutException(__('Your cart is empty.'));
         }
 
-        // Handle variants in a stable order so concurrent checkouts cannot deadlock.
-        ksort($lines);
-
         $shipping = PostalAddress::fromArray($data['shipping']);
         $billing = ($data['billing_same_as_shipping'] ?? true) || empty($data['billing']) ? $shipping : PostalAddress::fromArray($data['billing']);
 
-        $order = DB::transaction(function () use ($data, $user, $lines, $shipping, $billing) {
+        $order = DB::transaction(function () use ($data, $user, $shipping, $billing) {
+            // The cart is locked and emptied in this transaction: a double submit cannot place
+            // the same cart twice.
+            $lines = $this->cart->lockedLines();
+
+            if ($lines === []) {
+                throw new CheckoutException(__('Your cart is empty.'));
+            }
+
+            ksort($lines);
+
             $variants = ProductVariant::query()
                 ->whereKey(array_keys($lines))
                 ->with(['product.media', 'optionValues', 'stockLevels'])
@@ -182,12 +189,12 @@ class CheckoutService
 
             $this->workflow->recordPlaced($order, $user);
 
+            $this->cart->clearCart();
+
             return $order;
         }, attempts: 3);
 
         OrderPlaced::dispatch($order);
-
-        $this->cart->clearCart();
 
         if ($user !== null && ($data['save_address'] ?? false)) {
             $this->saveToAddressBook($user, $shipping);

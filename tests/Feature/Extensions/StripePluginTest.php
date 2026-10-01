@@ -15,6 +15,8 @@ use PnShop\Payment\RefundService;
 use PnShop\Payment\Testing\PaymentGatewayContractTests;
 use PnShop\Plugins\Stripe\WebhookSignature;
 use PnShop\Sales\Models\Order;
+use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\OrderStatus;
 use PnShop\Sales\States\PaymentStatus;
 use PnShop\Settings\Settings;
 use Tests\Feature\Admin\AdminTestCase;
@@ -93,6 +95,22 @@ class StripePluginTest extends AdminTestCase
         $this->get('/stripe/return/'.$payment->id.'?session_id=cs_other')->assertRedirect();
     }
 
+    public function test_guessing_payment_ids_never_yields_a_signed_order_link(): void
+    {
+        $order = $this->checkout();
+        $payment = $order->payments()->sole();
+
+        // A stranger (new session) without the Checkout Session id.
+        $this->flushSession();
+        $location = $this->get('/stripe/return/'.$payment->id)->assertRedirect()->headers->get('Location');
+
+        $this->assertStringNotContainsString('signature=', (string) $location);
+        $this->get((string) $location)->assertForbidden();
+
+        $this->get('/stripe/return/'.$payment->id.'?session_id=cs_wrong')->assertRedirect(route('orders.show', $order));
+        $this->get('/stripe/return/999999')->assertRedirect(route('home'));
+    }
+
     public function test_the_signed_webhook_confirms_the_payment_once(): void
     {
         $order = $this->checkout();
@@ -109,6 +127,26 @@ class StripePluginTest extends AdminTestCase
         $this->assertSame(PaymentState::Paid, $payment->fresh()->status);
         $this->assertSame(1, $payment->transactions()->where('type', 'webhook')->count());
         $this->assertSame(PaymentStatus::Paid, $order->fresh()->payment_status);
+    }
+
+    public function test_cancelling_expires_the_session_and_a_late_payment_is_flagged(): void
+    {
+        $order = $this->checkout();
+        $payment = $order->payments()->sole();
+        Http::fake(['api.stripe.com/v1/checkout/sessions/cs_test_1/expire' => Http::response(['id' => 'cs_test_1', 'status' => 'expired'])]);
+
+        app(OrderWorkflow::class)->transition($order, OrderStatus::Cancelled);
+
+        Http::assertSent(fn ($request) => str_ends_with($request->url(), '/checkout/sessions/cs_test_1/expire'));
+
+        // The customer had already paid on Stripe's page: the webhook still arrives.
+        $payload = json_encode(['type' => 'checkout.session.completed', 'data' => ['object' => $this->stripeSession($payment->id)]]);
+        $this->call('POST', '/stripe/webhook', [], [], [], ['HTTP_STRIPE_SIGNATURE' => WebhookSignature::header((string) $payload, 'whsec_fake', time()), 'CONTENT_TYPE' => 'application/json'], $payload)->assertOk();
+        $this->call('POST', '/stripe/webhook', [], [], [], ['HTTP_STRIPE_SIGNATURE' => WebhookSignature::header((string) $payload, 'whsec_fake', time()), 'CONTENT_TYPE' => 'application/json'], $payload)->assertOk();
+
+        $this->assertSame(OrderStatus::Cancelled, $order->fresh()->status);
+        $this->assertSame(1, $payment->transactions()->where('type', 'late_payment')->count());
+        $this->assertDatabaseHas('order_history', ['order_id' => $order->id, 'field' => 'note']);
     }
 
     public function test_a_payment_that_does_not_match_the_order_is_refused(): void

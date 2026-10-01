@@ -16,7 +16,7 @@ A **promotion** is a cart rule. When all of its **conditions** hold, its **actio
 
 | Type | Holds when |
 |---|---|
-| Cart subtotal is at least | the subtotal (before discounts) reaches the amount |
+| Cart subtotal is at least | the subtotal **before discounts** reaches the amount (as do free-shipping thresholds of shipping methods) |
 | Number of items is at least | the number of units reaches N (optionally counting only some products or categories) |
 | Cart contains products | a line is one of the products or in one of the categories (subcategories included) |
 | Customer group is | the signed-in customer is in one of the groups (guests never) |
@@ -39,7 +39,7 @@ Each promotion that needs a coupon has a **Coupons** tab:
 - **Matching:** customers can type a code in any case, and codes are stored upper-case.
 - **Code limits:** a code can have its own usage limit, on top of the promotion's.
 
-Customers enter a code in the cart, or through the Store API with `POST /cart/coupon`:
+Wrong codes are rate limited: 10 per 10 minutes per visitor. Customers enter a code in the cart, or through the Store API with `POST /cart/coupon`:
 
 - **Unknown or used-up codes** are refused.
 - **Valid codes the cart doesn't qualify for yet** (for example below the minimum subtotal) are kept, the cart says why, and the code applies as soon as the cart qualifies.

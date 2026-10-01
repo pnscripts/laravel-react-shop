@@ -2,6 +2,7 @@
 
 namespace PnShop\Sales;
 
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -9,6 +10,7 @@ use PnShop\Catalog\Models\Product;
 use PnShop\Foundation\Extension\Permission;
 use PnShop\Foundation\ModuleServiceProvider;
 use PnShop\Payment\Events\RefundCompleted;
+use PnShop\Sales\Console\CancelUnpaidOrdersCommand;
 use PnShop\Sales\Events\OrderPlaced;
 use PnShop\Sales\Events\OrderStateChanged;
 use PnShop\Sales\Invoices\HtmlInvoiceRenderer;
@@ -55,6 +57,7 @@ class SalesServiceProvider extends ModuleServiceProvider
             'Orders',
             new SettingDefinition('order_number_prefix', SettingType::String, 'Order number prefix', default: 'ORD-', help: 'Applies to new orders, e.g. ORD-000042.', rules: ['max:12']),
             new SettingDefinition('order_number_digits', SettingType::Integer, 'Order number digits', default: 6, required: true, help: 'The order id is padded with zeros to this length.', rules: ['min:1', 'max:12']),
+            new SettingDefinition('cancel_unpaid_after_hours', SettingType::Integer, 'Cancel unpaid orders after (hours)', default: 168, required: true, rules: ['min:0', 'max:8760'], help: 'Pending orders still unpaid after this time are cancelled and their stock released. Allow enough time for bank transfers. 0 turns this off.'),
             new SettingDefinition('invoice_on', SettingType::Select, 'Issue invoices', default: 'paid', required: true, options: [
                 'paid' => 'When the order is paid',
                 'placed' => 'When the order is placed',
@@ -68,6 +71,14 @@ class SalesServiceProvider extends ModuleServiceProvider
         ));
 
         Event::listen([OrderPlaced::class, OrderStateChanged::class], IssueInvoiceAutomatically::class);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([CancelUnpaidOrdersCommand::class]);
+        }
+
+        $this->callAfterResolving(Schedule::class, function (Schedule $schedule): void {
+            $schedule->command('pnshop:orders:cancel-unpaid')->hourly()->withoutOverlapping();
+        });
 
         $this->app->make(SettingsRegistry::class)->register(new SettingsSchema(
             'notifications',

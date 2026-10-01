@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use PnShop\Extension\Exceptions\ExtensionException;
+use PnShop\Extension\ExtensionManager;
 use PnShop\Extension\ExtensionStatus;
 use PnShop\Extension\Manifest;
 use PnShop\Extension\Models\Extension;
@@ -175,7 +176,10 @@ class ExtensionLifecycleTest extends ExtensionTestCase
     {
         $manifest = json_decode(File::get($this->extensions.'/acme/good/pnshop.json'), true);
 
-        foreach (['../../evil.js', '/etc/passwd.js', 'src/GoodPlugin.php', 'dist/missing.js'] as $script) {
+        // A script at the plugin root is refused too: its folder (the whole plugin) would be published.
+        File::put($this->extensions.'/acme/good/storefront.js', 'window.PnShop.registerSlot("footer.top", () => null);');
+
+        foreach (['../../evil.js', '/etc/passwd.js', 'src/GoodPlugin.php', 'dist/missing.js', 'storefront.js'] as $script) {
             try {
                 Manifest::fromArray([...$manifest, 'storefront' => $script], $this->extensions.'/acme/good');
                 $this->fail("{$script} should be refused.");
@@ -184,7 +188,28 @@ class ExtensionLifecycleTest extends ExtensionTestCase
             }
         }
 
-        File::put($this->extensions.'/acme/good/storefront.js', 'window.PnShop.registerSlot("footer.top", () => null);');
-        $this->assertSame('storefront.js', Manifest::fromArray([...$manifest, 'storefront' => 'storefront.js'], $this->extensions.'/acme/good')->storefront);
+        File::ensureDirectoryExists($this->extensions.'/acme/good/dist');
+        File::put($this->extensions.'/acme/good/dist/storefront.js', 'window.PnShop.registerSlot("footer.top", () => null);');
+        $this->assertSame('dist/storefront.js', Manifest::fromArray([...$manifest, 'storefront' => 'dist/storefront.js'], $this->extensions.'/acme/good')->storefront);
+    }
+
+    public function test_only_static_storefront_files_are_published(): void
+    {
+        $plugin = $this->extensions.'/acme/good';
+        File::ensureDirectoryExists($plugin.'/dist');
+        File::put($plugin.'/dist/storefront.js', 'export {};');
+        File::put($plugin.'/dist/style.css', 'a{}');
+        File::put($plugin.'/dist/shell.php', '<?php echo 1;');
+        $manifest = json_decode(File::get($plugin.'/pnshop.json'), true);
+        $public = sys_get_temp_dir().'/pnshop-public-'.getmypid();
+        $this->app->usePublicPath($public);
+
+        app(ExtensionManager::class)->publishStorefront(Manifest::fromArray([...$manifest, 'storefront' => 'dist/storefront.js'], $plugin));
+
+        $this->assertFileExists($public.'/extensions/acme/good/storefront.js');
+        $this->assertFileExists($public.'/extensions/acme/good/style.css');
+        $this->assertFileDoesNotExist($public.'/extensions/acme/good/shell.php');
+
+        File::deleteDirectory($public);
     }
 }

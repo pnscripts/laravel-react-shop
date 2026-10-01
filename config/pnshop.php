@@ -99,6 +99,10 @@ return [
             'min_seconds' => (int) env('PNSHOP_BOT_TRAP_MIN_SECONDS', 2),
             'max_age_hours' => 24,
         ],
+        // Days a guest's signed order link (emails, checkout API) keeps working.
+        'order_link_days' => (int) env('PNSHOP_ORDER_LINK_DAYS', 180),
+        // Hosts answered besides APP_URL's host and its subdomains (comma-separated).
+        'trusted_hosts' => env('PNSHOP_TRUSTED_HOSTS', ''),
     ],
 
     /*
@@ -168,6 +172,8 @@ return [
     'installer' => [
         'enforce' => (bool) env('PNSHOP_ENFORCE_INSTALL', true),
         'lock' => env('PNSHOP_INSTALL_LOCK', storage_path('app/pnshop-installed.json')),
+        // Cache store for the installer's rate limits (the database may not exist yet).
+        'cache_store' => env('PNSHOP_INSTALLER_CACHE', 'file'),
     ],
 
 ];

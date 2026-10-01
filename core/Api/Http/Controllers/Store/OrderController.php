@@ -4,6 +4,7 @@ namespace PnShop\Api\Http\Controllers\Store;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use PnShop\Api\Http\Controllers\ApiController;
@@ -80,6 +81,9 @@ class OrderController extends ApiController
         $customer = $this->customer($request);
         $isOwner = $customer !== null && (int) $order->user_id === $customer->id;
 
-        abort_unless($isOwner || $request->hasValidSignatureWhileIgnoring(['locale']), 404);
+        // Guests send the query string of the signed order link (links.order) with every call.
+        $signedShow = Request::create(route('api.store.orders.show', ['order' => $order]).'?'.http_build_query($request->only(['expires', 'signature'])));
+
+        abort_unless($isOwner || URL::hasValidSignature($signedShow), 404);
     }
 }

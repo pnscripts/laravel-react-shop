@@ -21,9 +21,14 @@ class AdminUserPolicy
         return $admin->can('system.admin_users.manage');
     }
 
+    /**
+     * Only administrators change administrators (their email, password or roles), so staff
+     * who manage accounts cannot take over a more powerful account.
+     */
     public function update(AdminUser $admin, AdminUser $model): bool
     {
-        return $admin->can('system.admin_users.manage');
+        return $admin->can('system.admin_users.manage')
+            && ($admin->isAdministrator() || ! $model->isAdministrator());
     }
 
     /**
@@ -33,6 +38,7 @@ class AdminUserPolicy
     {
         return $admin->can('system.admin_users.manage')
             && $admin->isNot($model)
+            && ($admin->isAdministrator() || ! $model->isAdministrator())
             && ! ($model->isAdministrator() && self::administratorCount() <= 1);
     }
 

@@ -5,6 +5,7 @@ namespace PnShop\Payment;
 use Brick\Math\RoundingMode;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use PnShop\Catalog\Models\ProductVariant;
@@ -44,7 +45,26 @@ class RefundService
      */
     public function refund(Order $order, array $quantities, ?Money $extra = null, bool $restock = false, ?string $reason = null, ?Model $actor = null): Refund
     {
-        $order->load(['items', 'payments.method']);
+        // One refund of an order at a time: the checks below must see the previous refund.
+        $lock = Cache::lock('pnshop:refund:order:'.$order->id, 120);
+
+        if (! $lock->block(15)) {
+            throw new OrderException(__('Another refund of this order is in progress. Try again in a moment.'));
+        }
+
+        try {
+            return $this->refundLocked($order, $quantities, $extra, $restock, $reason, $actor);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    /**
+     * @param  array<int, int>  $quantities
+     */
+    private function refundLocked(Order $order, array $quantities, ?Money $extra, bool $restock, ?string $reason, ?Model $actor): Refund
+    {
+        $order->refresh()->load(['items', 'payments.method']);
 
         if (! in_array($order->payment_status, [PaymentStatus::Paid, PaymentStatus::PartiallyRefunded], true)) {
             throw new OrderException(__('Only paid orders can be refunded.'));

@@ -26,6 +26,9 @@ use Throwable;
  */
 class ExtensionManager
 {
+    /** File types copied to public/extensions/<id>/ from a plugin's storefront folder. */
+    private const STOREFRONT_ASSETS = ['js', 'mjs', 'css', 'map', 'json', 'woff', 'woff2', 'png', 'jpg', 'jpeg', 'gif', 'webp', 'avif', 'ico', 'txt'];
+
     public function __construct(
         private PluginLoader $loader,
         private Migrator $migrator,
@@ -302,10 +305,20 @@ class ExtensionManager
         }
 
         $target = public_path('extensions/'.$manifest->id);
-        File::ensureDirectoryExists(dirname($target));
+        $source = dirname($manifest->path.'/'.$manifest->storefront);
 
-        if (! File::copyDirectory(dirname($manifest->path.'/'.$manifest->storefront), $target)) {
-            throw new ExtensionException(__('Could not publish the storefront files of :id.', ['id' => $manifest->id]));
+        // Only static assets are published: never PHP or other server-side files.
+        foreach (File::allFiles($source) as $file) {
+            if (! in_array(strtolower($file->getExtension()), self::STOREFRONT_ASSETS, true)) {
+                continue;
+            }
+
+            $destination = $target.'/'.$file->getRelativePathname();
+            File::ensureDirectoryExists(dirname($destination));
+
+            if (! File::copy($file->getPathname(), $destination)) {
+                throw new ExtensionException(__('Could not publish the storefront files of :id.', ['id' => $manifest->id]));
+            }
         }
     }
 

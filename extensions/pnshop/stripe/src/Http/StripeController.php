@@ -19,21 +19,31 @@ class StripeController
     /**
      * The customer comes back from Stripe. The session is read from Stripe's API (never
      * trusted from the URL) before the order is marked paid.
+     *
+     * Only the Checkout Session id proves the visitor is the customer: without it (anyone can
+     * guess payment ids) the redirect goes to the plain order page, which shows the order only
+     * to its customer or the browser that placed it, never to a signed link.
      */
-    public function return(Request $request, Payment $payment, StripeClient $stripe, StripeConfirmation $confirmation): RedirectResponse
+    public function return(Request $request, int $payment, StripeClient $stripe, StripeConfirmation $confirmation): RedirectResponse
     {
         $sessionId = (string) $request->query('session_id', '');
-        $order = $payment->order()->firstOrFail();
+        $model = Payment::query()->where('gateway', 'stripe')->find($payment);
 
-        if (preg_match('/^cs_[A-Za-z0-9_]+$/', $sessionId) === 1 && $sessionId === $payment->reference) {
-            try {
-                $confirmation->apply($payment, $stripe->get('checkout/sessions/'.$sessionId), 'return');
-            } catch (StripeException $e) {
-                report($e);
-            }
+        if ($model === null || preg_match('/^cs_[A-Za-z0-9_]+$/', $sessionId) !== 1 || ! hash_equals((string) $model->reference, $sessionId)) {
+            return $model === null
+                ? redirect()->route('home')
+                : redirect()->route('orders.show', ['order' => $model->order_id]);
         }
 
-        $paid = $payment->fresh()?->status === PaymentState::Paid;
+        $order = $model->order()->firstOrFail();
+
+        try {
+            $confirmation->apply($model, $stripe->get('checkout/sessions/'.$sessionId), 'return');
+        } catch (StripeException $e) {
+            report($e);
+        }
+
+        $paid = $model->fresh()?->status === PaymentState::Paid;
 
         return redirect()->to(OrderLinks::signedShow($order))
             ->with($paid ? 'success' : 'error', $paid ? __('Thank you! Your payment was received.') : __('The payment is not confirmed yet. If you completed it, it will appear shortly.'));

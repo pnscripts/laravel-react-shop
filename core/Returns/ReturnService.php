@@ -5,6 +5,7 @@ namespace PnShop\Returns;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use PnShop\Acl\Models\AdminUser;
@@ -112,7 +113,8 @@ class ReturnService
             $return = ReturnRequest::query()->create([
                 'number' => $prefix.str_pad((string) NumberSequence::next('return'), 6, '0', STR_PAD_LEFT),
                 'order_id' => $order->id,
-                'user_id' => $customer->id ?? $order->user_id,
+                // The order's customer, also when someone else opened a shared order link.
+                'user_id' => $order->user_id,
                 'status' => ReturnStatus::Requested,
                 'reason' => $reason,
                 'customer_note' => $note !== null && trim($note) !== '' ? trim($note) : null,
@@ -175,6 +177,24 @@ class ReturnService
      * Refund the received units (their paid price, tax included where it was added).
      */
     public function refund(ReturnRequest $return, ?Model $actor = null): ReturnRequest
+    {
+        // A double click must not refund twice: the status is re-read under the lock.
+        $lock = Cache::lock('pnshop:return:'.$return->id, 120);
+
+        if (! $lock->block(15)) {
+            throw new OrderException(__('This return is being refunded already.'));
+        }
+
+        try {
+            $return->refresh();
+
+            return $this->refundLocked($return, $actor);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    private function refundLocked(ReturnRequest $return, ?Model $actor): ReturnRequest
     {
         $return->load(['lines', 'order']);
 

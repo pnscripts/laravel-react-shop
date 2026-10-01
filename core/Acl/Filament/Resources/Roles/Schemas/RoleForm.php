@@ -31,7 +31,10 @@ class RoleForm
                     ->relationship(
                         'permissions',
                         'name',
-                        fn ($query) => $query->where('guard_name', 'admin')->orderBy('name'),
+                        // Only permissions the signed-in staff member holds (administrators: all).
+                        fn ($query) => $query->where('guard_name', 'admin')
+                            ->when(! (auth('admin')->user()?->isAdministrator() ?? false), fn ($query) => $query->whereIn('name', auth('admin')->user()?->getAllPermissions()->pluck('name')->all() ?? []))
+                            ->orderBy('name'),
                     )
                     ->getOptionLabelFromRecordUsing(function (Permission $permission) use ($registry): string {
                         $definition = $registry->all()[$permission->name] ?? null;

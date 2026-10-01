@@ -211,4 +211,24 @@ class InstallerTest extends TestCase
 
         $this->actingAs($admin, 'admin')->get('/admin/system/updates')->assertOk()->assertSee(PnShop::VERSION)->assertSee('PHP extension intl');
     }
+
+    public function test_an_unreachable_database_never_opens_the_installer(): void
+    {
+        $default = config('database.default');
+        config([
+            'pnshop.installer.enforce' => true,
+            'database.connections.unreachable' => ['driver' => 'mysql', 'host' => '127.0.0.1', 'port' => 1, 'database' => 'x', 'username' => 'x', 'password' => ''],
+            'database.default' => 'unreachable',
+        ]);
+
+        $this->assertSame(Installation::UNKNOWN, $this->installation()->state());
+
+        try {
+            $this->get('/install')->assertStatus(503)->assertSee('cannot reach its database');
+            $this->get('/')->assertStatus(503);
+        } finally {
+            // The test transaction is rolled back on the default connection.
+            config(['database.default' => $default]);
+        }
+    }
 }
