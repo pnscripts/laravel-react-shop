@@ -83,17 +83,19 @@ composer run dev
 
 Open `http://localhost:8000`.
 
-### Demo credentials
+### Administrator account
 
-After `php artisan migrate --seed`:
+No accounts are seeded. Create an administrator after migrating:
 
-- Email: `test@example.com`
-- Password: `password`
-- This user is an admin (`is_admin = true`)
+```bash
+php artisan pnshop:create-admin you@example.com --name="Your Name"
+```
+
+The command asks for a password (or use `--generate-password` to print a random one once). Run it again with an existing email to promote that user.
 
 Seeded payment methods: **Cash on Delivery**, **Bank Transfer**.  
 Seeded order statuses: **pending**, **paid**, **shipped**, **cancelled**.  
-Product seeders create sample categories, attributes, and products.
+Outside production, the seeders also create sample categories, attributes and products.
 
 ---
 

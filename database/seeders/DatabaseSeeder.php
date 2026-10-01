@@ -2,24 +2,27 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Seed reference data, plus a demo catalog outside production.
+     *
+     * No user accounts are seeded. Create an administrator with `php artisan pnshop:create-admin`.
      */
     public function run(): void
     {
-        User::factory()->admin()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
-
         $this->call([
             OrderStatusSeeder::class,
             PaymentMethodSeeder::class,
+        ]);
+
+        if (app()->isProduction()) {
+            return;
+        }
+
+        $this->call([
             ProductCategorySeeder::class,
             ProductAttributeSeeder::class,
             ProductSeeder::class,
