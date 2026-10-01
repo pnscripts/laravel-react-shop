@@ -8,6 +8,7 @@ use App\Services\CheckoutService;
 use App\Services\ShoppingCartService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,13 +19,13 @@ class CheckoutController extends Controller
         private CheckoutService $checkout,
     ) {}
 
-    public function create(): Response|RedirectResponse
+    public function create(Request $request): Response|RedirectResponse
     {
         if ($this->cart->getCartItems()->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        $user = request()->user();
+        $user = $request->user();
 
         return Inertia::render('checkout/index', [
             'cart' => $this->cart->toArray(),
@@ -33,8 +34,8 @@ class CheckoutController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name', 'description', 'type']),
             'defaults' => [
-                'name' => $user?->name ?? '',
-                'email' => $user?->email ?? '',
+                'name' => $user->name ?? '',
+                'email' => $user->email ?? '',
             ],
         ]);
     }

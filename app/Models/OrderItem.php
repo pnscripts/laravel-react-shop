@@ -27,7 +27,7 @@ class OrderItem extends Model
     /**
      * The attributes that should be cast to native types.
      *
-     * @var list<string>
+     * @var array<string, string>
      */
     protected $casts = [
         'price' => 'float',
@@ -37,7 +37,7 @@ class OrderItem extends Model
     /**
      * Get the order this item belongs to.
      *
-     * @return BelongsTo<Order, self>
+     * @return BelongsTo<Order, $this>
      */
     public function order(): BelongsTo
     {
@@ -47,7 +47,7 @@ class OrderItem extends Model
     /**
      * Get the product for this item.
      *
-     * @return BelongsTo<Product, self>
+     * @return BelongsTo<Product, $this>
      */
     public function product(): BelongsTo
     {

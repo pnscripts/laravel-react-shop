@@ -30,7 +30,7 @@ class Order extends Model
     /**
      * Get the items for this order.
      *
-     * @return HasMany<OrderItem>
+     * @return HasMany<OrderItem, $this>
      */
     public function items(): HasMany
     {
@@ -40,7 +40,7 @@ class Order extends Model
     /**
      * Get the user that owns the order.
      *
-     * @return BelongsTo<User, Order>
+     * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
     {
@@ -50,7 +50,7 @@ class Order extends Model
     /**
      * Get the order status associated with the order.
      *
-     * @return BelongsTo<OrderStatus, Order>
+     * @return BelongsTo<OrderStatus, $this>
      */
     public function orderStatus(): BelongsTo
     {
@@ -60,7 +60,7 @@ class Order extends Model
     /**
      * Get the payment method associated with the order.
      *
-     * @return BelongsTo<PaymentMethod, Order>
+     * @return BelongsTo<PaymentMethod, $this>
      */
     public function paymentMethod(): BelongsTo
     {

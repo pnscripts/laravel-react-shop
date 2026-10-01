@@ -18,7 +18,7 @@ class Product extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'product_category_id',
@@ -60,6 +60,8 @@ class Product extends Model
 
     /**
      * Get the category this product belongs to.
+     *
+     * @return BelongsTo<ProductCategory, $this>
      */
     public function category(): BelongsTo
     {
@@ -69,6 +71,8 @@ class Product extends Model
     /**
      * Get the attributes associated with this product.
      * This is a many-to-many relationship, where each product can have multiple attributes and each attribute can belong to multiple products.
+     *
+     * @return BelongsToMany<ProductAttributeValue, $this>
      */
     public function selectedAttributeValues(): BelongsToMany
     {
@@ -89,12 +93,12 @@ class Product extends Model
 
         $selectedValueIds = $this->selectedAttributeValues->pluck('id')->toArray();
 
-        return $categoryAttributes->map(function ($attribute) use ($selectedValueIds) {
-            $selectedValue = $attribute->values->firstWhere(fn ($value) => in_array($value->id, $selectedValueIds));
+        return $categoryAttributes->map(function (ProductAttribute $attribute) use ($selectedValueIds) {
+            $selectedValue = $attribute->values->first(fn (ProductAttributeValue $value) => in_array($value->id, $selectedValueIds));
 
             return [
-                'attribute' => $attribute->label, // label should be translatable
-                'value' => $selectedValue?->label, // label should be translatable
+                'attribute' => $attribute->label,
+                'value' => $selectedValue?->value,
             ];
         });
     }

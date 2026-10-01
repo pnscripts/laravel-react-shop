@@ -43,11 +43,11 @@ trait HasTranslations
             $translatedValue = $this->translate($field, $locale);
 
             // Fallback to the original field value if no translation exists
-            return $translatedValue ?? (string) $this->getOriginal($field) ?? ''; // Ensure a string is returned
+            return $translatedValue ?? (string) $this->getOriginal($field);
         }
 
         // If not translatable, return the original value of the field
-        return (string) $this->getOriginal($field) ?? '';
+        return (string) $this->getOriginal($field);
     }
 
     /**
@@ -75,8 +75,7 @@ trait HasTranslations
      */
     public function getTranslatableFields(): array
     {
-        // Ensure the model has a `translatable` property; otherwise, return an empty array
-        return property_exists($this, 'translatable') ? $this->translatable : [];
+        return $this->translatable;
     }
 
     /**

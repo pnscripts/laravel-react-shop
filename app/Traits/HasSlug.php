@@ -9,7 +9,7 @@ trait HasSlug
 {
     public static function bootHasSlug(): void
     {
-        static::creating(function (Model $model) {
+        static::creating(function (self $model) {
             // If the slug is NOT set, generate it from title using attributes
             if (empty($model->slug)) {
                 $model->slug = static::generateUniqueSlug($model);
@@ -19,7 +19,7 @@ trait HasSlug
             }
         });
 
-        static::updating(function (Model $model) {
+        static::updating(function (self $model) {
             // Only regenerate if relevant fields changed (title or slug)
             if ($model->isDirty('title') || $model->isDirty('slug')) {
                 $model->slug = static::generateUniqueSlug($model);
@@ -54,7 +54,7 @@ trait HasSlug
         while (
             $model->newQueryWithoutScopes()
                 ->where('slug', $slug)
-                ->when($model->exists, fn ($q) => $q->where('id', '!=', $model->id))
+                ->when($model->exists, fn ($q) => $q->whereKeyNot($model->getKey()))
                 ->exists()
         ) {
             $slug = $base.'-'.$i++; // Add counter to make slug unique

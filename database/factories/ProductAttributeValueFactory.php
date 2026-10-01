@@ -15,7 +15,7 @@ class ProductAttributeValueFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<Model>
+     * @var class-string<ProductAttributeValue>
      */
     protected $model = ProductAttributeValue::class;
 

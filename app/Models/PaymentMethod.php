@@ -26,7 +26,7 @@ class PaymentMethod extends Model
     /**
      * Get the orders that use this payment method.
      *
-     * @return HasMany<Order>
+     * @return HasMany<Order, $this>
      */
     public function orders()
     {

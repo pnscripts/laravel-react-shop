@@ -16,7 +16,7 @@ class ProductAttribute extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'key',         // Internal reference like 'wifi', 'size', 'color'
@@ -35,7 +35,7 @@ class ProductAttribute extends Model
     /**
      * The attributes that should be cast to native types.
      *
-     * @var array
+     * @var array<string, string>
      */
     protected $casts = [
         'is_required' => 'boolean',
@@ -43,6 +43,8 @@ class ProductAttribute extends Model
 
     /**
      * Get the values associated with this product attribute.
+     *
+     * @return HasMany<ProductAttributeValue, $this>
      */
     public function values(): HasMany
     {
@@ -51,6 +53,8 @@ class ProductAttribute extends Model
 
     /**
      * Get the categories that have this attribute.
+     *
+     * @return BelongsToMany<ProductCategory, $this>
      */
     public function categories(): BelongsToMany
     {

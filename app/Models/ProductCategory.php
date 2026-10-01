@@ -29,6 +29,8 @@ class ProductCategory extends Model
 
     /**
      * Relationship: Get all child categories (subcategories) of this category.
+     *
+     * @return HasMany<ProductCategory, $this>
      */
     public function children(): HasMany
     {
@@ -37,6 +39,8 @@ class ProductCategory extends Model
 
     /**
      * Relationship: Get the parent category.
+     *
+     * @return BelongsTo<ProductCategory, $this>
      */
     public function parent(): BelongsTo
     {
@@ -79,6 +83,8 @@ class ProductCategory extends Model
 
     /**
      * The attributes that belong to the product category.
+     *
+     * @return BelongsToMany<ProductAttribute, $this>
      */
     public function productAttributes(): BelongsToMany
     {
@@ -88,6 +94,8 @@ class ProductCategory extends Model
 
     /**
      * The products that belong to the product category.
+     *
+     * @return HasMany<Product, $this>
      */
     public function products(): HasMany
     {

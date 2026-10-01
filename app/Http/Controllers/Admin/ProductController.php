@@ -91,9 +91,9 @@ class ProductController extends Controller
     }
 
     /**
-     * @return Collection<int, array{id: int, title: string}>
+     * @return Collection<int, ProductCategory>
      */
-    private function categories()
+    private function categories(): Collection
     {
         return ProductCategory::query()
             ->orderBy('title')

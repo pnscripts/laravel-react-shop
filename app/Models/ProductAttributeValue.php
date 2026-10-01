@@ -16,7 +16,7 @@ class ProductAttributeValue extends Model
     /**
      * The attributes that are mass assignable.
      *
-     * @var array
+     * @var list<string>
      */
     protected $fillable = [
         'product_attribute_id',
@@ -34,6 +34,8 @@ class ProductAttributeValue extends Model
      * Relationship with the ProductAttribute model.
      * This defines the inverse of the relationship, where each attribute value belongs to a specific attribute.
      * For example, if the attribute is 'Color', the values could be 'Red', 'Blue', etc.
+     *
+     * @return BelongsTo<ProductAttribute, $this>
      */
     public function productAttribute(): BelongsTo
     {
@@ -44,6 +46,8 @@ class ProductAttributeValue extends Model
      * Relationship with the Product model.
      * This defines a many-to-many relationship, where each attribute value can be associated with multiple products.
      * For example, if the attribute is 'Size', the values could be 'S', 'M', 'L', etc., and multiple products can have the same size.
+     *
+     * @return BelongsToMany<Product, $this>
      */
     public function products(): BelongsToMany
     {

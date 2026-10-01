@@ -15,7 +15,7 @@ class ProductFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<Model>
+     * @var class-string<Product>
      */
     protected $model = Product::class;
 
@@ -26,10 +26,8 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
-        $category = ProductCategory::inRandomOrder()->first();
-
         return [
-            'product_category_id' => ProductCategory::inRandomOrder()->first()?->id ?? ProductCategory::factory(),
+            'product_category_id' => ProductCategory::query()->inRandomOrder()->value('id') ?? ProductCategory::factory(),
             'title' => $this->faker->words(3, true),
             'slug' => $this->faker->slug(),
             'description' => $this->faker->paragraph(),

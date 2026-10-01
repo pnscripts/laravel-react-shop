@@ -14,7 +14,7 @@ class ProductCategoryFactory extends Factory
     /**
      * The name of the factory's corresponding model.
      *
-     * @var class-string<Model>
+     * @var class-string<ProductCategory>
      */
     protected $model = ProductCategory::class;
 

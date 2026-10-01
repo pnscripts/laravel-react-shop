@@ -7,6 +7,8 @@ use App\Models\OrderItem;
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use App\Models\ProductAttribute;
+use App\Models\ProductCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -57,6 +59,25 @@ class ShopTest extends TestCase
             );
 
         $this->get(route('shop.show', $inactive->slug))->assertNotFound();
+    }
+
+    public function test_product_page_shows_selected_attribute_values(): void
+    {
+        $category = ProductCategory::factory()->create();
+        $attribute = ProductAttribute::factory()->create(['key' => 'color', 'label' => 'Color']);
+        $category->productAttributes()->attach($attribute);
+        $blue = $attribute->values()->create(['value' => 'Blue']);
+        $attribute->values()->create(['value' => 'Red']);
+
+        $product = Product::factory()->active()->create(['product_category_id' => $category->id]);
+        $product->selectedAttributeValues()->attach($blue);
+
+        $this->get(route('shop.show', $product->slug))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('product.attributes.0.attribute', 'Color')
+                ->where('product.attributes.0.value', 'Blue')
+            );
     }
 
     public function test_guest_can_add_a_product_to_the_cart(): void

@@ -23,7 +23,7 @@ class OrderStatus extends Model
     /**
      * Get the orders that have this status.
      *
-     * @return HasMany<Order>
+     * @return HasMany<Order, $this>
      */
     public function orders()
     {
