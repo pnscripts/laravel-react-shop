@@ -13,7 +13,7 @@ class HomeController extends Controller
     {
         $products = Product::query()
             ->active()
-            ->with('category:id,title,slug')
+            ->with(ProductCardPresenter::RELATIONS)
             ->latest()
             ->limit(8)
             ->get()

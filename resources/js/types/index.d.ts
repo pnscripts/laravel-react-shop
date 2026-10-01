@@ -63,13 +63,23 @@ export interface Money {
     formatted: string;
 }
 
+export interface ProductImage {
+    id: number | null;
+    url: string;
+    thumb: string;
+    srcset: string;
+    alt: string;
+    width: number | null;
+    height: number | null;
+}
+
 export interface ProductCard {
     id: number;
     title: string;
     slug: string;
     price: Money;
     discount_price: Money | null;
-    image: string | null;
+    image: ProductImage | null;
     stock: number;
     category: {
         id: number;
@@ -84,7 +94,7 @@ export interface CartItem {
     price: Money;
     discount_price: Money | null;
     unit_price: Money;
-    image: string | null;
+    image: ProductImage | null;
     stock: number;
     quantity: number;
     line_total: Money;

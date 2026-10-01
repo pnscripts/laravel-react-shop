@@ -4,6 +4,7 @@ namespace App\DTOs;
 
 use Brick\Money\Money;
 use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Presenters\ProductCardPresenter;
 
 /**
  * A cart line built from the current product row. Prices are never taken from the session.
@@ -15,7 +16,8 @@ final readonly class CartItemDTO
         public string $title,
         public Money $price,
         public ?Money $discount_price,
-        public ?string $image,
+        /** @var array{id: int|null, url: string, thumb: string, srcset: string, alt: string, width: int|null, height: int|null}|null */
+        public ?array $image,
         public int $stock,
         public int $quantity,
     ) {}
@@ -27,7 +29,7 @@ final readonly class CartItemDTO
             $product->title,
             $product->price,
             $product->discount_price,
-            $product->image,
+            ProductCardPresenter::mainImage($product),
             $product->stock,
             $quantity,
         );

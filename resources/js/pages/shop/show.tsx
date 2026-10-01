@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { type Money } from '@/types';
+import { type Money, type ProductImage } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { FormEventHandler, useState } from 'react';
 
 type ProductShow = {
     id: number;
@@ -16,7 +16,8 @@ type ProductShow = {
     description: string | null;
     price: Money;
     discount_price: Money | null;
-    image: string | null;
+    image: ProductImage | null;
+    gallery: ProductImage[];
     stock: number;
     sku: string | null;
     category: { id: number; title: string; slug: string } | null;
@@ -27,6 +28,8 @@ type ProductShow = {
 
 export default function ShopShow({ product }: { product: ProductShow }) {
     const t = useTranslations();
+    const [shownIndex, setShownIndex] = useState(0);
+    const shownImage = product.gallery[shownIndex] ?? product.image;
     const hasDiscount = product.discount_price !== null && product.discount_price.minor > 0;
     const { data, setData, post, processing, errors } = useForm({
         product_id: product.id,
@@ -57,10 +60,32 @@ export default function ShopShow({ product }: { product: ProductShow }) {
 
             <div className="grid gap-10 lg:grid-cols-2">
                 <div className="bg-muted overflow-hidden rounded-xl border">
-                    {product.image ? (
-                        <img src={product.image} alt={product.title} className="aspect-square w-full object-cover" />
+                    {shownImage ? (
+                        <img
+                            src={shownImage.url}
+                            srcSet={shownImage.srcset || undefined}
+                            sizes="(min-width: 1024px) 50vw, 100vw"
+                            alt={shownImage.alt}
+                            className="aspect-square w-full object-cover"
+                        />
                     ) : (
                         <div className="text-muted-foreground flex aspect-square items-center justify-center">{t('No image')}</div>
+                    )}
+                    {product.gallery.length > 1 && (
+                        <div className="bg-background flex gap-2 overflow-x-auto p-2">
+                            {product.gallery.map((image, index) => (
+                                <button
+                                    key={image.id ?? index}
+                                    type="button"
+                                    onClick={() => setShownIndex(index)}
+                                    aria-label={t('Show image :number', { number: index + 1 })}
+                                    aria-current={index === shownIndex}
+                                    className={`size-16 shrink-0 overflow-hidden rounded-md border-2 ${index === shownIndex ? 'border-primary' : 'border-transparent'}`}
+                                >
+                                    <img src={image.thumb} alt="" className="size-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
                     )}
                 </div>
 

@@ -2,15 +2,19 @@
 
 namespace PnShop\Catalog\Filament\Resources\Products\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Str;
 use PnShop\Catalog\Filament\Resources\Categories\CategoryResource;
 use PnShop\Catalog\Models\Product;
 use PnShop\Localization\Filament\TranslationsSection;
+use PnShop\Media\MediaLibrary;
+use PnShop\Media\Models\Media;
 
 class ProductForm
 {
@@ -48,8 +52,33 @@ class ProductForm
                             ->preload(),
                         Textarea::make('description')
                             ->rows(6),
+                        FileUpload::make('gallery')
+                            ->label('Images')
+                            ->helperText('The first image is the main product image. Drag to reorder.')
+                            ->image()
+                            ->multiple()
+                            ->reorderable()
+                            ->appendFiles()
+                            ->acceptedFileTypes(MediaLibrary::IMAGE_TYPES)
+                            ->maxSize(MediaLibrary::MAX_UPLOAD_KB)
+                            ->disk(MediaLibrary::disk())
+                            ->directory(fn () => MediaLibrary::directory())
+                            ->afterStateHydrated(fn (FileUpload $component, ?Product $record) => $component->state(
+                                $record?->mediaIn('gallery')->mapWithKeys(fn (Media $media) => [(string) Str::uuid() => $media->path])->all() ?? [],
+                            ))
+                            ->dehydrated(false)
+                            ->saveRelationshipsUsing(function (FileUpload $component, Product $record): void {
+                                $component->saveUploadedFiles();
+                                $library = app(MediaLibrary::class);
+
+                                $record->syncMediaCollection('gallery', array_map(
+                                    fn (mixed $path) => $library->register((string) $path)->id,
+                                    array_values((array) $component->getState()),
+                                ));
+                            }),
                         TextInput::make('image')
-                            ->label('Image URL')
+                            ->label('External image URL')
+                            ->helperText('Only used when the product has no uploaded images.')
                             ->url()
                             ->maxLength(2048),
                     ]),

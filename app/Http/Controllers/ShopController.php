@@ -10,6 +10,8 @@ use PnShop\Catalog\Models\Brand;
 use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Presenters\ProductCardPresenter;
+use PnShop\Media\MediaPresenter;
+use PnShop\Media\Models\Media;
 use PnShop\Money\MoneyPresenter;
 
 class ShopController extends Controller
@@ -24,7 +26,7 @@ class ShopController extends Controller
 
         $products = Product::query()
             ->active()
-            ->with('category:id,title,slug')
+            ->with(ProductCardPresenter::RELATIONS)
             ->when($categorySlug !== '', fn (Builder $query) => $category
                 ? $query->whereHas('categories', fn (Builder $categories) => $categories->whereKey($category->subtreeIds()))
                 : $query->whereRaw('1 = 0'))
@@ -56,7 +58,7 @@ class ShopController extends Controller
     {
         abort_unless($product->is_active, 404);
 
-        $product->load(['category:id,title,slug,parent_id,_lft,_rgt', 'brand:id,name,slug', 'selectedAttributeValues']);
+        $product->load(['category:id,title,slug,parent_id,_lft,_rgt', 'brand:id,name,slug', 'selectedAttributeValues', 'media']);
 
         $breadcrumbs = $product->category
             ? Category::query()->whereAncestorOf($product->category, andSelf: true)->defaultOrder()->get(['id', 'title', 'slug', '_lft', '_rgt'])
@@ -72,7 +74,8 @@ class ShopController extends Controller
                 'description' => $product->description,
                 'price' => MoneyPresenter::present($product->price),
                 'discount_price' => MoneyPresenter::present($product->discount_price),
-                'image' => $product->image,
+                'image' => ProductCardPresenter::mainImage($product),
+                'gallery' => $product->mediaIn('gallery')->map(fn (Media $media) => MediaPresenter::present($media, $product->title))->values()->all(),
                 'stock' => $product->stock,
                 'sku' => $product->sku,
                 'brand' => $product->brand ? ['name' => $product->brand->name, 'slug' => $product->brand->slug] : null,

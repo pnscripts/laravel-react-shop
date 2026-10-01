@@ -73,6 +73,7 @@ class ShoppingCartService
 
         $products = Product::query()
             ->active()
+            ->with('media')
             ->whereKey(array_keys($lines))
             ->get()
             ->keyBy('id');

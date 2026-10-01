@@ -13,6 +13,7 @@ use PnShop\Catalog\Factories\ProductFactory;
 use PnShop\Foundation\Concerns\HasSlug;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
+use PnShop\Media\Concerns\HasMedia;
 use PnShop\Money\MoneyCast;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
@@ -20,7 +21,7 @@ use Spatie\Activitylog\Support\LogOptions;
 class Product extends Model implements TranslatableModel
 {
     /** @use HasFactory<ProductFactory> */
-    use HasFactory, HasSlug, LogsActivity, SoftDeletes, Translatable;
+    use HasFactory, HasMedia, HasSlug, LogsActivity, SoftDeletes, Translatable;
 
     /**
      * The attributes that are mass assignable.

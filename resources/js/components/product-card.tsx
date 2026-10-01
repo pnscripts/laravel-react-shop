@@ -13,7 +13,14 @@ export function ProductCard({ product }: { product: ProductCardType }) {
             <Link href={route('shop.show', product.slug)} className="block">
                 <div className="bg-muted aspect-square overflow-hidden">
                     {product.image ? (
-                        <img src={product.image} alt={product.title} className="size-full object-cover" />
+                        <img
+                            src={product.image.thumb}
+                            srcSet={product.image.srcset || undefined}
+                            sizes="(min-width: 1280px) 20vw, (min-width: 640px) 40vw, 90vw"
+                            alt={product.image.alt}
+                            loading="lazy"
+                            className="size-full object-cover"
+                        />
                     ) : (
                         <div className="text-muted-foreground flex size-full items-center justify-center text-sm">{t('No image')}</div>
                     )}
