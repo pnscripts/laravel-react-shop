@@ -1,0 +1,8 @@
+# PN Shop core modules are held to a stricter level than the legacy app/ code.
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - core/
+    level: 7

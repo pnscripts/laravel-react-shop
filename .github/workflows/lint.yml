@@ -36,8 +36,11 @@ jobs:
       - name: Pint
         run: vendor/bin/pint --test
 
-      - name: Larastan
+      - name: Larastan (app, level 5)
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
+      - name: Larastan (core, level 7)
+        run: vendor/bin/phpstan analyse -c phpstan-core.neon --no-progress --memory-limit=1G
 
       - name: Prettier
         run: npm run format:check
