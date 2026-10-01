@@ -2,7 +2,7 @@
 
 An open-source **Laravel 13 + React/Inertia** e-commerce application, on its way to a full CMS and e-commerce platform. See [docs/](docs/README.md) for the architecture and roadmap.
 
-Today it is a working shop MVP: catalog, product page, session cart, guest or authenticated checkout, order confirmation, and a small admin for products and orders.
+Today it is a working shop: catalog with variants, a database cart, guest or authenticated checkout with structured addresses, customer accounts with address books, and a Filament admin.
 
 This is **not** a full marketplace. There is no Stripe (or any card gateway), and no public REST API yet.
 
@@ -14,18 +14,21 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
   - Home with featured/active products (`GET /`)
   - Shop index with optional category filter and pagination (`GET /shop`)
   - Product page by slug (`GET /shop/{slug}`)
-  - Session cart: add, update quantity, remove
-  - Checkout (guest or signed-in): name, email, phone, address, payment method
+  - Cart kept in the database: survives the session for guests, follows customers across devices, merges on sign-in
+  - Checkout (guest or signed-in): shipping and billing addresses, saved addresses, payment method, totals breakdown
+  - Customer account: orders and address book (`/dashboard`, `/account/orders`, `/account/addresses`)
+  - Honeypot and time-trap spam protection on checkout and registration
   - Order confirmation (`GET /orders/{order}`) for the owner or the current session
 - Auth from the official Laravel React starter (register, login, password reset, profile)
 - Admin panel at `/admin` (Filament 5) with separate staff accounts, roles and permissions
   - Dashboard: today's orders, pending orders, latest orders, low stock
   - Products with variants (options such as size), gallery images, brands, nested categories, filterable attributes, related products/upsells/cross-sells
   - Inventory with a stock movement ledger; media library with WebP conversions
-  - Orders: list, view, change status (cancelling returns stock)
+  - Orders: list, view, change status (stock is reserved at checkout, taken when shipped, released on cancel)
+  - Customers with address books and order history; customer groups
   - Admin users, roles, store settings, activity log
-- Domain models already in the repo: `Product`, `ProductCategory`, `ProductAttribute*`, `Order`, `OrderItem`, `OrderStatus`, `PaymentMethod`, `Translation`, `ShoppingCartService`
-- Product titles use the existing `HasTranslations` accessor (`title`)
+- Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)
+- English and Bulgarian storefront with a language switcher, localized URLs (`/bg/...`) and translatable catalog content
 - Manual payment methods only: cash on delivery and bank transfer
 - PHPUnit feature/unit tests for models, cart, shop flow, and admin access
 
@@ -33,8 +36,7 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
 
 - Stripe, PayPal, or any payment gateway
 - REST API
-- Language switcher UI (the translation trait exists; the storefront is English)
-- Order history page for customers
+- Shipping methods, taxes and promotions (Phase 6 and later)
 
 ---
 
@@ -44,7 +46,6 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
 - Inertia 3, React 19, TypeScript 5.9, Vite 8
 - Tailwind CSS 4.3, shadcn/Radix UI
 - Node 22.12+ for building assets (24 LTS recommended, see `.nvmrc`)
-- Session cart (`ShoppingCartService`)
 - SQLite by default (MySQL/PostgreSQL work if you change `.env`)
 
 ---

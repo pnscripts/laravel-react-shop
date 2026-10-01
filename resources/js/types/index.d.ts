@@ -105,11 +105,25 @@ export interface CartItem {
     line_total: Money;
 }
 
+export interface TotalLine {
+    code: string;
+    label: string;
+    amount: Money;
+    included: boolean;
+}
+
+export interface Totals {
+    subtotal: Money;
+    lines: TotalLine[];
+    total: Money;
+}
+
 export interface CartSummary {
     items: CartItem[];
     total_quantity: number;
     total_price: Money;
     final_price: Money;
+    totals: Totals;
 }
 
 export interface Paginated<T> {

@@ -13,13 +13,7 @@ class ThrottleTest extends TestCase
     public function test_checkout_is_rate_limited(): void
     {
         $payment = PaymentMethod::factory()->create(['is_active' => true]);
-        $data = [
-            'name' => 'Bot',
-            'email' => 'bot@example.com',
-            'phone' => '1',
-            'address' => 'x',
-            'payment_method_id' => $payment->id,
-        ];
+        $data = $this->checkoutData($payment->id, ['email' => 'bot@example.com']);
 
         for ($i = 0; $i < 5; $i++) {
             $this->post(route('checkout.store'), $data)->assertRedirect();

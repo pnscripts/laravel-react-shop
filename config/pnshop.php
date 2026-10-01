@@ -2,12 +2,14 @@
 
 use PnShop\Acl\AclServiceProvider;
 use PnShop\Admin\AdminServiceProvider;
+use PnShop\Cart\CartServiceProvider;
 use PnShop\Catalog\CatalogServiceProvider;
 use PnShop\Customer\CustomerServiceProvider;
 use PnShop\Inventory\InventoryServiceProvider;
 use PnShop\Localization\LocalizationServiceProvider;
 use PnShop\Media\MediaServiceProvider;
 use PnShop\Sales\SalesServiceProvider;
+use PnShop\Security\SecurityServiceProvider;
 use PnShop\Settings\SettingsServiceProvider;
 use PnShop\System\SystemServiceProvider;
 
@@ -33,6 +35,8 @@ return [
         CatalogServiceProvider::class,
         InventoryServiceProvider::class,
         CustomerServiceProvider::class,
+        CartServiceProvider::class,
+        SecurityServiceProvider::class,
         SalesServiceProvider::class,
         AdminServiceProvider::class,
     ],
@@ -54,6 +58,24 @@ return [
             'thumb' => 320,
             'medium' => 800,
             'large' => 1600,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Form protection
+    |--------------------------------------------------------------------------
+    |
+    | Checkout and registration refuse submissions that fill the hidden
+    | honeypot field, arrive faster than `min_seconds` after the form was
+    | shown, or use a form older than `max_age_hours`.
+    |
+    */
+
+    'security' => [
+        'bot_trap' => [
+            'min_seconds' => (int) env('PNSHOP_BOT_TRAP_MIN_SECONDS', 2),
+            'max_age_hours' => 24,
         ],
     ],
 

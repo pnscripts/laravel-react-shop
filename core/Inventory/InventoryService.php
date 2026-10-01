@@ -57,10 +57,7 @@ final class InventoryService
         $location ??= StockLocation::default();
 
         return DB::transaction(function () use ($variant, $quantity, $reason, $reference, $admin, $note, $location, $enforceAvailability) {
-            $level = StockLevel::query()->firstOrCreate(
-                ['product_variant_id' => $variant->id, 'stock_location_id' => $location->id],
-                ['on_hand' => 0, 'reserved' => 0],
-            );
+            $level = $this->level($variant, $location);
 
             $update = StockLevel::query()->whereKey($level->id);
 
@@ -86,6 +83,71 @@ final class InventoryService
                 'note' => $note,
             ]);
         });
+    }
+
+    /**
+     * Hold units for an order: they stay on hand but are no longer available.
+     *
+     * @throws InsufficientStock when fewer units are available and backorders are not allowed.
+     */
+    public function reserve(ProductVariant $variant, int $quantity, ?StockLocation $location = null): void
+    {
+        $level = $this->level($variant, $location);
+        $update = StockLevel::query()->whereKey($level->id);
+
+        if ($variant->track_inventory && ! $variant->allow_backorder) {
+            $update->whereRaw('on_hand - reserved >= ?', [$quantity]);
+        }
+
+        if ($update->increment('reserved', $quantity) === 0) {
+            throw new InsufficientStock("Not enough stock for variant {$variant->id}.");
+        }
+
+        $variant->unsetRelation('stockLevels');
+    }
+
+    /**
+     * Give held units back (never below zero).
+     */
+    public function release(ProductVariant $variant, int $quantity, ?StockLocation $location = null): void
+    {
+        if ($quantity <= 0) {
+            return;
+        }
+
+        $level = $this->level($variant, $location);
+
+        DB::transaction(function () use ($level, $quantity) {
+            $released = StockLevel::query()->whereKey($level->id)->where('reserved', '>=', $quantity)->decrement('reserved', $quantity);
+
+            if ($released === 0) {
+                StockLevel::query()->whereKey($level->id)->update(['reserved' => 0]);
+            }
+        });
+
+        $variant->unsetRelation('stockLevels');
+    }
+
+    /**
+     * Turn held units into a sale: they leave the reservation and the shelf, recorded in the ledger.
+     */
+    public function commit(ProductVariant $variant, int $quantity, StockMovementReason $reason, ?Model $reference = null, ?StockLocation $location = null): StockMovement
+    {
+        return DB::transaction(function () use ($variant, $quantity, $reason, $reference, $location) {
+            $this->release($variant, $quantity, $location);
+
+            return $this->adjust($variant, -$quantity, $reason, $reference, location: $location, enforceAvailability: false);
+        });
+    }
+
+    private function level(ProductVariant $variant, ?StockLocation $location): StockLevel
+    {
+        $location ??= StockLocation::default();
+
+        return StockLevel::query()->firstOrCreate(
+            ['product_variant_id' => $variant->id, 'stock_location_id' => $location->id],
+            ['on_hand' => 0, 'reserved' => 0],
+        );
     }
 
     /**

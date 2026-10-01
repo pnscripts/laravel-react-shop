@@ -1,13 +1,16 @@
+import { AddressFields, emptyAddress, type AddressData, type Country } from '@/components/address-fields';
+import { BotTrapFields, type BotTrapData } from '@/components/bot-trap';
 import InputError from '@/components/input-error';
+import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { type CartSummary } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { type CartSummary, type SharedData } from '@/types';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { FormEventHandler, useState } from 'react';
 
 type PaymentMethod = {
     id: number;
@@ -16,23 +19,51 @@ type PaymentMethod = {
     type: string;
 };
 
+type SavedAddress = AddressData & { id: number; lines: string[]; is_default_shipping: boolean; is_default_billing: boolean };
+
+const toAddressData = (address: SavedAddress): AddressData =>
+    Object.fromEntries(Object.keys(emptyAddress()).map((key) => [key, address[key as keyof AddressData] ?? ''])) as AddressData;
+
 export default function Checkout({
     cart,
     paymentMethods,
+    countries,
+    savedAddresses,
     defaults,
+    botTrap,
 }: {
     cart: CartSummary;
     paymentMethods: PaymentMethod[];
-    defaults: { name: string; email: string };
+    countries: Country[];
+    savedAddresses: SavedAddress[];
+    defaults: { email: string; first_name: string; last_name: string; phone: string };
+    botTrap: BotTrapData;
 }) {
     const t = useTranslations();
+    const { auth } = usePage<SharedData>().props;
+    const defaultCountry = countries.length === 1 ? countries[0].code : '';
+    const defaultShipping = savedAddresses.find((address) => address.is_default_shipping) ?? savedAddresses[0];
+    const defaultBilling = savedAddresses.find((address) => address.is_default_billing);
+    const [shippingChoice, setShippingChoice] = useState<number | 'new'>(defaultShipping?.id ?? 'new');
+
     const { data, setData, post, processing, errors } = useForm({
-        name: defaults.name,
         email: defaults.email,
-        phone: '',
-        address: '',
+        shipping: defaultShipping
+            ? toAddressData(defaultShipping)
+            : { ...emptyAddress(defaultCountry), first_name: defaults.first_name, last_name: defaults.last_name, phone: defaults.phone },
+        billing_same_as_shipping: !defaultBilling || defaultBilling.id === defaultShipping?.id,
+        billing: defaultBilling ? toAddressData(defaultBilling) : emptyAddress(defaultCountry),
+        save_address: savedAddresses.length === 0,
         payment_method_id: paymentMethods[0]?.id ? String(paymentMethods[0].id) : '',
+        ...botTrap,
     });
+    const fieldErrors = errors as Record<string, string | undefined>;
+
+    const chooseShipping = (choice: number | 'new') => {
+        setShippingChoice(choice);
+        const saved = savedAddresses.find((address) => address.id === choice);
+        setData('shipping', saved ? toAddressData(saved) : emptyAddress(defaultCountry));
+    };
 
     const submit: FormEventHandler = (event) => {
         event.preventDefault();
@@ -44,28 +75,112 @@ export default function Checkout({
             <Head title={t('Checkout')} />
             <h1 className="mb-6 text-3xl font-semibold tracking-tight">{t('Checkout')}</h1>
 
-            <form onSubmit={submit} className="grid gap-8 lg:grid-cols-3">
-                <div className="grid gap-4 lg:col-span-2">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">{t('Name')}</Label>
-                        <Input id="name" value={data.name} onChange={(event) => setData('name', event.target.value)} required />
-                        <InputError message={errors.name} />
-                    </div>
-                    <div className="grid gap-2">
+            <form onSubmit={submit} className="relative grid gap-8 lg:grid-cols-3">
+                <div className="grid content-start gap-8 lg:col-span-2">
+                    <BotTrapFields value={data.contact_website} onChange={(value) => setData('contact_website', value)} error={fieldErrors.form} />
+                    <section className="grid gap-2">
                         <Label htmlFor="email">{t('Email')}</Label>
-                        <Input id="email" type="email" value={data.email} onChange={(event) => setData('email', event.target.value)} required />
+                        <Input
+                            id="email"
+                            type="email"
+                            autoComplete="email"
+                            value={data.email}
+                            onChange={(event) => setData('email', event.target.value)}
+                            required
+                        />
                         <InputError message={errors.email} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="phone">{t('Phone')}</Label>
-                        <Input id="phone" value={data.phone} onChange={(event) => setData('phone', event.target.value)} required />
-                        <InputError message={errors.phone} />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="address">{t('Address')}</Label>
-                        <Textarea id="address" value={data.address} onChange={(event) => setData('address', event.target.value)} required />
-                        <InputError message={errors.address} />
-                    </div>
+                    </section>
+
+                    <section className="grid gap-4">
+                        <h2 className="text-lg font-semibold">{t('Shipping address')}</h2>
+                        {savedAddresses.length > 0 && (
+                            <div className="grid gap-2 sm:grid-cols-2">
+                                {savedAddresses.map((address) => (
+                                    <label
+                                        key={address.id}
+                                        className={`cursor-pointer rounded-lg border p-3 text-sm ${shippingChoice === address.id ? 'border-primary ring-primary ring-1' : ''}`}
+                                    >
+                                        <input
+                                            type="radio"
+                                            name="shipping_choice"
+                                            className="sr-only"
+                                            checked={shippingChoice === address.id}
+                                            onChange={() => chooseShipping(address.id)}
+                                        />
+                                        {address.lines.map((line) => (
+                                            <span key={line} className="block">
+                                                {line}
+                                            </span>
+                                        ))}
+                                    </label>
+                                ))}
+                                <label
+                                    className={`flex cursor-pointer items-center justify-center rounded-lg border border-dashed p-3 text-sm ${shippingChoice === 'new' ? 'border-primary ring-primary ring-1' : ''}`}
+                                >
+                                    <input
+                                        type="radio"
+                                        name="shipping_choice"
+                                        className="sr-only"
+                                        checked={shippingChoice === 'new'}
+                                        onChange={() => chooseShipping('new')}
+                                    />
+                                    {t('Use a new address')}
+                                </label>
+                            </div>
+                        )}
+                        {(shippingChoice === 'new' || Object.keys(errors).some((key) => key.startsWith('shipping.'))) && (
+                            <AddressFields
+                                value={data.shipping}
+                                onChange={(next) => setData('shipping', next)}
+                                countries={countries}
+                                errors={fieldErrors}
+                                prefix="shipping."
+                                idPrefix="shipping"
+                                phoneRequired
+                            />
+                        )}
+                        {savedAddresses.length > 0 && shippingChoice !== 'new' && !data.shipping.phone && (
+                            <div className="grid gap-2">
+                                <Label htmlFor="shipping-phone-only">{t('Phone')}</Label>
+                                <Input
+                                    id="shipping-phone-only"
+                                    autoComplete="tel"
+                                    value={data.shipping.phone}
+                                    onChange={(event) => setData('shipping', { ...data.shipping, phone: event.target.value })}
+                                    required
+                                />
+                                <InputError message={errors['shipping.phone' as keyof typeof errors]} />
+                            </div>
+                        )}
+                        {auth.user && shippingChoice === 'new' && (
+                            <label className="flex items-center gap-2 text-sm">
+                                <Checkbox checked={data.save_address} onCheckedChange={(checked) => setData('save_address', checked === true)} />
+                                {t('Save this address to my account')}
+                            </label>
+                        )}
+                    </section>
+
+                    <section className="grid gap-4">
+                        <h2 className="text-lg font-semibold">{t('Billing address')}</h2>
+                        <label className="flex items-center gap-2 text-sm">
+                            <Checkbox
+                                checked={data.billing_same_as_shipping}
+                                onCheckedChange={(checked) => setData('billing_same_as_shipping', checked === true)}
+                            />
+                            {t('Same as the shipping address')}
+                        </label>
+                        {!data.billing_same_as_shipping && (
+                            <AddressFields
+                                value={data.billing}
+                                onChange={(next) => setData('billing', next)}
+                                countries={countries}
+                                errors={fieldErrors}
+                                prefix="billing."
+                                idPrefix="billing"
+                            />
+                        )}
+                    </section>
+
                     <div className="grid gap-2">
                         <Label htmlFor="payment_method_id">{t('Payment method')}</Label>
                         <select
@@ -103,10 +218,7 @@ export default function Checkout({
                             </li>
                         ))}
                     </ul>
-                    <div className="mb-6 flex justify-between font-semibold">
-                        <span>{t('Total')}</span>
-                        <span>{cart.final_price.formatted}</span>
-                    </div>
+                    <TotalsBreakdown totals={cart.totals} />
                     <Button type="submit" className="w-full" disabled={processing}>
                         {t('Place order')}
                     </Button>

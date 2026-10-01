@@ -2,6 +2,7 @@ import { Head, useForm } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
+import { BotTrapFields, type BotTrapData } from '@/components/bot-trap';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -17,14 +18,16 @@ type RegisterForm = {
     password_confirmation: string;
 };
 
-export default function Register() {
+export default function Register({ botTrap }: { botTrap: BotTrapData }) {
     const t = useTranslations();
-    const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm>>({
+    const { data, setData, post, processing, errors, reset } = useForm<Required<RegisterForm> & BotTrapData>({
         name: '',
         email: '',
         password: '',
         password_confirmation: '',
+        ...botTrap,
     });
+    const formError = (errors as Record<string, string | undefined>).form;
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
@@ -36,7 +39,8 @@ export default function Register() {
     return (
         <AuthLayout title={t('Create an account')} description={t('Enter your details below to create your account')}>
             <Head title={t('Register')} />
-            <form className="flex flex-col gap-6" onSubmit={submit}>
+            <form className="relative flex flex-col gap-6" onSubmit={submit}>
+                <BotTrapFields value={data.contact_website} onChange={(value) => setData('contact_website', value)} error={formError} />
                 <div className="grid gap-6">
                     <div className="grid gap-2">
                         <Label htmlFor="name">{t('Name')}</Label>

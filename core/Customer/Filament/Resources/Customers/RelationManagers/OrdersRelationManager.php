@@ -27,7 +27,7 @@ class OrdersRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('id')->label('#'),
                 TextColumn::make('orderStatus.name')->label('Status')->badge(),
-                TextColumn::make('total')->state(fn (Order $record) => $record->itemsTotal()->formatToLocale(app()->getLocale())),
+                TextColumn::make('total')->state(fn (Order $record) => $record->grandTotal()->formatToLocale(app()->getLocale())),
                 TextColumn::make('created_at')->label('Placed')->dateTime(),
             ])
             ->recordActions([

@@ -16,6 +16,9 @@ core/
 ├── Catalog/                 products, variants, options, categories, brands, attributes, relations + admin
 ├── Inventory/               stock locations, levels, movement ledger, InventoryService
 ├── Media/                   media library, uploads, WebP conversions, HasMedia
+├── Customer/                customer groups, address books, PostalAddress + admin
+├── Cart/                    database carts, guest merge, CartCalculator (cart.totals pipeline)
+├── Security/                bot-trap middleware (honeypot, time trap), CaptchaVerifier
 ├── Sales/                   order permissions, policy, admin resource, dashboard widgets
 └── Admin/                   the Filament panel (/admin)
 ```
@@ -62,7 +65,7 @@ app(PipelineRegistry::class)->stage('cart.totals', ApplyLoyaltyDiscount::class, 
 $result = app(PipelineRegistry::class)->run('cart.totals', $cart);
 ```
 
-Stages work like middleware: `handle($payload, Closure $next)`. Lower priorities run first. Pipelines replace "override a core class" patterns; cart totals and price resolution (Phases 5–6) will use them.
+Stages work like middleware: `handle($payload, Closure $next)`. Lower priorities run first. Pipelines replace "override a core class" patterns. `cart.totals` is live (see [customers, cart and checkout](../ecommerce/customers-cart-and-checkout.md#totals-pipeline)); price resolution follows in Phase 6.
 
 ### Settings
 

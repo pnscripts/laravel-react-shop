@@ -21,7 +21,7 @@ class DashboardController extends Controller
                 'id' => $order->id,
                 'status' => $order->orderStatus ? __(ucfirst($order->orderStatus->name)) : null,
                 'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LL'),
-                'total' => MoneyPresenter::present($order->itemsTotal()),
+                'total' => MoneyPresenter::present($order->grandTotal()),
             ]),
             'defaultAddress' => $address?->toPostalAddress()->lines(),
         ]);

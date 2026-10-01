@@ -8,23 +8,24 @@ use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use PnShop\Cart\CartRepository;
+use PnShop\Cart\Totals\CartCalculator;
+use PnShop\Cart\Totals\CartTotals;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Inventory\InventoryService;
 use PnShop\Localization\Localization;
 use PnShop\Money\MoneyPresenter;
 
 /**
- * Session cart. The session holds only variant ids and quantities; every read
- * resolves current prices, titles and stock from the database.
+ * The visitor's cart. Cart lines (PnShop\Cart) hold only variant ids and quantities;
+ * every read resolves current prices, titles and stock from the database.
  *
  * Safe to keep across requests (controllers are cached on routes, and long-lived
- * workers reuse instances): it always reads the current request's session, and its
+ * workers reuse instances): it always reads the current request's cart, and its
  * memoized items are tied to the cart contents they were built from.
  */
 class ShoppingCartService
 {
-    private const SESSION_KEY = 'cart.variants';
-
     /** Session keys of earlier cart formats; cleared on first use. */
     private const LEGACY_SESSION_KEYS = ['shopping_cart', 'cart.lines'];
 
@@ -34,7 +35,11 @@ class ShoppingCartService
     /** Cart contents the memoized $items were built from. */
     private ?string $itemsFor = null;
 
-    public function __construct(private InventoryService $inventory) {}
+    public function __construct(
+        private InventoryService $inventory,
+        private CartRepository $carts,
+        private CartCalculator $calculator,
+    ) {}
 
     public function addItemToCart(int $variantId, int $quantity): void
     {
@@ -42,8 +47,7 @@ class ShoppingCartService
 
         $this->assertQuantityAvailable($variantId, ($lines[$variantId] ?? 0) + $quantity);
 
-        $lines[$variantId] = ($lines[$variantId] ?? 0) + $quantity;
-        $this->saveLines($lines);
+        $this->carts->setQuantity($variantId, ($lines[$variantId] ?? 0) + $quantity);
     }
 
     public function updateItemQuantityInCart(int $variantId, int $quantity): void
@@ -56,15 +60,12 @@ class ShoppingCartService
 
         $this->assertQuantityAvailable($variantId, $quantity);
 
-        $lines[$variantId] = $quantity;
-        $this->saveLines($lines);
+        $this->carts->setQuantity($variantId, $quantity);
     }
 
     public function removeItemFromCart(int $variantId): void
     {
-        $lines = $this->getLines();
-        unset($lines[$variantId]);
-        $this->saveLines($lines);
+        $this->carts->setQuantity($variantId, 0);
     }
 
     /**
@@ -96,36 +97,47 @@ class ShoppingCartService
     }
 
     /**
-     * Raw variant id => quantity lines, without touching the database.
+     * Raw variant id => quantity lines, without loading products.
      *
      * @return array<int, int>
      */
     public function getLines(): array
     {
-        $session = $this->request()->session();
+        $request = $this->request();
 
-        foreach (self::LEGACY_SESSION_KEYS as $key) {
-            if ($session->has($key)) {
-                $session->forget($key);
+        if ($request->hasSession()) {
+            foreach (self::LEGACY_SESSION_KEYS as $key) {
+                $request->session()->forget($key);
             }
         }
 
-        $lines = $session->get(self::SESSION_KEY, []);
-
-        return is_array($lines) ? array_map('intval', $lines) : [];
+        return $this->carts->lines();
     }
 
+    /**
+     * Subtotal, total lines (shipping, discounts, tax, ...) and grand total.
+     *
+     * @param  array<string, mixed>  $context  e.g. shipping address or chosen shipping method
+     */
+    public function totals(array $context = []): CartTotals
+    {
+        return $this->calculator->calculate($this->getCartItems(), app(Localization::class)->defaultCurrency()->code, $context);
+    }
+
+    /**
+     * Sum of the cart lines.
+     */
     public function getTotalPrice(): Money
     {
-        return $this->getCartItems()->reduce(
-            fn (Money $total, CartItemDTO $item) => $total->plus($item->getTotalPrice()),
-            Money::zero(app(Localization::class)->defaultCurrency()->code),
-        );
+        return $this->totals()->subtotal;
     }
 
+    /**
+     * What the customer pays.
+     */
     public function getFinalPrice(): Money
     {
-        return $this->getTotalPrice();
+        return $this->totals()->total();
     }
 
     public function getTotalQuantity(): int
@@ -135,7 +147,7 @@ class ShoppingCartService
 
     public function clearCart(): void
     {
-        $this->request()->session()->forget(self::SESSION_KEY);
+        $this->carts->clear();
         $this->items = null;
     }
 
@@ -144,6 +156,8 @@ class ShoppingCartService
      */
     public function toArray(): array
     {
+        $totals = $this->totals();
+
         return [
             'items' => $this->getCartItems()->map(fn (CartItemDTO $item) => [
                 'variant_id' => $item->variant_id,
@@ -161,8 +175,9 @@ class ShoppingCartService
                 'line_total' => MoneyPresenter::present($item->getTotalPrice()),
             ])->all(),
             'total_quantity' => $this->getCartItems()->sum('quantity'),
-            'total_price' => MoneyPresenter::present($this->getTotalPrice()),
-            'final_price' => MoneyPresenter::present($this->getFinalPrice()),
+            'total_price' => MoneyPresenter::present($totals->subtotal),
+            'final_price' => MoneyPresenter::present($totals->total()),
+            'totals' => $totals->toArray(),
         ];
     }
 
@@ -193,15 +208,6 @@ class ShoppingCartService
         if (! $this->inventory->canSell($variant, $quantity)) {
             throw new CartException(__('Only :stock of :product available.', ['stock' => (int) $variant->available(), 'product' => $variant->product->title]));
         }
-    }
-
-    /**
-     * @param  array<int, int>  $lines
-     */
-    private function saveLines(array $lines): void
-    {
-        $this->request()->session()->put(self::SESSION_KEY, $lines);
-        $this->items = null;
     }
 
     private function request(): Request

@@ -21,7 +21,7 @@ class OrdersController extends Controller
                 'status' => $order->orderStatus ? __(ucfirst($order->orderStatus->name)) : null,
                 'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LL'),
                 'items_count' => $order->items->sum('quantity'),
-                'total' => MoneyPresenter::present($order->itemsTotal()),
+                'total' => MoneyPresenter::present($order->grandTotal()),
             ]);
 
         return Inertia::render('account/orders', ['orders' => $orders]);

@@ -8,6 +8,7 @@ use PnShop\Catalog\Filament\Resources\Products\Pages\EditProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\ListProducts;
 use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Product;
+use PnShop\Inventory\InventoryService;
 
 class ProductResourceTest extends AdminTestCase
 {
@@ -54,6 +55,22 @@ class ProductResourceTest extends AdminTestCase
             ->assertHasFormErrors(['sale_price']);
 
         $this->assertNull($product->fresh()->sale_price);
+    }
+
+    public function test_saving_a_product_keeps_stock_reserved_for_orders(): void
+    {
+        $this->actingAsAdministrator();
+        $product = Product::factory()->create(['price' => 10, 'sale_price' => null, 'stock' => 5]);
+        app(InventoryService::class)->reserve($product->defaultVariant(), 2);
+
+        Livewire::test(EditProduct::class, ['record' => $product->getRouteKey()])
+            ->assertSchemaStateSet(['stock' => 5])
+            ->fillForm(['price' => 12])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(['on_hand' => 5, 'reserved' => 2], $product->defaultVariant()->stockLevels()->sole()->only(['on_hand', 'reserved']));
+        $this->assertSame(3, $product->fresh()->stock);
     }
 
     public function test_editing_is_logged(): void

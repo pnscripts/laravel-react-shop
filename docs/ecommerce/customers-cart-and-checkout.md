@@ -1,0 +1,91 @@
+# Customers, cart and checkout
+
+Customer code lives in `core/Customer`, `core/Cart` and `core/Security`. Checkout still lives in `app/Services/CheckoutService` and moves into the Sales module with the orders redesign (Phase 6).
+
+## Customers
+
+- Customer accounts are the `users` table, separate from staff accounts (`admin_users`, see [staff and roles](../administration/staff-and-roles.md)).
+- **Customer groups** (Admin → Customers → Customer groups) segment customers. New accounts join the default group, *Retail*. Groups will drive prices, promotions and tax in later phases.
+- **Address books:** customers keep several addresses under *Account → Addresses* and choose a default for shipping and one for billing. Staff see them on the customer's page in the admin.
+- **The account area** (`/dashboard`, `/account/orders`, `/account/addresses`) lists the customer's orders and addresses.
+
+## Cart
+
+| Table | Purpose |
+|---|---|
+| `carts` | One per guest (random `token`) or per customer (`user_id`). |
+| `cart_lines` | Variant id and quantity only. Prices, titles and stock are always read from the catalog. |
+
+- A guest's cart is found through the session and a 30-day, HTTP-only cookie (`pnshop_cart`). Browsing never creates a cart; the first *Add to cart* does.
+- A signed-in customer's cart belongs to the account, so it is the same on every device.
+- On sign-in, the guest cart is merged into the customer's cart. Quantities of the same variant add up.
+- `php artisan pnshop:carts:prune` runs daily from the scheduler. It deletes guest carts unchanged for 30 days and customer carts unchanged for 180 days (`--guest-days`, `--customer-days`).
+
+### Totals pipeline
+
+`PnShop\Cart\Totals\CartCalculator` adds up the lines into a **subtotal**, then runs the `cart.totals` pipeline. Each stage receives a `CartTotals` and may add `TotalLine`s:
+
+```php
+use PnShop\Cart\Totals\{CartCalculator, CartTotals, TotalLine};
+
+app(PipelineRegistry::class)->stage(CartCalculator::PIPELINE, function (CartTotals $totals, Closure $next) {
+    $totals->add(new TotalLine('shipping', __('Courier'), Money::of('5.00', $totals->currency())));
+
+    return $next($totals);
+}, priority: 200);
+```
+
+- **Line amounts:** negative for discounts. Set `included: true` for amounts already inside the prices (VAT in gross prices); those are shown but not added.
+- **Total:** the subtotal plus every non-included line, never below zero.
+- **Suggested priorities:** discounts 100, shipping 200, fees 300, tax 400.
+- **Context:** `$totals->context` carries what checkout knows: `shipping_address` and `billing_address` (`PostalAddress`) and `user`.
+
+Cart, checkout, the order page and the admin all show the same breakdown. The order stores it (`orders.subtotal`, `total`, `totals`), so later rule changes never alter a placed order.
+
+## Checkout
+
+1. **Contact email and shipping address:**
+   - the address is entered with the address fields;
+   - signed-in customers can pick a saved address instead;
+   - the phone number is required for couriers.
+2. **Billing address:** the same as shipping unless the customer unticks the box.
+3. **Payment method:** manual methods for now (Phase 6 adds gateways).
+
+When the order is placed:
+
+- the variant rows are locked;
+- stock is reserved (see below);
+- lines are priced from the database;
+- the addresses are copied into `order_addresses`, so editing an address book never changes an order;
+- totals are calculated and stored.
+
+Signed-in customers can save a new address to their address book. It is not saved twice.
+
+## Stock reservations
+
+| Order state | Stock |
+|---|---|
+| Placed (pending, paid, …) | **Reserved**: still on hand, no longer available |
+| Shipped / delivered / completed | **Fulfilled**: taken off hand, with an `order_fulfilled` movement |
+| Cancelled | **Released**: a reservation is dropped; shipped stock is put back (`order_cancelled` movement) |
+
+- Reopening a cancelled order reserves the stock again. It fails when the stock is gone.
+- Moving a shipped order back to an open status keeps it fulfilled, because the goods have left.
+- The admin's *Stock on hand* field shows the shelf quantity, including reserved units, so saving a product never loses reservations.
+
+## Spam protection
+
+The `bot-trap` route middleware (`core/Security`) protects checkout and registration:
+
+- **Honeypot:** a hidden `contact_website` field that people never see and bots fill in.
+- **Time trap:** `form_started` is an encrypted timestamp issued with the page. Submissions under `pnshop.security.bot_trap.min_seconds` (default 2), older than 24 hours, or without the timestamp are refused with a friendly message.
+- **CAPTCHA:**
+  - `PnShop\Security\Captcha\CaptchaVerifier` is checked last;
+  - the core binds a verifier that accepts everything;
+  - a Turnstile, hCaptcha or reCAPTCHA extension binds its own and adds its widget.
+
+To protect another form:
+
+1. Add the `bot-trap` middleware to its route.
+2. Pass `'botTrap' => BotTrap::fields()` to the page.
+3. Render `<BotTrapFields>` with the fields spread into `useForm`.

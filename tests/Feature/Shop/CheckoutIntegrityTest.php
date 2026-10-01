@@ -8,6 +8,7 @@ use App\Models\PaymentMethod;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use PnShop\Cart\Models\CartLine;
 use PnShop\Catalog\Models\Product;
 use Tests\TestCase;
 
@@ -39,7 +40,7 @@ class CheckoutIntegrityTest extends TestCase
             ->where('cart.final_price.formatted', '$120.00')
         );
 
-        $this->post(route('checkout.store'), $this->checkoutData())->assertRedirect();
+        $this->post(route('checkout.store'), $this->checkoutData($this->payment->id))->assertRedirect();
 
         $this->assertDatabaseHas('order_items', [
             'product_id' => $product->id,
@@ -68,7 +69,7 @@ class CheckoutIntegrityTest extends TestCase
         $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 3]);
         $product->update(['stock' => 1]);
 
-        $this->post(route('checkout.store'), $this->checkoutData())
+        $this->post(route('checkout.store'), $this->checkoutData($this->payment->id))
             ->assertRedirect()
             ->assertSessionHas('error', fn (string $message) => str_contains($message, 'Not enough stock'));
 
@@ -85,7 +86,7 @@ class CheckoutIntegrityTest extends TestCase
 
         $this->get(route('cart.index'))->assertInertia(fn (Assert $page) => $page->has('cart.items', 0));
 
-        $this->post(route('checkout.store'), $this->checkoutData())
+        $this->post(route('checkout.store'), $this->checkoutData($this->payment->id))
             ->assertSessionHas('error');
 
         $this->assertSame(0, Order::query()->count());
@@ -96,7 +97,7 @@ class CheckoutIntegrityTest extends TestCase
         $product = Product::factory()->active()->create(['title' => 'Old Lamp', 'sku' => 'LAMP-1', 'stock' => 3]);
 
         $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1]);
-        $this->post(route('checkout.store'), $this->checkoutData());
+        $this->post(route('checkout.store'), $this->checkoutData($this->payment->id));
 
         $order = Order::query()->sole();
         $product->forceDelete();
@@ -122,26 +123,15 @@ class CheckoutIntegrityTest extends TestCase
         $product->category->forceDelete();
     }
 
-    public function test_session_holds_only_variant_ids_and_quantities(): void
+    public function test_cart_holds_only_variant_ids_and_quantities(): void
     {
         $product = Product::factory()->active()->create(['stock' => 3]);
 
         $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 2]);
 
-        $this->assertSame([$product->defaultVariant()->id => 2], session('cart.variants'));
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function checkoutData(): array
-    {
-        return [
-            'name' => 'Jane Doe',
-            'email' => 'jane@example.com',
-            'phone' => '0888123456',
-            'address' => '123 Main St',
-            'payment_method_id' => $this->payment->id,
-        ];
+        $this->assertSame(
+            [['product_variant_id' => $product->defaultVariant()->id, 'quantity' => 2]],
+            CartLine::query()->get(['product_variant_id', 'quantity'])->toArray(),
+        );
     }
 }

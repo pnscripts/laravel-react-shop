@@ -1,4 +1,5 @@
 import { ProductCard } from '@/components/product-card';
+import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
@@ -79,10 +80,7 @@ export default function CartIndex({ cart, suggestions }: { cart: CartSummary; su
                             <span>{t('Items')}</span>
                             <span>{cart.total_quantity}</span>
                         </div>
-                        <div className="mb-6 flex justify-between font-semibold">
-                            <span>{t('Total')}</span>
-                            <span>{cart.final_price.formatted}</span>
-                        </div>
+                        <TotalsBreakdown totals={cart.totals} />
                         <Button className="w-full" asChild>
                             <Link href={route('checkout.create')}>{t('Checkout')}</Link>
                         </Button>

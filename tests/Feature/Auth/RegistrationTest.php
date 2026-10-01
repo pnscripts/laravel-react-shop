@@ -3,6 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Security\BotTrap;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -23,6 +24,7 @@ class RegistrationTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            ...BotTrap::fields(now()->subMinute()),
         ]);
 
         $this->assertAuthenticated();

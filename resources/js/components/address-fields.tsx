@@ -41,6 +41,7 @@ export function AddressFields({
     errors = {},
     prefix = '',
     idPrefix = 'address',
+    phoneRequired = false,
 }: {
     value: AddressData;
     onChange: (next: AddressData) => void;
@@ -48,6 +49,7 @@ export function AddressFields({
     errors?: Record<string, string | undefined>;
     prefix?: string;
     idPrefix?: string;
+    phoneRequired?: boolean;
 }) {
     const t = useTranslations();
     const field = (name: keyof AddressData, label: string, options: { required?: boolean; autoComplete?: string; className?: string } = {}) => (
@@ -93,7 +95,7 @@ export function AddressFields({
                 </select>
                 <InputError message={errors[`${prefix}country_code`]} />
             </div>
-            {field('phone', 'Phone', { autoComplete: 'tel', className: 'sm:col-span-2' })}
+            {field('phone', 'Phone', { required: phoneRequired, autoComplete: 'tel', className: 'sm:col-span-2' })}
         </div>
     );
 }

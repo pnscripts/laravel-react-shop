@@ -7,6 +7,7 @@ use App\Models\PaymentMethod;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Product;
+use PnShop\Security\BotTrap;
 use Tests\TestCase;
 
 class InterfaceTranslationsTest extends TestCase
@@ -47,7 +48,7 @@ class InterfaceTranslationsTest extends TestCase
         $this->from('/bg/shop')->post('/bg/cart', ['product_id' => $product->id, 'quantity' => 5])
             ->assertSessionHasErrors(['quantity' => 'Налични са само 2 бр. от '.$product->title.'.']);
 
-        $this->from('/bg/checkout')->post('/bg/checkout', [])
+        $this->from('/bg/checkout')->post('/bg/checkout', BotTrap::fields(now()->subMinute()))
             ->assertSessionHasErrors(['email' => 'Полето имейл е задължително.']);
     }
 
@@ -58,7 +59,7 @@ class InterfaceTranslationsTest extends TestCase
         $product = Product::factory()->active()->create(['stock' => 2]);
 
         $this->post('/bg/cart', ['product_id' => $product->id, 'quantity' => 1]);
-        $this->post('/bg/checkout', ['name' => 'Иван', 'email' => 'ivan@example.com', 'phone' => '1', 'address' => 'София', 'payment_method_id' => $payment->id])
+        $this->post('/bg/checkout', $this->checkoutData($payment->id, ['email' => 'ivan@example.com']))
             ->assertSessionHas('success', 'Благодарим Ви! Поръчката е приета.');
 
         $this->get('/bg/orders/1')->assertInertia(fn (Assert $page) => $page

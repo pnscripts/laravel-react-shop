@@ -2,16 +2,22 @@
 
 namespace App\Services;
 
+use App\DTOs\CartItemDTO;
 use App\Exceptions\CheckoutException;
 use App\Models\Order;
+use App\Models\OrderAddress;
 use App\Models\OrderItem;
 use App\Models\OrderStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use PnShop\Cart\Totals\CartCalculator;
+use PnShop\Cart\Totals\TotalLine;
 use PnShop\Catalog\Models\ProductVariant;
+use PnShop\Customer\Models\CustomerAddress;
+use PnShop\Customer\PostalAddress;
 use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
-use PnShop\Inventory\StockMovementReason;
+use PnShop\Inventory\OrderStockStatus;
 use PnShop\Localization\Localization;
 
 class CheckoutService
@@ -19,15 +25,20 @@ class CheckoutService
     public function __construct(
         private ShoppingCartService $cart,
         private InventoryService $inventory,
+        private CartCalculator $calculator,
     ) {}
 
     /**
      * Place an order from the current cart.
      *
-     * Prices come from the variant rows, and stock is taken through the inventory ledger
-     * with a conditional update, so it cannot be oversold even under concurrent checkouts.
+     * Prices come from the variant rows, and stock is reserved with a conditional update,
+     * so it cannot be oversold even under concurrent checkouts. It leaves the shelf when
+     * the order ships (OrderStatusService).
      *
-     * @param  array{name: string, email: string, phone: string, address: string, payment_method_id: int|string}  $data
+     * The order keeps copies of the shipping and billing addresses and its totals from
+     * the cart.totals pipeline, computed from the locked variant rows.
+     *
+     * @param  array{email: string, shipping: array<string, mixed>, billing?: array<string, mixed>, billing_same_as_shipping?: bool, save_address?: bool, payment_method_id: int|string}  $data
      *
      * @throws CheckoutException when the cart is empty or a product is unavailable.
      */
@@ -42,10 +53,13 @@ class CheckoutService
         // Handle variants in a stable order so concurrent checkouts cannot deadlock.
         ksort($lines);
 
-        $order = DB::transaction(function () use ($data, $user, $lines) {
+        $shipping = PostalAddress::fromArray($data['shipping']);
+        $billing = ($data['billing_same_as_shipping'] ?? true) || empty($data['billing']) ? $shipping : PostalAddress::fromArray($data['billing']);
+
+        $order = DB::transaction(function () use ($data, $user, $lines, $shipping, $billing) {
             $variants = ProductVariant::query()
                 ->whereKey(array_keys($lines))
-                ->with(['product', 'optionValues'])
+                ->with(['product.media', 'optionValues', 'stockLevels'])
                 ->orderBy('id')
                 ->lockForUpdate()
                 ->get()
@@ -55,14 +69,21 @@ class CheckoutService
 
             $order = Order::create([
                 'user_id' => $user?->id,
-                'name' => $data['name'],
+                'name' => $shipping->fullName(),
                 'email' => $data['email'],
-                'phone' => $data['phone'],
-                'address' => $data['address'],
+                'phone' => (string) $shipping->phone,
                 'payment_method_id' => $data['payment_method_id'],
                 'order_status_id' => OrderStatus::firstOrCreate(['name' => 'pending'])->id,
                 'currency' => $currency,
+                'stock_status' => OrderStockStatus::Reserved,
             ]);
+
+            $order->addresses()->createMany([
+                ['type' => OrderAddress::SHIPPING, ...$shipping->toArray()],
+                ['type' => OrderAddress::BILLING, ...$billing->toArray()],
+            ]);
+
+            $items = collect();
 
             foreach ($lines as $variantId => $quantity) {
                 $variant = $variants->get($variantId);
@@ -72,7 +93,7 @@ class CheckoutService
                 }
 
                 try {
-                    $this->inventory->adjust($variant, -$quantity, StockMovementReason::Order, $order);
+                    $this->inventory->reserve($variant, $quantity);
                 } catch (InsufficientStock) {
                     throw new CheckoutException(__('Not enough stock for :product. Available: :stock.', [
                         'product' => $variant->product->title,
@@ -92,13 +113,52 @@ class CheckoutService
                     'price' => $variant->price,
                     'sale_price' => $variant->isOnSale() ? $variant->sale_price : null,
                 ]);
+
+                $items->push(CartItemDTO::fromVariant($variant, $quantity));
             }
+
+            $totals = $this->calculator->calculate($items, $currency, ['shipping_address' => $shipping, 'billing_address' => $billing, 'user' => $user]);
+
+            $order->update([
+                'subtotal' => $totals->subtotal,
+                'total' => $totals->total(),
+                'totals' => array_map(fn (TotalLine $line) => [
+                    'code' => $line->code,
+                    'label' => $line->label,
+                    'amount' => $line->amount->getMinorAmount()->toInt(),
+                    'included' => $line->included,
+                ], $totals->lines()),
+            ]);
 
             return $order;
         }, attempts: 3);
 
         $this->cart->clearCart();
 
-        return $order->load(['items', 'orderStatus', 'paymentMethod']);
+        if ($user !== null && ($data['save_address'] ?? false)) {
+            $this->saveToAddressBook($user, $shipping);
+        }
+
+        return $order->load(['items', 'orderStatus', 'paymentMethod', 'addresses']);
+    }
+
+    /**
+     * Keep the shipping address for next time, unless the customer already has it.
+     */
+    private function saveToAddressBook(User $user, PostalAddress $address): void
+    {
+        $saved = $user->addresses()->get();
+
+        if ($saved->contains(fn (CustomerAddress $existing) => $existing->toPostalAddress()->toArray() === $address->toArray())) {
+            return;
+        }
+
+        $first = $saved->isEmpty();
+
+        $user->addresses()->create([
+            ...$address->toArray(),
+            'is_default_shipping' => $first,
+            'is_default_billing' => $first,
+        ]);
     }
 }

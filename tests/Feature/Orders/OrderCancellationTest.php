@@ -30,13 +30,7 @@ class OrderCancellationTest extends TestCase
         $this->product = Product::factory()->active()->create(['stock' => 5]);
 
         $this->post(route('cart.store'), ['product_id' => $this->product->id, 'quantity' => 3]);
-        $this->post(route('checkout.store'), [
-            'name' => 'Jane Doe',
-            'email' => 'jane@example.com',
-            'phone' => '0888123456',
-            'address' => '123 Main St',
-            'payment_method_id' => $payment->id,
-        ]);
+        $this->post(route('checkout.store'), $this->checkoutData($payment->id, ['email' => 'jane@example.com']));
 
         $this->order = Order::query()->sole();
         $this->statuses = app(OrderStatusService::class);

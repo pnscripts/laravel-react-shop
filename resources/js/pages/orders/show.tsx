@@ -1,7 +1,8 @@
+import { TotalsBreakdown } from '@/components/totals-breakdown';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
-import { type Money } from '@/types';
+import { type Money, type Totals } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 
 type OrderShow = {
@@ -9,7 +10,8 @@ type OrderShow = {
     name: string;
     email: string;
     phone: string;
-    address: string;
+    shipping_address: string[];
+    billing_address: string[] | null;
     status: string | null;
     payment_method: string | null;
     created_at: string | null;
@@ -23,8 +25,18 @@ type OrderShow = {
         unit_price: Money;
         line_total: Money;
     }[];
-    total: Money;
+    totals: Totals;
 };
+
+const AddressLines = ({ lines }: { lines: string[] }) => (
+    <address className="not-italic">
+        {lines.map((line) => (
+            <span key={line} className="block">
+                {line}
+            </span>
+        ))}
+    </address>
+);
 
 export default function OrderShow({ order }: { order: OrderShow }) {
     const t = useTranslations();
@@ -35,14 +47,19 @@ export default function OrderShow({ order }: { order: OrderShow }) {
             <h1 className="mb-2 text-3xl font-semibold tracking-tight">{t('Order #:id', { id: order.id })}</h1>
             <p className="text-muted-foreground mb-8">{t('Thanks — we saved your order. Keep this page if you checked out as a guest.')}</p>
 
-            <div className="mb-8 grid gap-6 md:grid-cols-2">
+            <div className="mb-8 grid gap-6 md:grid-cols-3">
                 <div className="rounded-xl border p-6">
-                    <h2 className="mb-3 font-semibold">{t('Customer')}</h2>
-                    <p>{order.name}</p>
-                    <p className="text-muted-foreground text-sm">{order.email}</p>
+                    <h2 className="mb-3 font-semibold">{t('Shipping address')}</h2>
+                    <AddressLines lines={order.shipping_address} />
+                    <p className="text-muted-foreground mt-2 text-sm">{order.email}</p>
                     <p className="text-muted-foreground text-sm">{order.phone}</p>
-                    <p className="mt-2 whitespace-pre-line">{order.address}</p>
                 </div>
+                {order.billing_address && (
+                    <div className="rounded-xl border p-6">
+                        <h2 className="mb-3 font-semibold">{t('Billing address')}</h2>
+                        <AddressLines lines={order.billing_address} />
+                    </div>
+                )}
                 <div className="rounded-xl border p-6">
                     <h2 className="mb-3 font-semibold">{t('Details')}</h2>
                     <p>{t('Status: :status', { status: order.status ?? t('pending') })}</p>
@@ -74,8 +91,12 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                     </tbody>
                 </table>
             </div>
-            <div className="mt-4 flex items-center justify-between">
-                <p className="font-semibold">{t('Total :amount', { amount: order.total.formatted })}</p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-[1fr_20rem]">
+                <div className="sm:col-start-2">
+                    <TotalsBreakdown totals={order.totals} />
+                </div>
+            </div>
+            <div className="flex justify-end">
                 <Button asChild>
                     <Link href={route('shop.index')}>{t('Continue shopping')}</Link>
                 </Button>

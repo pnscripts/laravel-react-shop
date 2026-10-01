@@ -126,13 +126,7 @@ class ShopTest extends TestCase
             'quantity' => 2,
         ]);
 
-        $response = $this->post(route('checkout.store'), [
-            'name' => 'Jane Doe',
-            'email' => 'jane@example.com',
-            'phone' => '0888123456',
-            'address' => '123 Main St',
-            'payment_method_id' => $payment->id,
-        ]);
+        $response = $this->post(route('checkout.store'), $this->checkoutData($payment->id, ['email' => 'jane@example.com']));
 
         $order = Order::query()->first();
         $this->assertNotNull($order);

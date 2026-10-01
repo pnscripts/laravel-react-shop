@@ -80,9 +80,11 @@ $inventory->available($variant);                                      // null wh
 
 - Decrements are a single conditional `UPDATE`, so concurrent checkouts can never oversell.
 - Variants can allow backorders (sell below zero) or not track stock at all.
+- Checkout **reserves** stock (`reserve()`); it leaves the shelf when the order ships (`commit()`, reason `order_fulfilled`), and cancelling releases it (`release()`). See [stock reservations](customers-cart-and-checkout.md#stock-reservations).
 - Movement reasons:
-  - checkout: `order`;
-  - cancelling: `order_cancelled`, returning stock;
-  - reopening a cancelled order: `order_reopened`, taking it again or failing when it is gone;
-  - admin edits: `adjustment`.
+  - shipping an order: `order_fulfilled`;
+  - cancelling a shipped order: `order_cancelled`, returning stock;
+  - reopening a cancelled order straight to shipped: `order_reopened`;
+  - admin edits: `adjustment`;
+  - orders placed before Phase 5 recorded `order` at checkout.
 - The dashboard's *Low stock* widget lists tracked variants with 5 or fewer units available.

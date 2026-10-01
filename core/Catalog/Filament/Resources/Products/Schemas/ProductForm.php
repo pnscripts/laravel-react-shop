@@ -116,12 +116,17 @@ class ProductForm
                             ->minValue(0)
                             ->lt('price')
                             ->helperText('Leave empty when the product is not on sale.')),
-                        self::shortcut(TextInput::make('stock')
+                        TextInput::make('stock')
                             ->label('Stock on hand')
                             ->integer()
                             ->minValue(0)
                             ->default(0)
-                            ->helperText('Changes are recorded in the stock history.')),
+                            // `stock` reads as *available*; the form edits what is on the shelf,
+                            // which includes units reserved for open orders.
+                            ->afterStateHydrated(fn (TextInput $component, ?Product $record) => $record === null ? null : $component->state(
+                                (int) $record->defaultVariant()?->stockLevels()->sum('on_hand'),
+                            ))
+                            ->helperText(fn (?Product $record) => self::stockHelp($record)),
                         self::shortcut(TextInput::make('sku')
                             ->label('SKU')
                             ->maxLength(255)
@@ -173,6 +178,15 @@ class ProductForm
                     'description' => fn (string $name) => Textarea::make($name)->label('Description')->rows(6),
                 ])->columnSpanFull(),
             ]);
+    }
+
+    private static function stockHelp(?Product $record): string
+    {
+        $reserved = (int) $record?->defaultVariant()?->stockLevels()->sum('reserved');
+
+        return $reserved > 0
+            ? "Includes {$reserved} reserved for open orders. Changes are recorded in the stock history."
+            : 'Changes are recorded in the stock history.';
     }
 
     /**

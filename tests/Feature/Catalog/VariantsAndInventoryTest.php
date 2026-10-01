@@ -19,6 +19,7 @@ use PnShop\Catalog\ProductType;
 use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\Models\StockMovement;
+use PnShop\Inventory\OrderStockStatus;
 use PnShop\Inventory\StockMovementReason;
 use Tests\Feature\Admin\AdminTestCase;
 
@@ -57,7 +58,7 @@ class VariantsAndInventoryTest extends AdminTestCase
         $this->post('/cart', ['product_id' => $product->id, 'quantity' => 1]);
         $this->get('/cart')->assertInertia(fn (Assert $page) => $page->where('cart.final_price.amount', '10.00'));
 
-        $this->post('/checkout', $this->checkoutData());
+        $this->post('/checkout', $this->checkoutData($this->payment->id));
         $this->assertDatabaseHas('order_items', ['price' => 1000, 'sale_price' => null]);
     }
 
@@ -82,7 +83,7 @@ class VariantsAndInventoryTest extends AdminTestCase
         );
     }
 
-    public function test_a_chosen_variant_is_bought_and_its_stock_taken_through_the_ledger(): void
+    public function test_a_chosen_variant_is_reserved_at_checkout_and_taken_when_shipped(): void
     {
         [, , $medium] = $this->tShirt();
 
@@ -92,15 +93,22 @@ class VariantsAndInventoryTest extends AdminTestCase
             ->where('cart.final_price.amount', '25.00')
         );
 
-        $this->post('/checkout', $this->checkoutData())->assertRedirect();
+        $this->post('/checkout', $this->checkoutData($this->payment->id))->assertRedirect();
 
         $order = Order::query()->sole();
         $this->assertDatabaseHas('order_items', ['order_id' => $order->id, 'product_variant_id' => $medium->id, 'variant_label' => 'Size: M', 'price' => 2500]);
         $this->assertSame(0, $medium->fresh()->available());
+        $this->assertSame(['on_hand' => 1, 'reserved' => 1], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
+        $this->assertDatabaseMissing('stock_movements', ['product_variant_id' => $medium->id, 'reference_id' => $order->id]);
+
+        app(OrderStatusService::class)->change($order, OrderStatus::factory()->create(['name' => 'shipped']));
+
+        $this->assertSame(['on_hand' => 0, 'reserved' => 0], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
+        $this->assertSame(OrderStockStatus::Fulfilled, $order->fresh()->stock_status);
         $this->assertDatabaseHas('stock_movements', [
             'product_variant_id' => $medium->id,
             'quantity' => -1,
-            'reason' => 'order',
+            'reason' => 'order_fulfilled',
             'reference_type' => $order->getMorphClass(),
             'reference_id' => $order->id,
         ]);
@@ -129,20 +137,41 @@ class VariantsAndInventoryTest extends AdminTestCase
         $medium->update(['allow_backorder' => true]);
 
         $this->post('/cart', ['variant_id' => $medium->id, 'quantity' => 3])->assertSessionHasNoErrors();
-        $this->post('/checkout', $this->checkoutData())->assertRedirect();
+        $this->post('/checkout', $this->checkoutData($this->payment->id))->assertRedirect();
+        app(OrderStatusService::class)->change(Order::query()->sole(), OrderStatus::factory()->create(['name' => 'shipped']));
 
         $this->assertSame(-2, (int) $medium->stockLevels()->sum('on_hand'));
     }
 
-    public function test_cancelling_an_order_returns_the_variants_stock(): void
+    public function test_cancelling_an_open_order_releases_its_reservation(): void
     {
         [, , $medium] = $this->tShirt();
         $this->post('/cart', ['variant_id' => $medium->id, 'quantity' => 1]);
-        $this->post('/checkout', $this->checkoutData());
+        $this->post('/checkout', $this->checkoutData($this->payment->id));
 
         app(OrderStatusService::class)->change(Order::query()->sole(), OrderStatus::factory()->create(['name' => 'cancelled']));
 
         $this->assertSame(1, $medium->fresh()->available());
+        $this->assertSame(['on_hand' => 1, 'reserved' => 0], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
+        $this->assertSame(OrderStockStatus::Released, Order::query()->sole()->stock_status);
+    }
+
+    public function test_cancelling_a_shipped_order_puts_the_stock_back(): void
+    {
+        [, , $medium] = $this->tShirt();
+        $this->post('/cart', ['variant_id' => $medium->id, 'quantity' => 1]);
+        $this->post('/checkout', $this->checkoutData($this->payment->id));
+        $order = Order::query()->sole();
+        $statuses = app(OrderStatusService::class);
+
+        $statuses->change($order, OrderStatus::factory()->create(['name' => 'shipped']));
+        // Back to an open status: the goods have already left.
+        $statuses->change($order, OrderStatus::factory()->create(['name' => 'paid']));
+        $this->assertSame(0, $medium->fresh()->available());
+
+        $statuses->change($order, OrderStatus::factory()->create(['name' => 'cancelled']));
+
+        $this->assertSame(['on_hand' => 1, 'reserved' => 0], $medium->stockLevels()->sole()->only(['on_hand', 'reserved']));
         $this->assertDatabaseHas('stock_movements', ['product_variant_id' => $medium->id, 'quantity' => 1, 'reason' => 'order_cancelled']);
     }
 
@@ -240,13 +269,5 @@ class VariantsAndInventoryTest extends AdminTestCase
         }
 
         return $option->load('values');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function checkoutData(): array
-    {
-        return ['name' => 'Jane Doe', 'email' => 'jane@example.com', 'phone' => '1', 'address' => 'x', 'payment_method_id' => $this->payment->id];
     }
 }

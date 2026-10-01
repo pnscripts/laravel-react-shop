@@ -31,8 +31,18 @@ class OrderInfolist
                                     ->label('Total')
                                     ->state(fn (OrderItem $record) => $record->lineTotal()->formatToLocale(app()->getLocale())),
                             ]),
+                        TextEntry::make('subtotal')
+                            ->state(fn (Order $record) => ($record->subtotal ?? $record->itemsTotal())->formatToLocale(app()->getLocale())),
+                        TextEntry::make('totals_breakdown')
+                            ->label('Adjustments')
+                            ->state(fn (Order $record) => array_map(
+                                fn (array $line) => $line['label'].': '.$line['amount']['formatted'].($line['included'] ? ' (included)' : ''),
+                                $record->presentTotals()['lines'],
+                            ))
+                            ->listWithLineBreaks()
+                            ->visible(fn (Order $record) => ($record->totals ?? []) !== []),
                         TextEntry::make('total')
-                            ->state(fn (Order $record) => $record->itemsTotal()->formatToLocale(app()->getLocale()))
+                            ->state(fn (Order $record) => $record->grandTotal()->formatToLocale(app()->getLocale()))
                             ->weight('bold'),
                     ]),
                 Section::make('Order')
@@ -44,7 +54,15 @@ class OrderInfolist
                         TextEntry::make('name')->label('Customer'),
                         TextEntry::make('email')->copyable(),
                         TextEntry::make('phone'),
-                        TextEntry::make('address'),
+                        TextEntry::make('shipping_address')
+                            ->label('Shipping address')
+                            ->state(fn (Order $record) => $record->shippingLines())
+                            ->listWithLineBreaks(),
+                        TextEntry::make('billing_address')
+                            ->label('Billing address')
+                            ->state(fn (Order $record) => $record->billingAddress?->toPostalAddress()->lines())
+                            ->listWithLineBreaks()
+                            ->placeholder('Same as shipping'),
                     ]),
             ]);
     }

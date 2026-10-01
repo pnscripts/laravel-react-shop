@@ -9,6 +9,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Customer\Models\CustomerAddress;
 use PnShop\Customer\Models\CustomerGroup;
+use PnShop\Security\BotTrap;
 use Tests\TestCase;
 
 class CustomerAccountTest extends TestCase
@@ -17,7 +18,7 @@ class CustomerAccountTest extends TestCase
 
     public function test_new_customers_join_the_default_group(): void
     {
-        $this->post('/register', ['name' => 'Ana', 'email' => 'ana@example.com', 'password' => 'a-long-password', 'password_confirmation' => 'a-long-password']);
+        $this->post('/register', ['name' => 'Ana', 'email' => 'ana@example.com', 'password' => 'a-long-password', 'password_confirmation' => 'a-long-password', ...BotTrap::fields(now()->subMinute())]);
 
         $this->assertSame(CustomerGroup::default()->id, User::query()->where('email', 'ana@example.com')->sole()->customer_group_id);
     }
