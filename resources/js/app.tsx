@@ -1,16 +1,18 @@
 import '../css/app.css';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 import { resolvePage } from './lib/resolve-page';
-
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+import { pageTitle, setStoreName } from './lib/store-name';
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    title: pageTitle,
     resolve: resolvePage,
     setup({ el, App, props }) {
+        setStoreName(props.initialPage.props.name);
+        router.on('navigate', (event) => setStoreName(event.detail.page.props.name));
+
         const root = createRoot(el);
 
         root.render(<App {...props} />);

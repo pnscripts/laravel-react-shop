@@ -3,15 +3,16 @@ import createServer from '@inertiajs/react/server';
 import ReactDOMServer from 'react-dom/server';
 import { route } from 'ziggy-js';
 import { resolvePage } from './lib/resolve-page';
+import { pageTitle, setStoreName } from './lib/store-name';
 import type { SharedData } from './types';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+createServer((page) => {
+    setStoreName(page.props.name);
 
-createServer((page) =>
-    createInertiaApp({
+    return createInertiaApp({
         page,
         render: ReactDOMServer.renderToString,
-        title: (title) => `${title} - ${appName}`,
+        title: pageTitle,
         resolve: resolvePage,
         setup: ({ App, props }) => {
             const { ziggy } = page.props as unknown as SharedData;
@@ -25,5 +26,5 @@ createServer((page) =>
 
             return <App {...props} />;
         },
-    }),
-);
+    });
+});
