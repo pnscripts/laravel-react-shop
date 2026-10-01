@@ -1,6 +1,8 @@
-# Laravel React Shop
+# PN Shop
 
-An open-source **Laravel 13 + React/Inertia** e-commerce starter kit. It is a working shop MVP: catalog, product page, session cart, guest or authenticated checkout, order confirmation, and a small admin for products and orders.
+An open-source **Laravel 13 + React/Inertia** e-commerce application, on its way to a full CMS and e-commerce platform. See [docs/](docs/README.md) for the architecture and roadmap.
+
+Today it is a working shop MVP: catalog, product page, session cart, guest or authenticated checkout, order confirmation, and a small admin for products and orders.
 
 This is **not** a full marketplace. There is no Stripe (or any card gateway), no roles/permissions package, and no public REST API yet.
 
@@ -28,18 +30,18 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), no
 
 - Stripe, PayPal, or any payment gateway
 - Spatie (or similar) roles/permissions — admin is a boolean `is_admin` column
-- REST API and Scramble API docs (the package is still in `composer.json` from earlier work, but there are no shop API routes)
+- REST API
 - Language switcher UI (the translation trait exists; the storefront is English)
 - Category admin, attribute filtering, media uploads, order history page for customers
-- Production-ready Telescope: it is disabled in `.env.example` (`TELESCOPE_ENABLED=false`)
 
 ---
 
 ## Stack
 
-- Laravel 13, PHP 8.3+
-- Official Laravel React starter with Inertia 2 and TypeScript
-- Tailwind CSS 4, shadcn/Radix UI
+- Laravel 13, PHP 8.4+
+- Inertia 3, React 19, TypeScript 5.9, Vite 8
+- Tailwind CSS 4.3, shadcn/Radix UI
+- Node 22.12+ for building assets (24 LTS recommended, see `.nvmrc`)
 - Session cart (`ShoppingCartService`)
 - SQLite by default (MySQL/PostgreSQL work if you change `.env`)
 
@@ -48,12 +50,14 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), no
 ## Install
 
 ```bash
-git clone git@github.com:Petar-V-Nikolov/laravel-react-shop.git
+git clone git@github.com:pnscripts/laravel-react-shop.git
 cd laravel-react-shop
 composer install
 cp .env.example .env
 php artisan key:generate
 ```
+
+`.env.example` ships production-safe defaults. For local development set `APP_ENV=local` and `APP_DEBUG=true` in `.env`.
 
 SQLite is the default. Create the database file if it does not exist:
 
@@ -99,17 +103,24 @@ Outside production, the seeders also create sample categories, attributes and pr
 
 ---
 
-## Tests
+## Tests and quality checks
 
 ```bash
 php artisan test
+vendor/bin/pint --test
+vendor/bin/phpstan analyse
+npm run format:check
+npm run lint:check
+npm run types
 ```
+
+CI runs all of these on every pull request, plus `composer audit` and `npm audit`.
 
 ---
 
 ## Telescope
 
-`TELESCOPE_ENABLED=false` is set in `.env.example`. Do not enable Telescope in production without locking it down.
+Telescope is a development dependency. It is registered only when `APP_ENV=local`, and `TELESCOPE_ENABLED=false` by default.
 
 ---
 

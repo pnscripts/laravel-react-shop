@@ -9,5 +9,6 @@ Planning stage (2026-10-01). These documents come from the discovery, research a
 | [research/platform-comparison.md](research/platform-comparison.md) | OpenCart, PrestaShop, WooCommerce, Shopware, Magento, Bagisto, Lunar: architecture research |
 | [research/version-modernization.md](research/version-modernization.md) | Current vs latest stable versions, audits, upgrade plan |
 | [research/security-performance-audit.md](research/security-performance-audit.md) | Security and performance findings with file:line and fixes |
+| [upgrades/2026-10-phase-0-1.md](upgrades/2026-10-phase-0-1.md) | Upgrade notes for the safety fixes and version upgrade (Phases 0–1) |
 
 The full `docs/` tree (cms, ecommerce, plugins, themes, api, installation, …) is filled in phase by phase after approval.
