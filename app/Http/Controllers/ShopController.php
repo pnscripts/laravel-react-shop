@@ -8,7 +8,10 @@ use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Catalog\Models\Brand;
 use PnShop\Catalog\Models\Category;
+use PnShop\Catalog\Models\Option;
+use PnShop\Catalog\Models\OptionValue;
 use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Catalog\Presenters\ProductCardPresenter;
 use PnShop\Media\MediaPresenter;
 use PnShop\Media\Models\Media;
@@ -58,7 +61,16 @@ class ShopController extends Controller
     {
         abort_unless($product->is_active, 404);
 
-        $product->load(['category:id,title,slug,parent_id,_lft,_rgt', 'brand:id,name,slug', 'selectedAttributeValues', 'media']);
+        $product->load([
+            'category:id,title,slug,parent_id,_lft,_rgt',
+            'brand:id,name,slug',
+            'selectedAttributeValues',
+            'media',
+            'options.values',
+            'variants' => fn ($variants) => $variants->where('is_active', true)->with(['optionValues', 'stockLevels']),
+        ]);
+
+        abort_if($product->variants->isEmpty(), 404);
 
         $breadcrumbs = $product->category
             ? Category::query()->whereAncestorOf($product->category, andSelf: true)->defaultOrder()->get(['id', 'title', 'slug', '_lft', '_rgt'])
@@ -66,18 +78,17 @@ class ShopController extends Controller
                 ->values()
             : [];
 
+        $usedValueIds = $product->variants->flatMap(fn (ProductVariant $variant) => $variant->optionValues->modelKeys())->unique();
+
         return Inertia::render('shop/show', [
             'product' => [
                 'id' => $product->id,
+                'type' => $product->type->value,
                 'title' => $product->title,
                 'slug' => $product->slug,
                 'description' => $product->description,
-                'price' => MoneyPresenter::present($product->price),
-                'discount_price' => MoneyPresenter::present($product->discount_price),
                 'image' => ProductCardPresenter::mainImage($product),
                 'gallery' => $product->mediaIn('gallery')->map(fn (Media $media) => MediaPresenter::present($media, $product->title))->values()->all(),
-                'stock' => $product->stock,
-                'sku' => $product->sku,
                 'brand' => $product->brand ? ['name' => $product->brand->name, 'slug' => $product->brand->slug] : null,
                 'category' => $product->category ? [
                     'id' => $product->category->id,
@@ -88,6 +99,24 @@ class ShopController extends Controller
                 'attributes' => $product->category
                     ? $product->getProductAttributesWithValues()
                     : [],
+                'options' => $product->options->map(fn (Option $option) => [
+                    'id' => $option->id,
+                    'name' => $option->name,
+                    'values' => $option->values
+                        ->filter(fn (OptionValue $value) => $usedValueIds->contains($value->id))
+                        ->map(fn (OptionValue $value) => ['id' => $value->id, 'value' => $value->value])
+                        ->values(),
+                ])->values(),
+                'variants' => $product->variants->map(fn (ProductVariant $variant) => [
+                    'id' => $variant->id,
+                    'sku' => $variant->sku,
+                    'option_value_ids' => $variant->optionValues->modelKeys(),
+                    'price' => MoneyPresenter::present($variant->price),
+                    'sale_price' => $variant->isOnSale() ? MoneyPresenter::present($variant->sale_price) : null,
+                    'stock' => $variant->available(),
+                    'can_backorder' => $variant->allow_backorder,
+                ])->values(),
+                'default_variant_id' => $product->defaultVariant()?->id,
             ],
         ]);
     }

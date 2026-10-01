@@ -16,8 +16,8 @@ Route::get('/shop/{product:slug}', [ShopController::class, 'show'])->name('shop.
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
 Route::middleware('throttle:cart')->group(function () {
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
-    Route::patch('/cart/{product}', [CartController::class, 'update'])->name('cart.update');
-    Route::delete('/cart/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
+    Route::patch('/cart/{variant}', [CartController::class, 'update'])->whereNumber('variant')->name('cart.update');
+    Route::delete('/cart/{variant}', [CartController::class, 'destroy'])->whereNumber('variant')->name('cart.destroy');
 });
 
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');

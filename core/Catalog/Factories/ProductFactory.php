@@ -34,12 +34,12 @@ class ProductFactory extends Factory
             'slug' => $this->faker->slug(),
             'description' => $this->faker->paragraph(),
             'price' => $price,
-            'discount_price' => $this->faker->optional()->passthrough(round($price * $this->faker->randomFloat(2, 0.5, 0.95), 2)),
+            'sale_price' => $this->faker->optional()->passthrough(round($price * $this->faker->randomFloat(2, 0.5, 0.95), 2)),
             'stock' => $this->faker->numberBetween(0, 100),
             'is_active' => $this->faker->boolean(90),
-            'sku' => strtoupper($this->faker->bothify('SKU-####-???')),
+            'sku' => strtoupper($this->faker->unique()->bothify('SKU-####-???')),
             'barcode' => $this->faker->ean13(),
-            'image' => $this->faker->imageUrl(600, 600, 'products', true),
+            'image' => null,
         ];
     }
 

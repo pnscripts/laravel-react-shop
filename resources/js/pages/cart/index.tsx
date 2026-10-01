@@ -35,22 +35,23 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                                 </thead>
                                 <tbody>
                                     {cart.items.map((item) => (
-                                        <tr key={item.product_id} className="border-t">
+                                        <tr key={item.variant_id} className="border-t">
                                             <td className="px-4 py-3">
                                                 <div className="font-medium">{item.title}</div>
+                                                {item.variant_label && <div className="text-muted-foreground text-xs">{item.variant_label}</div>}
                                                 <div className="text-muted-foreground">{item.unit_price.formatted}</div>
                                             </td>
                                             <td className="px-4 py-3">
                                                 <Input
                                                     type="number"
                                                     min={1}
-                                                    max={item.stock}
+                                                    max={item.stock ?? undefined}
                                                     defaultValue={item.quantity}
                                                     className="w-20"
                                                     onBlur={(event) => {
                                                         const quantity = Number(event.target.value);
                                                         if (quantity !== item.quantity && quantity >= 1) {
-                                                            router.patch(route('cart.update', item.product_id), { quantity });
+                                                            router.patch(route('cart.update', item.variant_id), { quantity });
                                                         }
                                                     }}
                                                 />
@@ -60,7 +61,7 @@ export default function CartIndex({ cart }: { cart: CartSummary }) {
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => router.delete(route('cart.destroy', item.product_id))}
+                                                    onClick={() => router.delete(route('cart.destroy', item.variant_id))}
                                                 >
                                                     {t('Remove')}
                                                 </Button>

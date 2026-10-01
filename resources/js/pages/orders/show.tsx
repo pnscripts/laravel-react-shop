@@ -16,9 +16,10 @@ type OrderShow = {
     items: {
         id: number;
         title: string;
+        variant_label: string | null;
         quantity: number;
         price: Money;
-        discount_price: Money | null;
+        sale_price: Money | null;
         unit_price: Money;
         line_total: Money;
     }[];
@@ -62,7 +63,10 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                     <tbody>
                         {order.items.map((item) => (
                             <tr key={item.id} className="border-t">
-                                <td className="px-4 py-3">{item.title}</td>
+                                <td className="px-4 py-3">
+                                    {item.title}
+                                    {item.variant_label && <div className="text-muted-foreground text-xs">{item.variant_label}</div>}
+                                </td>
                                 <td className="px-4 py-3">{item.quantity}</td>
                                 <td className="px-4 py-3">{item.line_total.formatted}</td>
                             </tr>

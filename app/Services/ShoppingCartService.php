@@ -5,61 +5,63 @@ namespace App\Services;
 use App\DTOs\CartItemDTO;
 use App\Exceptions\CartException;
 use Brick\Money\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Models\ProductVariant;
+use PnShop\Inventory\InventoryService;
 use PnShop\Localization\Localization;
 use PnShop\Money\MoneyPresenter;
 
 /**
- * Session cart. The session holds only product ids and quantities; every read
+ * Session cart. The session holds only variant ids and quantities; every read
  * resolves current prices, titles and stock from the database.
  */
 class ShoppingCartService
 {
-    private const SESSION_KEY = 'cart.lines';
+    private const SESSION_KEY = 'cart.variants';
 
-    /** Session key used by the previous object-based cart; cleared on first use. */
-    private const LEGACY_SESSION_KEY = 'shopping_cart';
+    /** Session keys of earlier cart formats; cleared on first use. */
+    private const LEGACY_SESSION_KEYS = ['shopping_cart', 'cart.lines'];
 
     /** @var Collection<int, CartItemDTO>|null */
     private ?Collection $items = null;
 
-    public function __construct(private Request $request) {}
+    public function __construct(private Request $request, private InventoryService $inventory) {}
 
-    public function addItemToCart(int $productId, int $quantity): void
+    public function addItemToCart(int $variantId, int $quantity): void
     {
         $lines = $this->getLines();
 
-        $this->assertQuantityAvailable($productId, ($lines[$productId] ?? 0) + $quantity);
+        $this->assertQuantityAvailable($variantId, ($lines[$variantId] ?? 0) + $quantity);
 
-        $lines[$productId] = ($lines[$productId] ?? 0) + $quantity;
+        $lines[$variantId] = ($lines[$variantId] ?? 0) + $quantity;
         $this->saveLines($lines);
     }
 
-    public function updateItemQuantityInCart(int $productId, int $quantity): void
+    public function updateItemQuantityInCart(int $variantId, int $quantity): void
     {
         $lines = $this->getLines();
 
-        if (! isset($lines[$productId])) {
+        if (! isset($lines[$variantId])) {
             throw new CartException(__('Item not found in the cart.'));
         }
 
-        $this->assertQuantityAvailable($productId, $quantity);
+        $this->assertQuantityAvailable($variantId, $quantity);
 
-        $lines[$productId] = $quantity;
+        $lines[$variantId] = $quantity;
         $this->saveLines($lines);
     }
 
-    public function removeItemFromCart(int $productId): void
+    public function removeItemFromCart(int $variantId): void
     {
         $lines = $this->getLines();
-        unset($lines[$productId]);
+        unset($lines[$variantId]);
         $this->saveLines($lines);
     }
 
     /**
-     * Cart lines for products that are still active, priced from the database.
+     * Cart lines for variants that can still be bought, priced from the database.
      *
      * @return Collection<int, CartItemDTO>
      */
@@ -71,21 +73,20 @@ class ShoppingCartService
 
         $lines = $this->getLines();
 
-        $products = Product::query()
-            ->active()
-            ->with('media')
+        $variants = $this->purchasableVariants()
             ->whereKey(array_keys($lines))
+            ->with(['product.media', 'optionValues', 'stockLevels'])
             ->get()
             ->keyBy('id');
 
         return $this->items = collect($lines)
-            ->filter(fn (int $quantity, int $productId) => $products->has($productId))
-            ->map(fn (int $quantity, int $productId) => CartItemDTO::fromProduct($products[$productId], $quantity))
+            ->filter(fn (int $quantity, int $variantId) => $variants->has($variantId))
+            ->map(fn (int $quantity, int $variantId) => CartItemDTO::fromVariant($variants[$variantId], $quantity))
             ->values();
     }
 
     /**
-     * Raw product id => quantity lines, without touching the database.
+     * Raw variant id => quantity lines, without touching the database.
      *
      * @return array<int, int>
      */
@@ -93,8 +94,10 @@ class ShoppingCartService
     {
         $session = $this->request->session();
 
-        if ($session->has(self::LEGACY_SESSION_KEY)) {
-            $session->forget(self::LEGACY_SESSION_KEY);
+        foreach (self::LEGACY_SESSION_KEYS as $key) {
+            if ($session->has($key)) {
+                $session->forget($key);
+            }
         }
 
         $lines = $session->get(self::SESSION_KEY, []);
@@ -133,13 +136,17 @@ class ShoppingCartService
     {
         return [
             'items' => $this->getCartItems()->map(fn (CartItemDTO $item) => [
+                'variant_id' => $item->variant_id,
                 'product_id' => $item->product_id,
                 'title' => $item->title,
+                'slug' => $item->slug,
+                'variant_label' => $item->variant_label,
+                'sku' => $item->sku,
                 'price' => MoneyPresenter::present($item->price),
-                'discount_price' => MoneyPresenter::present($item->discount_price),
+                'sale_price' => MoneyPresenter::present($item->sale_price),
                 'unit_price' => MoneyPresenter::present($item->getUnitPrice()),
                 'image' => $item->image,
-                'stock' => $item->stock,
+                'stock' => $item->available,
                 'quantity' => $item->quantity,
                 'line_total' => MoneyPresenter::present($item->getTotalPrice()),
             ])->all(),
@@ -149,20 +156,32 @@ class ShoppingCartService
         ];
     }
 
-    private function assertQuantityAvailable(int $productId, int $quantity): void
+    /**
+     * Active variants of active products.
+     *
+     * @return Builder<ProductVariant>
+     */
+    public function purchasableVariants(): Builder
+    {
+        return ProductVariant::query()
+            ->where('is_active', true)
+            ->whereHas('product', fn (Builder $product) => $product->where('is_active', true));
+    }
+
+    private function assertQuantityAvailable(int $variantId, int $quantity): void
     {
         if ($quantity <= 0) {
             throw new CartException(__('Quantity must be greater than 0.'));
         }
 
-        $product = Product::query()->active()->find($productId);
+        $variant = $this->purchasableVariants()->with(['product', 'stockLevels'])->find($variantId);
 
-        if (! $product) {
+        if (! $variant) {
             throw new CartException(__('This product is not available.'));
         }
 
-        if ($quantity > $product->stock) {
-            throw new CartException(__('Only :stock of :product available.', ['stock' => $product->stock, 'product' => $product->title]));
+        if (! $this->inventory->canSell($variant, $quantity)) {
+            throw new CartException(__('Only :stock of :product available.', ['stock' => (int) $variant->available(), 'product' => $variant->product->title]));
         }
     }
 

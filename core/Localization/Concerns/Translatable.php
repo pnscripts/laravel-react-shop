@@ -25,8 +25,16 @@ use PnShop\Localization\Localization;
  */
 trait Translatable
 {
+    /** @var array<string, array<string, string|null>> translations to store on save, by locale */
+    private array $pendingTranslations = [];
+
     public static function bootTranslatable(): void
     {
+        static::saved(function (Model $model): void {
+            /** @var static $model */
+            $model->applyPendingTranslations();
+        });
+
         static::addGlobalScope('translations', function (Builder $query): void {
             $locale = app()->getLocale();
 
@@ -127,6 +135,50 @@ trait Translatable
         }
 
         return is_string($value) && $value !== '' ? $value : null;
+    }
+
+    /**
+     * Write-only attribute for inline editors: `['bg' => ['title' => '…']]`, stored when the model is saved.
+     */
+    public function setTranslationsInputAttribute(mixed $value): void
+    {
+        $this->pendingTranslations = is_array($value) ? $value : [];
+    }
+
+    /**
+     * Current translations of every non-default active language, in the `translations_input` shape.
+     *
+     * @return array<string, array<string, string|null>>
+     */
+    public function translationsInput(): array
+    {
+        $input = [];
+
+        foreach (app(Localization::class)->languages() as $language) {
+            if ($language->is_default) {
+                continue;
+            }
+
+            foreach ($this->translatableAttributes() as $attribute) {
+                $input[$language->code][$attribute] = $this->translation($attribute, $language->code);
+            }
+        }
+
+        return $input;
+    }
+
+    private function applyPendingTranslations(): void
+    {
+        $pending = $this->pendingTranslations;
+        $this->pendingTranslations = [];
+
+        foreach ($pending as $locale => $values) {
+            $values = array_map(fn (mixed $value) => is_string($value) && trim($value) !== '' ? $value : null, (array) $values);
+
+            if (array_filter($values) !== [] || $this->hasTranslation((string) $locale)) {
+                $this->setTranslations((string) $locale, $values);
+            }
+        }
     }
 
     public function hasTranslation(string $locale): bool

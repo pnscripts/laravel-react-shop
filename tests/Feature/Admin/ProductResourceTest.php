@@ -29,27 +29,31 @@ class ProductResourceTest extends AdminTestCase
                 'title' => 'Desk Lamp',
                 'product_category_id' => $category->id,
                 'price' => 50,
-                'discount_price' => 40,
+                'sale_price' => 40,
                 'stock' => 7,
                 'is_active' => true,
             ])
             ->call('create')
             ->assertHasNoFormErrors();
 
-        $this->assertDatabaseHas('products', ['title' => 'Desk Lamp', 'slug' => 'desk-lamp', 'stock' => 7]);
+        $product = Product::query()->where('slug', 'desk-lamp')->sole();
+        $this->assertSame(7, $product->stock);
+        $this->assertSame('50.00', (string) $product->price->getAmount());
+        $this->assertSame('40.00', (string) $product->sale_price->getAmount());
+        $this->assertDatabaseHas('stock_movements', ['product_variant_id' => $product->defaultVariant()->id, 'quantity' => 7, 'reason' => 'adjustment']);
     }
 
     public function test_discount_must_be_below_the_price(): void
     {
         $this->actingAsAdministrator();
-        $product = Product::factory()->create(['price' => 100, 'discount_price' => null]);
+        $product = Product::factory()->create(['price' => 100, 'sale_price' => null]);
 
         Livewire::test(EditProduct::class, ['record' => $product->getRouteKey()])
-            ->fillForm(['discount_price' => 120])
+            ->fillForm(['sale_price' => 120])
             ->call('save')
-            ->assertHasFormErrors(['discount_price']);
+            ->assertHasFormErrors(['sale_price']);
 
-        $this->assertNull($product->fresh()->discount_price);
+        $this->assertNull($product->fresh()->sale_price);
     }
 
     public function test_editing_is_logged(): void

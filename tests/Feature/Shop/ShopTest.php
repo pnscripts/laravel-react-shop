@@ -11,6 +11,7 @@ use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductAttribute;
+use PnShop\Catalog\Models\ProductVariant;
 use Tests\TestCase;
 
 class ShopTest extends TestCase
@@ -85,7 +86,7 @@ class ShopTest extends TestCase
             'title' => 'Cart Product',
             'stock' => 10,
             'price' => 25,
-            'discount_price' => null,
+            'sale_price' => null,
         ]);
 
         $this->from(route('shop.show', $product->slug))
@@ -111,7 +112,7 @@ class ShopTest extends TestCase
             'title' => 'Checkout Product',
             'stock' => 10,
             'price' => 50,
-            'discount_price' => null,
+            'sale_price' => null,
         ]);
         OrderStatus::factory()->create(['name' => 'pending']);
         $payment = PaymentMethod::factory()->create([
@@ -161,6 +162,6 @@ class ShopTest extends TestCase
     {
         Product::factory()->count(50)->create();
 
-        $this->assertSame(0, Product::query()->whereColumn('discount_price', '>=', 'price')->count());
+        $this->assertSame(0, ProductVariant::query()->whereColumn('sale_price', '>=', 'price')->count());
     }
 }

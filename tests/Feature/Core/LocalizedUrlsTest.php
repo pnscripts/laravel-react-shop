@@ -98,7 +98,8 @@ class LocalizedUrlsTest extends TestCase
 
     public function test_the_admin_is_not_localized(): void
     {
-        $this->get('/bg/admin')->assertNotFound();
+        $this->get('/bg/admin')->assertRedirect('/admin/login');
+        $this->get('/bg/up')->assertOk();
     }
 
     public function test_requests_use_the_store_timezone(): void

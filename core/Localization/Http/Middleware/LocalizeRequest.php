@@ -45,8 +45,18 @@ class LocalizeRequest
             return redirect()->to($path.($query !== null ? '?'.$query : ''), 301);
         }
 
-        if (! $this->localization->isSupported($locale) || $this->isUnlocalized($path)) {
+        if (! $this->localization->isSupported($locale)) {
             return $next($request);
+        }
+
+        // Admin, Livewire, assets, ... are never localized: /bg/_debugbar/x is served as /_debugbar/x.
+        if ($this->isUnlocalized($path)) {
+            $server = $request->server->all();
+            $server['REQUEST_URI'] = $request->getBaseUrl().$path.($query !== null ? '?'.$query : '');
+            $unprefixed = $request->duplicate(server: $server);
+            app()->instance('request', $unprefixed);
+
+            return $next($unprefixed);
         }
 
         app()->setLocale($locale);
@@ -75,7 +85,10 @@ class LocalizeRequest
 
     private function isUnlocalized(string $path): bool
     {
-        return in_array(explode('/', ltrim($path, '/'))[0], Localization::UNLOCALIZED_PATHS, true);
+        $first = explode('/', ltrim($path, '/'))[0];
+
+        // Livewire 4 serves its endpoints under a hashed prefix such as "livewire-602b24a2".
+        return in_array($first, Localization::UNLOCALIZED_PATHS, true) || str_starts_with($first, 'livewire-');
     }
 
     /**

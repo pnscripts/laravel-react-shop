@@ -27,11 +27,11 @@ class CheckoutIntegrityTest extends TestCase
 
     public function test_checkout_charges_the_current_price_not_the_price_when_added(): void
     {
-        $product = Product::factory()->active()->create(['price' => 100, 'discount_price' => 10, 'stock' => 5]);
+        $product = Product::factory()->active()->create(['price' => 100, 'sale_price' => 10, 'stock' => 5]);
 
         $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1]);
 
-        $product->update(['discount_price' => null, 'price' => 120]);
+        $product->update(['sale_price' => null, 'price' => 120]);
 
         $this->get(route('cart.index'))->assertInertia(fn (Assert $page) => $page
             ->where('cart.items.0.price.amount', '120.00')
@@ -44,7 +44,7 @@ class CheckoutIntegrityTest extends TestCase
         $this->assertDatabaseHas('order_items', [
             'product_id' => $product->id,
             'price' => 12000,
-            'discount_price' => null,
+            'sale_price' => null,
             'currency' => 'USD',
         ]);
     }
@@ -122,13 +122,13 @@ class CheckoutIntegrityTest extends TestCase
         $product->category->forceDelete();
     }
 
-    public function test_session_holds_only_product_ids_and_quantities(): void
+    public function test_session_holds_only_variant_ids_and_quantities(): void
     {
         $product = Product::factory()->active()->create(['stock' => 3]);
 
         $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 2]);
 
-        $this->assertSame([$product->id => 2], session('cart.lines'));
+        $this->assertSame([$product->defaultVariant()->id => 2], session('cart.variants'));
     }
 
     /**

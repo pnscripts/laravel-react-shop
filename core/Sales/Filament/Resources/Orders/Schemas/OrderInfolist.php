@@ -23,7 +23,8 @@ class OrderInfolist
                             ->hiddenLabel()
                             ->columns(4)
                             ->schema([
-                                TextEntry::make('product_title')->label('Product')->placeholder('Product'),
+                                TextEntry::make('product_title')->label('Product')->placeholder('Product')
+                                    ->state(fn (OrderItem $record) => $record->variant_label ? "{$record->product_title} ({$record->variant_label})" : $record->product_title),
                                 TextEntry::make('product_sku')->label('SKU')->placeholder('—'),
                                 TextEntry::make('quantity'),
                                 TextEntry::make('line_total')

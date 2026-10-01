@@ -2,16 +2,21 @@
 
 namespace PnShop\Catalog\Filament\Resources\Products\Schemas;
 
+use Brick\Money\Money;
+use Filament\Forms\Components\Field;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 use PnShop\Catalog\Filament\Resources\Categories\CategoryResource;
 use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\ProductType;
 use PnShop\Localization\Filament\TranslationsSection;
 use PnShop\Media\MediaLibrary;
 use PnShop\Media\Models\Media;
@@ -20,6 +25,8 @@ class ProductForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $isSimple = fn (Get $get) => ($get('type') instanceof ProductType ? $get('type') : ProductType::tryFrom((string) $get('type'))) !== ProductType::Variable;
+
         return $schema
             ->columns(3)
             ->components([
@@ -29,6 +36,12 @@ class ProductForm
                         TextInput::make('title')
                             ->required()
                             ->maxLength(255),
+                        Select::make('type')
+                            ->options(collect(ProductType::cases())->mapWithKeys(fn (ProductType $type) => [$type->value => $type->label()]))
+                            ->default(ProductType::Simple->value)
+                            ->required()
+                            ->live()
+                            ->helperText('Products with variants have options such as size or color, each combination with its own price and stock.'),
                         Select::make('product_category_id')
                             ->label('Primary category')
                             ->helperText('Used for breadcrumbs and the product\'s main URL.')
@@ -82,31 +95,48 @@ class ProductForm
                             ->url()
                             ->maxLength(2048),
                     ]),
-                Section::make('Pricing and stock')
+                Section::make('Visibility')
                     ->columnSpan(1)
                     ->schema([
                         Toggle::make('is_active')
                             ->label('Visible in the store')
                             ->default(true),
-                        TextInput::make('price')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0),
-                        TextInput::make('discount_price')
+                    ]),
+                Section::make('Pricing and inventory')
+                    ->description('Stored on the product\'s single variant.')
+                    ->columnSpan(1)
+                    ->visible($isSimple)
+                    ->schema([
+                        self::shortcut(TextInput::make('price')->required()->numeric()->minValue(0)),
+                        self::shortcut(TextInput::make('sale_price')
+                            ->label('Sale price')
                             ->numeric()
                             ->minValue(0)
                             ->lt('price')
-                            ->helperText('Leave empty for no discount.'),
-                        TextInput::make('stock')
-                            ->required()
+                            ->helperText('Leave empty when the product is not on sale.')),
+                        self::shortcut(TextInput::make('stock')
+                            ->label('Stock on hand')
                             ->integer()
                             ->minValue(0)
-                            ->default(0),
-                        TextInput::make('sku')
+                            ->default(0)
+                            ->helperText('Changes are recorded in the stock history.')),
+                        self::shortcut(TextInput::make('sku')
                             ->label('SKU')
-                            ->maxLength(255),
-                        TextInput::make('barcode')
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->unique('product_variants', 'sku', ignoreRecord: false, modifyRuleUsing: fn (Unique $rule, ?Product $record) => $rule->ignore($record?->defaultVariant()?->id))),
+                        self::shortcut(TextInput::make('barcode')->maxLength(255)),
+                        self::shortcut(TextInput::make('weight')->label('Weight (grams)')->integer()->minValue(0)),
+                    ]),
+                Section::make('Options')
+                    ->description('Choose the options this product varies by, then add variants below.')
+                    ->columnSpan(1)
+                    ->hidden($isSimple)
+                    ->schema([
+                        Select::make('options')
+                            ->hiddenLabel()
+                            ->relationship('options', 'name')
+                            ->multiple()
+                            ->preload(),
                     ]),
                 TranslationsSection::make([
                     'title' => fn (string $name) => TextInput::make($name)->label('Title')->maxLength(255),
@@ -115,5 +145,21 @@ class ProductForm
                     'description' => fn (string $name) => Textarea::make($name)->label('Description')->rows(6),
                 ])->columnSpanFull(),
             ]);
+    }
+
+    /**
+     * A field backed by a Product variant shortcut (price, stock, ...): filled from the
+     * default variant and saved back to it through the model's shortcut attributes.
+     */
+    private static function shortcut(Field $field): Field
+    {
+        return $field->afterStateHydrated(function (Field $component, ?Product $record) use ($field): void {
+            if ($record === null) {
+                return;
+            }
+
+            $value = $record->getAttribute($field->getName());
+            $component->state($value instanceof Money ? (string) $value->getAmount() : $value);
+        });
     }
 }

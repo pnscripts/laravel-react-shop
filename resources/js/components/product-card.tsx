@@ -6,7 +6,6 @@ import { Link } from '@inertiajs/react';
 
 export function ProductCard({ product }: { product: ProductCardType }) {
     const t = useTranslations();
-    const hasDiscount = product.discount_price !== null && product.discount_price.minor > 0;
 
     return (
         <Card className="overflow-hidden py-0">
@@ -35,13 +34,18 @@ export function ProductCard({ product }: { product: ProductCardType }) {
                 </CardHeader>
                 <CardContent className="px-4">
                     <div className="flex items-baseline gap-2">
-                        <span className="font-semibold">{(hasDiscount ? product.discount_price : product.price)?.formatted}</span>
-                        {hasDiscount && <span className="text-muted-foreground text-sm line-through">{product.price.formatted}</span>}
+                        {product.price_from && <span className="text-muted-foreground text-sm">{t('from')}</span>}
+                        <span className="font-semibold">{(product.sale_price ?? product.price)?.formatted}</span>
+                        {product.sale_price && <span className="text-muted-foreground text-sm line-through">{product.price?.formatted}</span>}
                     </div>
                 </CardContent>
                 <CardFooter className="px-4 pb-4">
                     <span className="text-muted-foreground text-sm">
-                        {product.stock > 0 ? t(':count in stock', { count: product.stock }) : t('Out of stock')}
+                        {product.stock === null
+                            ? t('In stock')
+                            : product.stock > 0
+                              ? t(':count in stock', { count: product.stock })
+                              : t('Out of stock')}
                     </span>
                 </CardFooter>
             </Link>

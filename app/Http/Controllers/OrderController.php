@@ -33,9 +33,10 @@ class OrderController extends Controller
                 'items' => $order->items->map(fn ($item) => [
                     'id' => $item->id,
                     'title' => $item->product_title ?? 'Product',
+                    'variant_label' => $item->variant_label,
                     'quantity' => $item->quantity,
                     'price' => MoneyPresenter::present($item->price),
-                    'discount_price' => MoneyPresenter::present($item->discount_price),
+                    'sale_price' => MoneyPresenter::present($item->sale_price),
                     'unit_price' => MoneyPresenter::present($item->unitPrice()),
                     'line_total' => MoneyPresenter::present($item->lineTotal()),
                 ]),

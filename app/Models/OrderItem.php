@@ -12,6 +12,14 @@ use PnShop\Money\MoneyCast;
 
 /**
  * @property string $currency ISO 4217 code, same as the order
+ * @property int $quantity
+ * @property Money $price
+ * @property Money|null $sale_price
+ * @property int|null $product_id
+ * @property int|null $product_variant_id
+ * @property string|null $product_title
+ * @property string|null $product_sku
+ * @property string|null $variant_label
  */
 class OrderItem extends Model
 {
@@ -27,10 +35,12 @@ class OrderItem extends Model
         'product_id',
         'product_title',
         'product_sku',
+        'product_variant_id',
+        'variant_label',
         'quantity',
         'currency',
         'price',
-        'discount_price',
+        'sale_price',
     ];
 
     /**
@@ -40,7 +50,7 @@ class OrderItem extends Model
      */
     protected $casts = [
         'price' => MoneyCast::class.':currency',
-        'discount_price' => MoneyCast::class.':currency',
+        'sale_price' => MoneyCast::class.':currency',
     ];
 
     /**
@@ -65,7 +75,8 @@ class OrderItem extends Model
 
     public function unitPrice(): Money
     {
-        return $this->discount_price !== null && $this->discount_price->isPositive() ? $this->discount_price : $this->price;
+        // sale_price on an order line is what was actually charged, so it always wins when stored.
+        return $this->sale_price !== null && $this->sale_price->isPositive() ? $this->sale_price : $this->price;
     }
 
     public function lineTotal(): Money

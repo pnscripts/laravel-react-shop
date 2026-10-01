@@ -28,7 +28,7 @@ class ShoppingCartServiceTest extends TestCase
 
         $this->product1 = Product::factory()->active()->create([
             'price' => 100,
-            'discount_price' => 80,
+            'sale_price' => 80,
             'stock' => 10,
             'title' => 'Test Product 1',
             'image' => 'test-product-1.jpg',
@@ -36,7 +36,7 @@ class ShoppingCartServiceTest extends TestCase
 
         $this->product2 = Product::factory()->active()->create([
             'price' => 200,
-            'discount_price' => 150,
+            'sale_price' => 150,
             'stock' => 5,
             'title' => 'Test Product 2',
             'image' => 'test-product-2.jpg',
@@ -44,7 +44,7 @@ class ShoppingCartServiceTest extends TestCase
 
         $this->product3 = Product::factory()->active()->create([
             'price' => 300,
-            'discount_price' => 250,
+            'sale_price' => 250,
             'stock' => 3,
             'title' => 'Test Product 3',
             'image' => 'test-product-3.jpg',
@@ -52,7 +52,7 @@ class ShoppingCartServiceTest extends TestCase
 
         $this->product4 = Product::factory()->active()->create([
             'price' => 400,
-            'discount_price' => 350,
+            'sale_price' => 350,
             'stock' => 2,
             'title' => 'Test Product 4',
             'image' => 'test-product-4.jpg',
@@ -63,11 +63,11 @@ class ShoppingCartServiceTest extends TestCase
 
     public function test_add_multiple_items_to_cart_with_product_1_added_twice(): void
     {
-        $this->service->addItemToCart($this->product1->id, 2);
-        $this->service->addItemToCart($this->product1->id, 3);
-        $this->service->addItemToCart($this->product2->id, 1);
-        $this->service->addItemToCart($this->product3->id, 3);
-        $this->service->addItemToCart($this->product4->id, 1);
+        $this->service->addItemToCart($this->product1->defaultVariant()->id, 2);
+        $this->service->addItemToCart($this->product1->defaultVariant()->id, 3);
+        $this->service->addItemToCart($this->product2->defaultVariant()->id, 1);
+        $this->service->addItemToCart($this->product3->defaultVariant()->id, 3);
+        $this->service->addItemToCart($this->product4->defaultVariant()->id, 1);
 
         $cartItems = $this->service->getCartItems();
 
@@ -81,14 +81,14 @@ class ShoppingCartServiceTest extends TestCase
 
     public function test_update_multiple_items_in_cart(): void
     {
-        $this->service->addItemToCart($this->product1->id, 2);
-        $this->service->addItemToCart($this->product2->id, 1);
-        $this->service->addItemToCart($this->product3->id, 3);
-        $this->service->addItemToCart($this->product4->id, 1);
+        $this->service->addItemToCart($this->product1->defaultVariant()->id, 2);
+        $this->service->addItemToCart($this->product2->defaultVariant()->id, 1);
+        $this->service->addItemToCart($this->product3->defaultVariant()->id, 3);
+        $this->service->addItemToCart($this->product4->defaultVariant()->id, 1);
 
-        $this->service->updateItemQuantityInCart($this->product1->id, 5);
-        $this->service->updateItemQuantityInCart($this->product2->id, 2);
-        $this->service->updateItemQuantityInCart($this->product3->id, 1);
+        $this->service->updateItemQuantityInCart($this->product1->defaultVariant()->id, 5);
+        $this->service->updateItemQuantityInCart($this->product2->defaultVariant()->id, 2);
+        $this->service->updateItemQuantityInCart($this->product3->defaultVariant()->id, 1);
 
         $cartItems = $this->service->getCartItems();
         $this->assertEquals(5, $cartItems->where('product_id', $this->product1->id)->first()->quantity);
@@ -99,12 +99,12 @@ class ShoppingCartServiceTest extends TestCase
 
     public function test_remove_item_from_cart(): void
     {
-        $this->service->addItemToCart($this->product1->id, 2);
-        $this->service->addItemToCart($this->product2->id, 1);
-        $this->service->addItemToCart($this->product3->id, 3);
-        $this->service->addItemToCart($this->product4->id, 1);
+        $this->service->addItemToCart($this->product1->defaultVariant()->id, 2);
+        $this->service->addItemToCart($this->product2->defaultVariant()->id, 1);
+        $this->service->addItemToCart($this->product3->defaultVariant()->id, 3);
+        $this->service->addItemToCart($this->product4->defaultVariant()->id, 1);
 
-        $this->service->removeItemFromCart($this->product1->id);
+        $this->service->removeItemFromCart($this->product1->defaultVariant()->id);
 
         $cartItems = $this->service->getCartItems();
         $this->assertCount(3, $cartItems);
@@ -113,20 +113,20 @@ class ShoppingCartServiceTest extends TestCase
 
     public function test_get_total_price(): void
     {
-        $this->service->addItemToCart($this->product1->id, 2);
-        $this->service->addItemToCart($this->product2->id, 1);
-        $this->service->addItemToCart($this->product3->id, 3);
-        $this->service->addItemToCart($this->product4->id, 1);
+        $this->service->addItemToCart($this->product1->defaultVariant()->id, 2);
+        $this->service->addItemToCart($this->product2->defaultVariant()->id, 1);
+        $this->service->addItemToCart($this->product3->defaultVariant()->id, 3);
+        $this->service->addItemToCart($this->product4->defaultVariant()->id, 1);
 
         $this->assertEquals(80 * 2 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getTotalPrice()->getAmount()->toFloat());
     }
 
     public function test_get_final_price(): void
     {
-        $this->service->addItemToCart($this->product1->id, 2);
-        $this->service->addItemToCart($this->product2->id, 1);
-        $this->service->addItemToCart($this->product3->id, 3);
-        $this->service->addItemToCart($this->product4->id, 1);
+        $this->service->addItemToCart($this->product1->defaultVariant()->id, 2);
+        $this->service->addItemToCart($this->product2->defaultVariant()->id, 1);
+        $this->service->addItemToCart($this->product3->defaultVariant()->id, 3);
+        $this->service->addItemToCart($this->product4->defaultVariant()->id, 1);
 
         $this->assertEquals(80 * 2 + 150 * 1 + 250 * 3 + 350 * 1, $this->service->getFinalPrice()->getAmount()->toFloat());
     }
@@ -137,6 +137,6 @@ class ShoppingCartServiceTest extends TestCase
         $request->setLaravelSession($this->app['session.store']);
         $this->app->instance('request', $request);
 
-        return new ShoppingCartService($request);
+        return app(ShoppingCartService::class, ['request' => $request]);
     }
 }

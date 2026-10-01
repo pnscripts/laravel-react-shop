@@ -77,10 +77,11 @@ export interface ProductCard {
     id: number;
     title: string;
     slug: string;
-    price: Money;
-    discount_price: Money | null;
+    price: Money | null;
+    sale_price: Money | null;
+    price_from: boolean;
     image: ProductImage | null;
-    stock: number;
+    stock: number | null;
     category: {
         id: number;
         title: string;
@@ -89,13 +90,17 @@ export interface ProductCard {
 }
 
 export interface CartItem {
+    variant_id: number;
     product_id: number;
     title: string;
+    slug: string;
+    variant_label: string;
+    sku: string | null;
     price: Money;
-    discount_price: Money | null;
+    sale_price: Money | null;
     unit_price: Money;
     image: ProductImage | null;
-    stock: number;
+    stock: number | null;
     quantity: number;
     line_total: Money;
 }

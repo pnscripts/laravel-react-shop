@@ -8,17 +8,24 @@ use App\Models\OrderItem;
 use App\Models\OrderStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Models\ProductVariant;
+use PnShop\Inventory\Exceptions\InsufficientStock;
+use PnShop\Inventory\InventoryService;
+use PnShop\Inventory\StockMovementReason;
 use PnShop\Localization\Localization;
 
 class CheckoutService
 {
-    public function __construct(private ShoppingCartService $cart) {}
+    public function __construct(
+        private ShoppingCartService $cart,
+        private InventoryService $inventory,
+    ) {}
 
     /**
      * Place an order from the current cart.
      *
-     * Prices and stock are read from locked product rows, never from the session.
+     * Prices come from the variant rows, and stock is taken through the inventory ledger
+     * with a conditional update, so it cannot be oversold even under concurrent checkouts.
      *
      * @param  array{name: string, email: string, phone: string, address: string, payment_method_id: int|string}  $data
      *
@@ -32,18 +39,18 @@ class CheckoutService
             throw new CheckoutException(__('Your cart is empty.'));
         }
 
-        // Lock rows in a stable order so concurrent checkouts cannot deadlock.
+        // Handle variants in a stable order so concurrent checkouts cannot deadlock.
         ksort($lines);
 
         $order = DB::transaction(function () use ($data, $user, $lines) {
-            $products = Product::query()
+            $variants = ProductVariant::query()
                 ->whereKey(array_keys($lines))
+                ->with(['product', 'optionValues'])
                 ->orderBy('id')
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
 
-            $status = OrderStatus::firstOrCreate(['name' => 'pending']);
             $currency = app(Localization::class)->defaultCurrency()->code;
 
             $order = Order::create([
@@ -53,36 +60,37 @@ class CheckoutService
                 'phone' => $data['phone'],
                 'address' => $data['address'],
                 'payment_method_id' => $data['payment_method_id'],
-                'order_status_id' => $status->id,
+                'order_status_id' => OrderStatus::firstOrCreate(['name' => 'pending'])->id,
                 'currency' => $currency,
             ]);
 
-            foreach ($lines as $productId => $quantity) {
-                $product = $products->get($productId);
+            foreach ($lines as $variantId => $quantity) {
+                $variant = $variants->get($variantId);
 
-                if (! $product || ! $product->is_active) {
+                if (! $variant || ! $variant->is_active || ! $variant->product->is_active) {
                     throw new CheckoutException(__('A product in your cart is no longer available. Please review your cart.'));
                 }
 
-                // Conditional decrement: never lets stock go below zero, even without row locks (SQLite).
-                $decremented = Product::query()
-                    ->whereKey($product->id)
-                    ->where('stock', '>=', $quantity)
-                    ->decrement('stock', $quantity);
-
-                if ($decremented === 0) {
-                    throw new CheckoutException(__('Not enough stock for :product. Available: :stock.', ['product' => $product->title, 'stock' => $product->stock]));
+                try {
+                    $this->inventory->adjust($variant, -$quantity, StockMovementReason::Order, $order);
+                } catch (InsufficientStock) {
+                    throw new CheckoutException(__('Not enough stock for :product. Available: :stock.', [
+                        'product' => $variant->product->title,
+                        'stock' => (int) $variant->available(),
+                    ]));
                 }
 
                 OrderItem::create([
                     'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'product_title' => $product->title,
-                    'product_sku' => $product->sku,
+                    'product_id' => $variant->product_id,
+                    'product_variant_id' => $variant->id,
+                    'product_title' => $variant->product->title,
+                    'product_sku' => $variant->sku,
+                    'variant_label' => $variant->label() ?: null,
                     'quantity' => $quantity,
                     'currency' => $currency,
-                    'price' => $product->price,
-                    'discount_price' => $product->discount_price,
+                    'price' => $variant->price,
+                    'sale_price' => $variant->isOnSale() ? $variant->sale_price : null,
                 ]);
             }
 
@@ -91,6 +99,6 @@ class CheckoutService
 
         $this->cart->clearCart();
 
-        return $order->load(['items.product', 'orderStatus', 'paymentMethod']);
+        return $order->load(['items', 'orderStatus', 'paymentMethod']);
     }
 }

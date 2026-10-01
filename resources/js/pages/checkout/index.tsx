@@ -94,9 +94,10 @@ export default function Checkout({
                     <h2 className="mb-4 font-semibold">{t('Order summary')}</h2>
                     <ul className="mb-4 space-y-2 text-sm">
                         {cart.items.map((item) => (
-                            <li key={item.product_id} className="flex justify-between gap-4">
+                            <li key={item.variant_id} className="flex justify-between gap-4">
                                 <span>
-                                    {item.title} × {item.quantity}
+                                    {item.title}
+                                    {item.variant_label && ` (${item.variant_label})`} × {item.quantity}
                                 </span>
                                 <span>{item.line_total.formatted}</span>
                             </li>

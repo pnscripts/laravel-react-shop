@@ -3,6 +3,7 @@
 use PnShop\Acl\AclServiceProvider;
 use PnShop\Admin\AdminServiceProvider;
 use PnShop\Catalog\CatalogServiceProvider;
+use PnShop\Inventory\InventoryServiceProvider;
 use PnShop\Localization\LocalizationServiceProvider;
 use PnShop\Media\MediaServiceProvider;
 use PnShop\Sales\SalesServiceProvider;
@@ -29,6 +30,7 @@ return [
         AclServiceProvider::class,
         SystemServiceProvider::class,
         CatalogServiceProvider::class,
+        InventoryServiceProvider::class,
         SalesServiceProvider::class,
         AdminServiceProvider::class,
     ],
