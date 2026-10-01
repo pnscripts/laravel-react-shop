@@ -4,7 +4,7 @@ An open-source **Laravel 13 + React/Inertia** e-commerce application, on its way
 
 Today it is a working shop MVP: catalog, product page, session cart, guest or authenticated checkout, order confirmation, and a small admin for products and orders.
 
-This is **not** a full marketplace. There is no Stripe (or any card gateway), no roles/permissions package, and no public REST API yet.
+This is **not** a full marketplace. There is no Stripe (or any card gateway), and no public REST API yet.
 
 ---
 
@@ -18,9 +18,11 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), no
   - Checkout (guest or signed-in): name, email, phone, address, payment method
   - Order confirmation (`GET /orders/{order}`) for the owner or the current session
 - Auth from the official Laravel React starter (register, login, password reset, profile)
-- Simple admin (`is_admin` on `users`, not a roles package)
-  - Products: list, create, edit, deactivate
-  - Orders: list, update status
+- Admin panel at `/admin` (Filament 5) with separate staff accounts, roles and permissions
+  - Dashboard: today's orders, pending orders, latest orders, low stock
+  - Products: list, filter, create, edit, delete/restore
+  - Orders: list, view, change status (cancelling returns stock)
+  - Admin users, roles, store settings, activity log
 - Domain models already in the repo: `Product`, `ProductCategory`, `ProductAttribute*`, `Order`, `OrderItem`, `OrderStatus`, `PaymentMethod`, `Translation`, `ShoppingCartService`
 - Product titles use the existing `HasTranslations` accessor (`title`)
 - Manual payment methods only: cash on delivery and bank transfer
@@ -29,7 +31,6 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), no
 ## What is not implemented
 
 - Stripe, PayPal, or any payment gateway
-- Spatie (or similar) roles/permissions — admin is a boolean `is_admin` column
 - REST API
 - Language switcher UI (the translation trait exists; the storefront is English)
 - Category admin, attribute filtering, media uploads, order history page for customers
@@ -89,13 +90,13 @@ Open `http://localhost:8000`.
 
 ### Administrator account
 
-No accounts are seeded. Create an administrator after migrating:
+No accounts are seeded. Create an administrator after migrating, then sign in at `/admin`:
 
 ```bash
 php artisan pnshop:create-admin you@example.com --name="Your Name"
 ```
 
-The command asks for a password (or use `--generate-password` to print a random one once). Run it again with an existing email to promote that user.
+The command asks for a password (or use `--generate-password` to print a random one once). Staff accounts are separate from customer accounts; see [docs/administration/staff-and-roles.md](docs/administration/staff-and-roles.md).
 
 Seeded payment methods: **Cash on Delivery**, **Bank Transfer**.  
 Seeded order statuses: **pending**, **paid**, **shipped**, **cancelled**.  
