@@ -7,4 +7,7 @@ parameters:
         - stubs/phpstan/kalnoy-nestedset.stub
     paths:
         - core/
+        # Contract test kits in core/*/Testing are analysed through the tests that use them.
+        - tests/Feature/Payment/BankTransferContractTest.php
+        - tests/Feature/Payment/CashOnDeliveryContractTest.php
     level: 7

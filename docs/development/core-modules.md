@@ -19,7 +19,8 @@ core/
 ├── Customer/                customer groups, address books, PostalAddress + admin
 ├── Cart/                    database carts, guest merge, CartCalculator (cart.totals pipeline)
 ├── Security/                bot-trap middleware (honeypot, time trap), CaptchaVerifier
-├── Sales/                   orders, checkout, payment methods, admin resources, dashboard widgets
+├── Sales/                   orders, OrderWorkflow (states, history), checkout, admin resources, dashboard widgets
+├── Payment/                 gateways (PaymentGatewayManager), payment methods, payments, contract test kit
 └── Admin/                   the Filament panel (/admin)
 ```
 

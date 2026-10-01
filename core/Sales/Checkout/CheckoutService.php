@@ -15,6 +15,9 @@ use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Localization\Localization;
+use PnShop\Payment\Models\PaymentMethod;
+use PnShop\Payment\PaymentContext;
+use PnShop\Payment\PaymentService;
 use PnShop\Sales\Events\OrderPlaced;
 use PnShop\Sales\Exceptions\CheckoutException;
 use PnShop\Sales\Models\Order;
@@ -32,6 +35,7 @@ class CheckoutService
         private InventoryService $inventory,
         private CartCalculator $calculator,
         private OrderWorkflow $workflow,
+        private PaymentService $payments,
     ) {}
 
     /**
@@ -127,6 +131,12 @@ class CheckoutService
             }
 
             $totals = $this->calculator->calculate($items, $currency, ['shipping_address' => $shipping, 'billing_address' => $billing, 'user' => $user]);
+
+            $method = PaymentMethod::query()->find($data['payment_method_id']);
+
+            if ($method === null || ! $this->payments->accepts($method, new PaymentContext($totals->total(), $shipping->country_code, $user))) {
+                throw new CheckoutException(__('This payment method is not available for your order. Please choose another one.'));
+            }
 
             $order->update([
                 'subtotal' => $totals->subtotal,

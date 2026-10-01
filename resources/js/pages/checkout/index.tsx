@@ -16,7 +16,6 @@ type PaymentMethod = {
     id: number;
     name: string;
     description: string | null;
-    type: string;
 };
 
 type SavedAddress = AddressData & { id: number; lines: string[]; is_default_shipping: boolean; is_default_billing: boolean };

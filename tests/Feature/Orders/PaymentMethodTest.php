@@ -3,7 +3,7 @@
 namespace Tests\Feature\Orders;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use PnShop\Sales\Models\PaymentMethod;
+use PnShop\Payment\Models\PaymentMethod;
 use Tests\TestCase;
 
 class PaymentMethodTest extends TestCase
@@ -16,14 +16,14 @@ class PaymentMethodTest extends TestCase
         // Act
         $method = PaymentMethod::factory()->create([
             'name' => 'Cash on Delivery',
-            'type' => 'manual',
+            'gateway' => 'bank_transfer',
         ]);
 
         // Assert
         $this->assertDatabaseHas('payment_methods', [
             'id' => $method->id,
             'name' => 'Cash on Delivery',
-            'type' => 'manual',
+            'gateway' => 'bank_transfer',
         ]);
     }
 

@@ -1,0 +1,189 @@
+<?php
+
+namespace PnShop\Payment;
+
+use Brick\Money\Money;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use PnShop\Payment\Models\Payment;
+use PnShop\Payment\Models\PaymentMethod;
+use PnShop\Payment\Models\PaymentTransaction;
+use PnShop\Sales\Models\Order;
+use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\PaymentStatus;
+use Throwable;
+
+/**
+ * Chooses payment methods for a checkout, starts payments through their gateways and
+ * applies the gateway's answer to the payment and the order's payment state.
+ */
+class PaymentService
+{
+    public function __construct(private OrderWorkflow $workflow) {}
+
+    /**
+     * Active methods whose gateway is installed and whose rules (amount, country,
+     * gateway checks) accept this checkout, in display order.
+     *
+     * @return Collection<int, PaymentMethod>
+     */
+    public function availableMethods(PaymentContext $context): Collection
+    {
+        return PaymentMethod::query()->active()->orderBy('position')->orderBy('id')->get()
+            ->filter(fn (PaymentMethod $method) => $this->accepts($method, $context))
+            ->values();
+    }
+
+    public function accepts(PaymentMethod $method, PaymentContext $context): bool
+    {
+        $gateway = $method->gatewayInstance();
+        $total = $context->total;
+        $sameCurrency = fn (?Money $limit) => $limit !== null && $limit->getCurrency()->getCurrencyCode() === $total->getCurrency()->getCurrencyCode();
+
+        return $method->is_active
+            && $gateway !== null
+            && ! ($sameCurrency($method->min_total) && $total->isLessThan($method->min_total))
+            && ! ($sameCurrency($method->max_total) && $total->isGreaterThan($method->max_total))
+            && ($method->countries === null || $method->countries === [] || $context->countryCode === null || in_array($context->countryCode, $method->countries, true))
+            && $gateway->isAvailable($context, $method);
+    }
+
+    /**
+     * Start paying for a freshly placed order. A gateway error never loses the order:
+     * the payment is marked failed and the customer can pay later or contact the store.
+     */
+    public function start(Order $order): PaymentResult
+    {
+        $method = $order->paymentMethod;
+
+        $payment = Payment::query()->create([
+            'order_id' => $order->id,
+            'payment_method_id' => $method?->id,
+            'gateway' => $method->gateway ?? 'manual',
+            'currency' => $order->currency,
+            'amount' => $order->grandTotal(),
+        ]);
+
+        $gateway = $method?->gatewayInstance();
+
+        if ($method === null || $gateway === null) {
+            return $this->apply($payment, PaymentResult::pending(), 'initiate');
+        }
+
+        try {
+            $result = $gateway->initiate($payment, $method);
+        } catch (Throwable $e) {
+            Log::error('Payment gateway failed to start a payment.', ['gateway' => $gateway->code(), 'order' => $order->id, 'exception' => $e]);
+            $result = PaymentResult::failed(__('The payment could not be started. Please contact us to complete your order.'));
+        }
+
+        return $this->apply($payment, $result, 'initiate');
+    }
+
+    /**
+     * Record what the gateway reported (on start, a return from the provider or a webhook)
+     * and move the order's payment state to match.
+     */
+    public function apply(Payment $payment, PaymentResult $result, string $type, ?Model $actor = null): PaymentResult
+    {
+        DB::transaction(function () use ($payment, $result, $type, $actor) {
+            $this->record($payment, $type, $result->outcome->value, $payment->amount, $result->reference, $result->message, $result->data, $actor);
+
+            $state = match ($result->outcome) {
+                PaymentOutcome::Paid => PaymentState::Paid,
+                PaymentOutcome::Authorized => PaymentState::Authorized,
+                PaymentOutcome::Failed => PaymentState::Failed,
+                default => null,
+            };
+
+            if ($state !== null) {
+                $payment->forceFill(['status' => $state, 'reference' => $result->reference ?? $payment->reference])->save();
+            }
+        });
+
+        $orderState = match ($result->outcome) {
+            PaymentOutcome::Paid => PaymentStatus::Paid,
+            PaymentOutcome::Authorized => PaymentStatus::Authorized,
+            PaymentOutcome::Failed => PaymentStatus::Failed,
+            default => null,
+        };
+
+        if ($orderState !== null && $payment->order !== null && $payment->order->payment_status !== $orderState) {
+            $this->workflow->transition($payment->order, $orderState, $actor, $result->message);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Settle the order's open payments after staff recorded the order as paid; orders
+     * without any payment row get one, so the payment ledger always matches the order.
+     */
+    public function settle(Order $order, ?Model $actor = null): void
+    {
+        $open = $order->payments()->get()->filter(fn (Payment $payment) => $payment->status->isOpen());
+
+        if ($open->isEmpty() && ! $order->payments()->where('status', PaymentState::Paid)->exists()) {
+            $open = collect([Payment::query()->create([
+                'order_id' => $order->id,
+                'payment_method_id' => $order->payment_method_id,
+                'gateway' => $order->paymentMethod->gateway ?? 'manual',
+                'currency' => $order->currency,
+                'amount' => $order->grandTotal(),
+            ])]);
+        }
+
+        foreach ($open as $payment) {
+            $payment->forceFill(['status' => PaymentState::Paid])->save();
+            $this->record($payment, 'manual', PaymentOutcome::Paid->value, $payment->amount, null, 'Recorded as paid by staff', [], $actor);
+        }
+    }
+
+    /**
+     * Cancel the open payments of a cancelled order.
+     */
+    public function cancelOpen(Order $order, ?Model $actor = null): void
+    {
+        foreach ($order->payments()->get()->filter(fn (Payment $payment) => $payment->status->isOpen()) as $payment) {
+            $payment->forceFill(['status' => PaymentState::Cancelled])->save();
+            $this->record($payment, 'cancel', PaymentState::Cancelled->value, null, null, 'Order cancelled', [], $actor);
+        }
+    }
+
+    /**
+     * What the customer should do to pay, for the order page.
+     */
+    public function instructions(Order $order): ?string
+    {
+        $payment = $order->payments()->latest('id')->first();
+
+        if ($payment === null || $payment->status !== PaymentState::Pending) {
+            return null;
+        }
+
+        $method = $payment->method;
+
+        return $method === null ? null : $method->gatewayInstance()?->instructions($payment, $method);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function record(Payment $payment, string $type, string $outcome, ?Money $amount, ?string $reference, ?string $message, array $data, ?Model $actor): PaymentTransaction
+    {
+        return PaymentTransaction::query()->create([
+            'payment_id' => $payment->id,
+            'type' => $type,
+            'outcome' => $outcome,
+            'currency' => $payment->currency,
+            'amount' => $amount,
+            'reference' => $reference,
+            'message' => $message,
+            'data' => $data === [] ? null : $data,
+            'actor_type' => $actor?->getMorphClass(),
+            'actor_id' => $actor?->getKey(),
+        ]);
+    }
+}

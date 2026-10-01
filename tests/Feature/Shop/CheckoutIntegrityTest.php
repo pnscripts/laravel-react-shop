@@ -7,8 +7,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Cart\Models\CartLine;
 use PnShop\Catalog\Models\Product;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class CheckoutIntegrityTest extends TestCase

@@ -13,6 +13,7 @@ type OrderShow = OrderStates & {
     shipping_address: string[];
     billing_address: string[] | null;
     payment_method: string | null;
+    payment_instructions: string | null;
     created_at: string | null;
     items: {
         id: number;
@@ -68,6 +69,13 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                     {order.created_at && <p>{t('Placed: :date', { date: order.created_at })}</p>}
                 </div>
             </div>
+
+            {order.payment_instructions && (
+                <section className="bg-muted/40 mb-8 rounded-xl border p-6">
+                    <h2 className="mb-2 font-semibold">{t('How to pay')}</h2>
+                    <p className="text-sm whitespace-pre-line">{order.payment_instructions}</p>
+                </section>
+            )}
 
             <div className="overflow-hidden rounded-xl border">
                 <table className="w-full text-sm">

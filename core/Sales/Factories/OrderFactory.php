@@ -4,8 +4,8 @@ namespace PnShop\Sales\Factories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\PaymentMethod;
 
 /**
  * @extends Factory<Order>

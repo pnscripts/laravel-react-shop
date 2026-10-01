@@ -10,9 +10,9 @@ use PnShop\Cart\Totals\CartTotals;
 use PnShop\Cart\Totals\TotalLine;
 use PnShop\Catalog\Models\Product;
 use PnShop\Foundation\Extension\PipelineRegistry;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\Models\OrderAddress;
-use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class CheckoutAddressesAndTotalsTest extends TestCase

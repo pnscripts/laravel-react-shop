@@ -8,9 +8,9 @@ use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductAttribute;
 use PnShop\Catalog\Models\ProductVariant;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\Models\OrderItem;
-use PnShop\Sales\Models\PaymentMethod;
 use Tests\TestCase;
 
 class ShopTest extends TestCase
@@ -115,7 +115,7 @@ class ShopTest extends TestCase
         ]);
         $payment = PaymentMethod::factory()->create([
             'name' => 'Cash on Delivery',
-            'type' => 'cash_on_delivery',
+            'gateway' => 'cash_on_delivery',
             'is_active' => true,
         ]);
 

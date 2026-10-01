@@ -5,7 +5,7 @@ namespace Tests\Feature\Core;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Product;
-use PnShop\Sales\Models\PaymentMethod;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Security\BotTrap;
 use Tests\TestCase;
 

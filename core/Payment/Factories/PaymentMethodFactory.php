@@ -1,10 +1,10 @@
 <?php
 
-namespace PnShop\Sales\Factories;
+namespace PnShop\Payment\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Model;
-use PnShop\Sales\Models\PaymentMethod;
+use PnShop\Payment\Models\PaymentMethod;
 
 /**
  * @extends Factory<PaymentMethod>
@@ -26,9 +26,9 @@ class PaymentMethodFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->randomElement(['Cash on Delivery', 'Stripe', 'PayPal']),
+            'name' => $this->faker->randomElement(['Cash on Delivery', 'Bank Transfer']),
             'description' => $this->faker->sentence,
-            'type' => $this->faker->randomElement(['manual', 'online']),
+            'gateway' => $this->faker->randomElement(['cash_on_delivery', 'bank_transfer']),
             'is_active' => true,
         ];
     }

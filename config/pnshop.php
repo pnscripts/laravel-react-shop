@@ -8,6 +8,7 @@ use PnShop\Customer\CustomerServiceProvider;
 use PnShop\Inventory\InventoryServiceProvider;
 use PnShop\Localization\LocalizationServiceProvider;
 use PnShop\Media\MediaServiceProvider;
+use PnShop\Payment\PaymentServiceProvider;
 use PnShop\Sales\SalesServiceProvider;
 use PnShop\Security\SecurityServiceProvider;
 use PnShop\Settings\SettingsServiceProvider;
@@ -38,6 +39,7 @@ return [
         CartServiceProvider::class,
         SecurityServiceProvider::class,
         SalesServiceProvider::class,
+        PaymentServiceProvider::class,
         AdminServiceProvider::class,
     ],
 

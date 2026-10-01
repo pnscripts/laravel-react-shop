@@ -4,11 +4,6 @@ namespace PnShop\Settings\Filament\Pages;
 
 use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Field;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Actions;
@@ -18,10 +13,10 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use PnShop\Settings\Filament\SettingField;
 use PnShop\Settings\SettingDefinition;
 use PnShop\Settings\Settings;
 use PnShop\Settings\SettingsRegistry;
-use PnShop\Settings\SettingType;
 use UnitEnum;
 
 /**
@@ -69,7 +64,7 @@ class ManageSettings extends Page
             $tabs[] = Tab::make($settingsSchema->label)
                 ->statePath(self::stateKey($namespace))
                 ->schema(array_values(array_map(
-                    fn (SettingDefinition $definition) => self::field($definition),
+                    fn (SettingDefinition $definition) => SettingField::make($definition),
                     $settingsSchema->definitions(),
                 )));
         }
@@ -114,25 +109,5 @@ class ManageSettings extends Page
     private static function stateKey(string $namespace): string
     {
         return str_replace('.', '__', $namespace);
-    }
-
-    private static function field(SettingDefinition $definition): Field
-    {
-        $field = match ($definition->type) {
-            SettingType::Text => Textarea::make($definition->key)->rows(3),
-            SettingType::Boolean => Toggle::make($definition->key),
-            SettingType::Select => Select::make($definition->key)->options($definition->options),
-            SettingType::Email => TextInput::make($definition->key)->email(),
-            SettingType::Url => TextInput::make($definition->key)->url(),
-            SettingType::Integer => TextInput::make($definition->key)->integer(),
-            SettingType::Decimal => TextInput::make($definition->key)->numeric(),
-            SettingType::String => TextInput::make($definition->key),
-        };
-
-        return $field
-            ->label($definition->label)
-            ->helperText($definition->help)
-            ->required($definition->required)
-            ->rules($definition->rules);
     }
 }

@@ -4,11 +4,11 @@ namespace Tests\Feature\Admin;
 
 use Livewire\Livewire;
 use PnShop\Catalog\Models\Product;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ListOrders;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ViewOrder;
 use PnShop\Sales\Filament\Resources\Orders\RelationManagers\HistoryRelationManager;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Sales\States\OrderStatus;
 use PnShop\Sales\States\PaymentStatus;
 

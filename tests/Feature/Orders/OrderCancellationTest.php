@@ -4,9 +4,9 @@ namespace Tests\Feature\Orders;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PnShop\Catalog\Models\Product;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Exceptions\OrderException;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Sales\OrderWorkflow;
 use PnShop\Sales\States\OrderStatus;
 use Tests\TestCase;

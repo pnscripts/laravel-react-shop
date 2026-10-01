@@ -12,16 +12,21 @@ use Inertia\Response;
 use PnShop\Cart\ShoppingCartService;
 use PnShop\Customer\Models\CustomerAddress;
 use PnShop\Customer\PostalAddress;
+use PnShop\Payment\Models\PaymentMethod;
+use PnShop\Payment\PaymentContext;
+use PnShop\Payment\PaymentOutcome;
+use PnShop\Payment\PaymentService;
 use PnShop\Sales\Checkout\CheckoutService;
 use PnShop\Sales\Exceptions\CheckoutException;
-use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Security\BotTrap;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CheckoutController extends Controller
 {
     public function __construct(
         private ShoppingCartService $cart,
         private CheckoutService $checkout,
+        private PaymentService $payments,
     ) {}
 
     public function create(Request $request): Response|RedirectResponse
@@ -34,10 +39,10 @@ class CheckoutController extends Controller
 
         return Inertia::render('checkout/index', [
             'cart' => $this->cart->toArray(),
-            'paymentMethods' => PaymentMethod::query()
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name', 'description', 'type']),
+            'paymentMethods' => $this->payments
+                ->availableMethods(new PaymentContext($this->cart->getFinalPrice(), customer: $user))
+                ->map(fn (PaymentMethod $method) => ['id' => $method->id, 'name' => $method->name, 'description' => $method->description])
+                ->values(),
             'countries' => AddressesController::countryOptions(),
             'botTrap' => BotTrap::fields(),
             'savedAddresses' => $user?->addresses->map(fn (CustomerAddress $address) => [
@@ -57,7 +62,7 @@ class CheckoutController extends Controller
         ]);
     }
 
-    public function store(StoreCheckoutRequest $request): RedirectResponse
+    public function store(StoreCheckoutRequest $request): RedirectResponse|SymfonyResponse
     {
         try {
             $order = $this->checkout->place($request->validated(), $request->user());
@@ -73,8 +78,14 @@ class CheckoutController extends Controller
 
         $request->session()->put('recent_order_ids', $recent);
 
-        return redirect()
-            ->route('orders.show', $order)
-            ->with('success', __('Thank you! Your order has been placed.'));
+        $payment = $this->payments->start($order);
+
+        if ($payment->outcome === PaymentOutcome::Redirect && $payment->redirectUrl !== null) {
+            return Inertia::location($payment->redirectUrl);
+        }
+
+        $redirect = redirect()->route('orders.show', $order)->with('success', __('Thank you! Your order has been placed.'));
+
+        return $payment->outcome === PaymentOutcome::Failed ? $redirect->with('error', $payment->message) : $redirect;
     }
 }

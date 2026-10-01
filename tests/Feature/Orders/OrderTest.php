@@ -4,8 +4,8 @@ namespace Tests\Feature\Orders;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Sales\States\OrderStatus;
 use PnShop\Settings\Settings;
 use Tests\TestCase;

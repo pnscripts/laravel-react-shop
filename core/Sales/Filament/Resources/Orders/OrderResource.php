@@ -7,6 +7,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use PnShop\Payment\Filament\RelationManagers\PaymentsRelationManager;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ListOrders;
 use PnShop\Sales\Filament\Resources\Orders\Pages\ViewOrder;
 use PnShop\Sales\Filament\Resources\Orders\RelationManagers\HistoryRelationManager;
@@ -39,7 +40,7 @@ class OrderResource extends Resource
 
     public static function getRelations(): array
     {
-        return [HistoryRelationManager::class];
+        return [PaymentsRelationManager::class, HistoryRelationManager::class];
     }
 
     public static function canCreate(): bool

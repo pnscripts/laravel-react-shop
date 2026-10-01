@@ -2,6 +2,7 @@
 
 namespace PnShop\Sales\Events;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Events\Dispatchable;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\States\OrderState;
@@ -18,5 +19,6 @@ final class OrderStateChanged
         public readonly OrderState $from,
         public readonly OrderState $to,
         public readonly ?string $note = null,
+        public readonly ?Model $actor = null,
     ) {}
 }

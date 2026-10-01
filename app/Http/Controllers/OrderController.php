@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Money\MoneyPresenter;
+use PnShop\Payment\PaymentService;
 use PnShop\Sales\Models\Order;
 
 class OrderController extends Controller
@@ -31,6 +32,7 @@ class OrderController extends Controller
                 'number' => $order->number,
                 ...$order->presentStates(),
                 'payment_method' => $order->paymentMethod?->name,
+                'payment_instructions' => app(PaymentService::class)->instructions($order),
                 'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LLL'),
                 'items' => $order->items->map(fn ($item) => [
                     'id' => $item->id,

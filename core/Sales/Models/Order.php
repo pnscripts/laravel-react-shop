@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Money\MoneyCast;
 use PnShop\Money\MoneyPresenter;
+use PnShop\Payment\Models\Payment;
+use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Factories\OrderFactory;
 use PnShop\Sales\OrderNumber;
 use PnShop\Sales\States\FulfillmentStatus;
@@ -173,6 +175,14 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return HasMany<Payment, $this>
+     */
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class)->orderBy('id');
     }
 
     /**

@@ -56,7 +56,7 @@ class OrderWorkflow
         $order->refresh();
 
         foreach (array_filter($changes) as [$from, $state]) {
-            OrderStateChanged::dispatch($order, $from, $state, $state === $to ? $note : null);
+            OrderStateChanged::dispatch($order, $from, $state, $state === $to ? $note : null, $actor);
         }
 
         return $order;

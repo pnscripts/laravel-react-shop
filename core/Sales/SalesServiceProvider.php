@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Gate;
 use PnShop\Foundation\Extension\Permission;
 use PnShop\Foundation\ModuleServiceProvider;
 use PnShop\Sales\Models\Order;
-use PnShop\Sales\Models\PaymentMethod;
 use PnShop\Sales\Policies\OrderPolicy;
 use PnShop\Settings\SettingDefinition;
 use PnShop\Settings\SettingsRegistry;
@@ -23,10 +22,7 @@ class SalesServiceProvider extends ModuleServiceProvider
     {
         $this->app->singleton(OrderWorkflow::class);
 
-        Relation::morphMap([
-            'order' => Order::class,
-            'payment_method' => PaymentMethod::class,
-        ]);
+        Relation::morphMap(['order' => Order::class]);
     }
 
     protected function permissions(): array
