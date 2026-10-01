@@ -7,6 +7,8 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use PnShop\Acl\Models\AdminUser;
+use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\ProductType;
 use Tests\TestCase;
 
 class CreateAdminCommandTest extends TestCase
@@ -53,5 +55,11 @@ class CreateAdminCommandTest extends TestCase
 
         $this->assertSame(0, User::query()->count());
         $this->assertSame(0, AdminUser::query()->count());
+
+        // The demo catalog shows variants, brands and filterable attributes.
+        $tShirt = Product::query()->where('title', 'Classic T-shirt')->sole();
+        $this->assertSame(ProductType::Variable, $tShirt->type);
+        $this->assertSame(4, $tShirt->variants()->count());
+        $this->get('/shop')->assertOk()->assertInertia(fn ($page) => $page->has('brands', 3)->has('facets'));
     }
 }

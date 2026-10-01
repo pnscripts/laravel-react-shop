@@ -25,37 +25,31 @@ class ProductAttributeSeeder extends Seeder
         }
 
         // If categories exist, create product attributes using factories
+        // Specification attributes (filterable in the shop). Size is a variant option, see CatalogDemoSeeder.
         $attributesData = [
-            ['key' => 'wifi', 'label' => 'Wi-Fi', 'type' => 'boolean', 'is_required' => false],
-            ['key' => 'size', 'label' => 'Size', 'type' => 'select', 'is_required' => true],
-            ['key' => 'color', 'label' => 'Color', 'type' => 'select', 'is_required' => true],
+            ['key' => 'wifi', 'label' => 'Wi-Fi', 'bg' => 'Wi-Fi', 'type' => 'boolean', 'values' => ['Yes' => 'Да', 'No' => 'Не']],
+            ['key' => 'material', 'label' => 'Material', 'bg' => 'Материал', 'type' => 'select', 'values' => ['Cotton' => 'Памук', 'Wood' => 'Дърво', 'Metal' => 'Метал']],
+            ['key' => 'color', 'label' => 'Color', 'bg' => 'Цвят', 'type' => 'select', 'values' => ['Red' => 'Червен', 'Green' => 'Зелен', 'Blue' => 'Син', 'Black' => 'Черен']],
         ];
 
-        foreach ($attributesData as $attributeData) {
-            // Create the ProductAttribute using the factory
+        foreach ($attributesData as $position => $attributeData) {
             $attribute = ProductAttribute::factory()->create([
                 'key' => $attributeData['key'],
                 'label' => $attributeData['label'],
                 'type' => $attributeData['type'],
-                'is_required' => $attributeData['is_required'],
+                'is_required' => false,
+                'is_filterable' => true,
+                'position' => $position,
             ]);
+            $attribute->setTranslations('bg', ['label' => $attributeData['bg']]);
 
-            // Define attribute values based on the attribute key
-            $values = [];
-            if ($attribute->key == 'size') {
-                $values = ['S', 'M', 'L', 'XL'];
-            } elseif ($attribute->key == 'color') {
-                $values = ['Red', 'Green', 'Blue', 'Black'];
-            } elseif ($attribute->key == 'wifi') {
-                $values = ['true', 'false'];
-            }
-
-            // Create ProductAttributeValue records using the factory
-            foreach ($values as $value) {
-                ProductAttributeValue::factory()->create([
+            foreach (array_keys($attributeData['values']) as $valuePosition => $value) {
+                $created = ProductAttributeValue::factory()->create([
                     'product_attribute_id' => $attribute->id,
                     'value' => $value,
+                    'position' => $valuePosition,
                 ]);
+                $created->setTranslations('bg', ['value' => $attributeData['values'][$value]]);
             }
 
             // Attach this attribute to all existing categories
