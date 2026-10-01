@@ -2,6 +2,7 @@
 
 namespace PnShop\Api\Http\Controllers\Store;
 
+use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
 use PnShop\Api\Http\Controllers\ApiController;
 use PnShop\Catalog\Models\Product;
@@ -20,6 +21,11 @@ class ProductController extends ApiController
      *
      * @return array<string, mixed>
      */
+    #[QueryParameter('category', 'Category slug; includes its subcategories.', type: 'string')]
+    #[QueryParameter('brand', 'Brand slug.', type: 'string')]
+    #[QueryParameter('q', 'Search in product titles.', type: 'string')]
+    #[QueryParameter('filter', 'Attribute values: filter[<attribute id>][]=<value id>. Values of one attribute are alternatives; attributes narrow down.', type: 'object')]
+    #[QueryParameter('sort', '`-id` (newest first, default) or `id`.', type: 'string', example: '-id')]
     public function index(Request $request): array
     {
         [, $direction] = $this->sort($request, ['id'], '-id');

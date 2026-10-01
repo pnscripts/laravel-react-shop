@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\Models\StockLevel;
 use PnShop\Money\MoneyCast;
@@ -31,6 +32,8 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property bool $is_default
  * @property bool $is_active
  * @property int $position
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class ProductVariant extends Model
 {

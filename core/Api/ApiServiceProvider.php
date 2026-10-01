@@ -41,14 +41,17 @@ class ApiServiceProvider extends ModuleServiceProvider
         if (! $this->app->routesAreCached()) {
             Route::prefix(self::STORE_PREFIX)
                 ->name('api.store.')
-                ->middleware(['api', ApiRequest::class, StoreCustomer::class, 'throttle:store-api'])
+                ->middleware([ApiRequest::class, StoreCustomer::class, 'api', 'throttle:store-api'])
                 ->group($this->modulePath('routes/store.php'));
 
             Route::prefix(self::ADMIN_PREFIX)
                 ->name('api.admin.')
-                ->middleware(['api', ApiRequest::class, StaffToken::class, 'throttle:admin-api'])
+                // Authenticate before route model binding, so callers without a token learn nothing about records.
+                ->middleware([ApiRequest::class, StaffToken::class, 'api', 'throttle:admin-api'])
                 ->group($this->modulePath('routes/admin.php'));
         }
+
+        OpenApiDocs::register();
 
         if ($this->app->runningInConsole()) {
             $this->commands([ApiTokenCommand::class]);

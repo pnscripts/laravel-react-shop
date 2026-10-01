@@ -6,6 +6,7 @@ use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 use PnShop\Money\MoneyCast;
 use PnShop\Payment\PaymentState;
 use PnShop\Sales\Models\Order;
@@ -22,6 +23,8 @@ use PnShop\Sales\Models\Order;
  * @property Money $amount
  * @property Money $refunded_amount
  * @property string|null $reference the gateway's id for the payment
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Payment extends Model
 {

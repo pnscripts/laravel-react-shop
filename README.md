@@ -32,6 +32,9 @@ This is **not** a full marketplace. Card payments come through the included Stri
   - Themes: prebuilt storefront bundles, child themes that override files by path, theme settings as CSS variables; the Aurora example theme
   - Payment methods (cash on delivery, bank transfer) with a payment ledger; shipping zones and methods (flat, free, pickup, by weight, by subtotal) with partial shipments and tracking; refunds with restocking; numbered invoices; order emails in the customer's language; tax classes, zones and rates (inclusive or exclusive prices)
   - Admin users, roles, store settings, activity log
+- JSON APIs ([docs/api](docs/api/README.md)), both with problem+json errors, cursor pagination and OpenAPI documents:
+  - **Store API** (`/api/store/v1`) for headless storefronts and apps: catalog, pages, menus, cart, idempotent checkout, customer accounts.
+  - **Admin API** (`/api/admin/v1`) for integrations: staff tokens limited to chosen permissions.
 - Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)
 - English and Bulgarian storefront with a language switcher, localized URLs (`/bg/...`) and translatable catalog content
 - Built-in payment gateways are manual (cash on delivery, bank transfer); card gateways come as extensions
@@ -39,7 +42,6 @@ This is **not** a full marketplace. Card payments come through the included Stri
 
 ## What is not implemented
 
-- REST API
 - Promotions and coupons (Phase 11)
 
 ---
