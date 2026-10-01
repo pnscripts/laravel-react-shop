@@ -16,12 +16,16 @@ Route::get('/shop', [ShopController::class, 'index'])->name('shop.index');
 Route::get('/shop/{product:slug}', [ShopController::class, 'show'])->name('shop.show');
 
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
-Route::patch('/cart/{product}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
+Route::middleware('throttle:cart')->group(function () {
+    Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
+    Route::patch('/cart/{product}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{product}', [CartController::class, 'destroy'])->name('cart.destroy');
+});
 
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
-Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+Route::post('/checkout', [CheckoutController::class, 'store'])
+    ->middleware('throttle:checkout')
+    ->name('checkout.store');
 
 Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
 

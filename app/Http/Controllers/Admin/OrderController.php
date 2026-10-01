@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exceptions\CheckoutException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateOrderStatusRequest;
 use App\Models\Order;
 use App\Models\OrderStatus;
+use App\Services\OrderStatusService;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,11 +36,13 @@ class OrderController extends Controller
         ]);
     }
 
-    public function update(UpdateOrderStatusRequest $request, Order $order): RedirectResponse
+    public function update(UpdateOrderStatusRequest $request, Order $order, OrderStatusService $statuses): RedirectResponse
     {
-        $order->update([
-            'order_status_id' => $request->validated('order_status_id'),
-        ]);
+        try {
+            $statuses->change($order, OrderStatus::findOrFail($request->validated('order_status_id')));
+        } catch (CheckoutException $e) {
+            return back()->with('error', $e->getMessage());
+        }
 
         return back()->with('success', 'Order status updated.');
     }

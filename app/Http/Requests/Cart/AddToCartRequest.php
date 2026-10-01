@@ -23,7 +23,7 @@ class AddToCartRequest extends FormRequest
                 'integer',
                 Rule::exists('products', 'id')->where('is_active', true),
             ],
-            'quantity' => ['required', 'integer', 'min:1'],
+            'quantity' => ['required', 'integer', 'min:1', 'max:100'],
         ];
     }
 }
