@@ -1,15 +1,16 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "petar-v-nikolov/laravel-react-shop",
+    "name": "pnscripts/pn-shop",
     "type": "project",
-    "description": "An open-source Laravel 13 + React/Inertia e-commerce starter kit with catalog, cart, checkout, and a simple admin.",
+    "description": "PN Shop: an open-source Laravel CMS and e-commerce platform with a React/Inertia storefront.",
     "keywords": [
         "laravel",
         "react",
         "inertia",
         "ecommerce",
         "shop",
-        "starter-kit"
+        "cms",
+        "pn-shop"
     ],
     "license": "MIT",
     "require": {
