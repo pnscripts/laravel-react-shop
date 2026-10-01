@@ -22,6 +22,7 @@ core/
 ├── Sales/                   orders, OrderWorkflow (states, history), checkout, admin resources, dashboard widgets
 ├── Payment/                 gateways (PaymentGatewayManager), payment methods, payments, contract test kit
 ├── Shipping/                zones, methods, carriers (ShippingCarrierManager), shipments, cart.totals stage, contract test kit
+├── Tax/                     tax classes, zones, rates, TaxProvider (rate tables by default), cart.totals stage
 └── Admin/                   the Filament panel (/admin)
 ```
 

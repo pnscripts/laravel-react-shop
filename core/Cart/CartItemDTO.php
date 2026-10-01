@@ -28,6 +28,7 @@ final readonly class CartItemDTO
         public ?int $available,
         public int $quantity,
         public int $weight = 0,
+        public ?int $taxClassId = null,
     ) {}
 
     /**
@@ -50,6 +51,7 @@ final readonly class CartItemDTO
             $variant->available(),
             $quantity,
             (int) $variant->weight,
+            $product->tax_class_id,
         );
     }
 

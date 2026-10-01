@@ -16,6 +16,7 @@ use PnShop\Money\MoneyCast;
  * @property int $quantity_fulfilled units already shipped
  * @property Money $price
  * @property Money|null $sale_price
+ * @property Money $tax_amount tax included in or added to the line total
  * @property int|null $product_id
  * @property int|null $product_variant_id
  * @property string|null $product_title
@@ -43,6 +44,7 @@ class OrderItem extends Model
         'currency',
         'price',
         'sale_price',
+        'tax_amount',
     ];
 
     /**
@@ -55,6 +57,7 @@ class OrderItem extends Model
         'quantity_fulfilled' => 'integer',
         'price' => MoneyCast::class.':currency',
         'sale_price' => MoneyCast::class.':currency',
+        'tax_amount' => MoneyCast::class.':currency',
     ];
 
     /**

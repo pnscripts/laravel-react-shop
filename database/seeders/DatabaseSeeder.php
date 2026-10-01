@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PaymentMethodSeeder::class,
             ShippingSeeder::class,
+            TaxSeeder::class,
         ]);
 
         if (app()->isProduction()) {

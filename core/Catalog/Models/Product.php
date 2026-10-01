@@ -20,6 +20,7 @@ use PnShop\Inventory\InventoryService;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
 use PnShop\Media\Concerns\HasMedia;
+use PnShop\Tax\Models\TaxClass;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -44,6 +45,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property-read Money|null $sale_price
  * @property-read string|null $sku
  * @property-read string|null $barcode
+ * @property int|null $tax_class_id null uses the default tax class
  * @property-read int|null $stock units available across variants, null when not tracked
  */
 class Product extends Model implements TranslatableModel
@@ -59,6 +61,7 @@ class Product extends Model implements TranslatableModel
         'type',
         'product_category_id',
         'brand_id',
+        'tax_class_id',
         'title',
         'slug',
         'description',
@@ -275,6 +278,14 @@ class Product extends Model implements TranslatableModel
     protected function weight(): Attribute
     {
         return $this->variantShortcut('weight');
+    }
+
+    /**
+     * @return BelongsTo<TaxClass, $this>
+     */
+    public function taxClass(): BelongsTo
+    {
+        return $this->belongsTo(TaxClass::class);
     }
 
     /**

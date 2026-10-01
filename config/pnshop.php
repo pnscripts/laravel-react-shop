@@ -14,6 +14,7 @@ use PnShop\Security\SecurityServiceProvider;
 use PnShop\Settings\SettingsServiceProvider;
 use PnShop\Shipping\ShippingServiceProvider;
 use PnShop\System\SystemServiceProvider;
+use PnShop\Tax\TaxServiceProvider;
 
 return [
 
@@ -42,6 +43,7 @@ return [
         SalesServiceProvider::class,
         PaymentServiceProvider::class,
         ShippingServiceProvider::class,
+        TaxServiceProvider::class,
         AdminServiceProvider::class,
     ],
 

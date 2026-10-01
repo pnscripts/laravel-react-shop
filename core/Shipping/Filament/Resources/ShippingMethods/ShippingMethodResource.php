@@ -62,6 +62,7 @@ class ShippingMethodResource extends Resource
             ]),
             Section::make('Availability')->columnSpan(1)->schema([
                 Toggle::make('is_active')->label('Offered at checkout')->default(true),
+                Select::make('tax_class_id')->label('Tax class')->relationship('taxClass', 'name')->placeholder('Default class')->preload(),
                 TextInput::make('position')->integer()->default(0),
             ]),
             Section::make('Price')

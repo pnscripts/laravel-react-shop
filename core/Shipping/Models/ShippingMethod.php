@@ -12,6 +12,7 @@ use PnShop\Localization\Contracts\TranslatableModel;
 use PnShop\Shipping\Contracts\ShippingCarrier;
 use PnShop\Shipping\Factories\ShippingMethodFactory;
 use PnShop\Shipping\ShippingCarrierManager;
+use PnShop\Tax\Models\TaxClass;
 
 /**
  * A delivery option in a zone: a carrier with the merchant's settings.
@@ -21,6 +22,7 @@ use PnShop\Shipping\ShippingCarrierManager;
  * @property string $name
  * @property string|null $description
  * @property string $carrier
+ * @property int|null $tax_class_id null uses the default tax class
  * @property array<string, mixed>|null $settings
  * @property bool $is_active
  * @property int $position
@@ -32,7 +34,7 @@ class ShippingMethod extends Model implements TranslatableModel
     use HasFactory, SoftDeletes, Translatable;
 
     /** @var list<string> */
-    protected $fillable = ['shipping_zone_id', 'name', 'description', 'carrier', 'settings', 'is_active', 'position'];
+    protected $fillable = ['shipping_zone_id', 'name', 'description', 'carrier', 'tax_class_id', 'settings', 'is_active', 'position'];
 
     /** @var list<string> */
     protected array $translatable = ['name', 'description'];
@@ -59,6 +61,14 @@ class ShippingMethod extends Model implements TranslatableModel
     public function zone(): BelongsTo
     {
         return $this->belongsTo(ShippingZone::class, 'shipping_zone_id');
+    }
+
+    /**
+     * @return BelongsTo<TaxClass, $this>
+     */
+    public function taxClass(): BelongsTo
+    {
+        return $this->belongsTo(TaxClass::class);
     }
 
     public function carrierInstance(): ?ShippingCarrier

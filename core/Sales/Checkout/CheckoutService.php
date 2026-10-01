@@ -32,6 +32,7 @@ use PnShop\Sales\States\PaymentStatus;
 use PnShop\Shipping\Models\ShippingMethod;
 use PnShop\Shipping\ShippingRequest;
 use PnShop\Shipping\ShippingService;
+use PnShop\Tax\TaxResult;
 
 class CheckoutService
 {
@@ -149,6 +150,14 @@ class CheckoutService
 
             if ($method === null || ! $this->payments->accepts($method, new PaymentContext($totals->total(), $shipping->country_code, $user))) {
                 throw new CheckoutException(__('This payment method is not available for your order. Please choose another one.'));
+            }
+
+            $tax = $totals->meta['tax'] ?? null;
+
+            if ($tax instanceof TaxResult) {
+                foreach ($order->items()->get() as $orderItem) {
+                    $orderItem->update(['tax_amount' => $tax->forLine('item:'.$orderItem->product_variant_id)]);
+                }
             }
 
             $order->update([

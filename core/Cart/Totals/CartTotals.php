@@ -17,6 +17,13 @@ final class CartTotals
     private array $lines = [];
 
     /**
+     * Details stages leave for later steps, e.g. `tax` (a TaxResult with the tax per line).
+     *
+     * @var array<string, mixed>
+     */
+    public array $meta = [];
+
+    /**
      * @param  Collection<int, CartItemDTO>  $items
      * @param  array<string, mixed>  $context
      */

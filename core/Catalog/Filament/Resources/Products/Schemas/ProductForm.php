@@ -103,6 +103,11 @@ class ProductForm
                         Toggle::make('is_active')
                             ->label('Visible in the store')
                             ->default(true),
+                        Select::make('tax_class_id')
+                            ->label('Tax class')
+                            ->relationship('taxClass', 'name')
+                            ->placeholder('Default class')
+                            ->preload(),
                     ]),
                 Section::make('Pricing and inventory')
                     ->description('Stored on the product\'s single variant.')

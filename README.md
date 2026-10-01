@@ -26,7 +26,7 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
   - Inventory with a stock movement ledger; media library with WebP conversions
   - Orders: numbers, status / payment / fulfillment state machines with history and notes (stock is reserved at checkout, taken when shipped, released on cancel)
   - Customers with address books and order history; customer groups
-  - Payment methods (cash on delivery, bank transfer) with a payment ledger; shipping zones and methods (flat, free, pickup, by weight, by subtotal) with partial shipments and tracking
+  - Payment methods (cash on delivery, bank transfer) with a payment ledger; shipping zones and methods (flat, free, pickup, by weight, by subtotal) with partial shipments and tracking; tax classes, zones and rates (inclusive or exclusive prices)
   - Admin users, roles, store settings, activity log
 - Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)
 - English and Bulgarian storefront with a language switcher, localized URLs (`/bg/...`) and translatable catalog content
@@ -37,7 +37,7 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
 
 - Stripe, PayPal, or any payment gateway
 - REST API
-- Taxes and promotions (Phase 6 and later)
+- Promotions and coupons (Phase 11)
 
 ---
 
