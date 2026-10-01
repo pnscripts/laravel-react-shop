@@ -9,6 +9,8 @@ core/
 ├── Foundation/              PnShop (version), PnShopServiceProvider, ModuleServiceProvider
 │   └── Extension/           Permission, PermissionRegistry, PipelineRegistry
 ├── Settings/                typed, cached settings + admin page
+├── Localization/            languages, currencies, countries, localized URLs, Translatable
+├── Money/                   MoneyCast, MoneyPresenter (minor units, Brick Money)
 ├── Acl/                     staff accounts (admin_users), roles, permissions, commands
 ├── System/                  activity log
 ├── Catalog/                 product permissions, policy, admin resource, low-stock widget

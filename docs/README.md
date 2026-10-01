@@ -1,6 +1,6 @@
 # PN Shop documentation
 
-Architecture approved 2026-10-01. Phases 0–2 are implemented; the documents below record the plan, research and what has shipped.
+Architecture approved 2026-10-01. Phases 0–3 are implemented; the documents below record the plan, research and what has shipped.
 
 | Document | Purpose |
 |---|---|
@@ -11,6 +11,8 @@ Architecture approved 2026-10-01. Phases 0–2 are implemented; the documents be
 | [research/security-performance-audit.md](research/security-performance-audit.md) | Security and performance findings with file:line and fixes |
 | [upgrades/2026-10-phase-0-1.md](upgrades/2026-10-phase-0-1.md) | Upgrade notes for the safety fixes and version upgrade (Phases 0–1) |
 | [upgrades/2026-10-phase-2.md](upgrades/2026-10-phase-2.md) | Upgrade notes for the core foundation and admin panel (Phase 2) |
+| [upgrades/2026-10-phase-3.md](upgrades/2026-10-phase-3.md) | Upgrade notes for localization and money (Phase 3) |
+| [development/localization-and-money.md](development/localization-and-money.md) | Languages, localized URLs, translatable models, interface text, money |
 | [development/core-modules.md](development/core-modules.md) | Core module layout, permissions, pipelines and settings for developers |
 | [administration/staff-and-roles.md](administration/staff-and-roles.md) | Admin panel, staff accounts, roles and the activity log |
 
