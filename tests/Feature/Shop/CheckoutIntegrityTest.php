@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\OrderStatus;
 use App\Models\PaymentMethod;
 use App\Models\Product;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -86,6 +87,37 @@ class CheckoutIntegrityTest extends TestCase
             ->assertSessionHas('error');
 
         $this->assertSame(0, Order::query()->count());
+    }
+
+    public function test_order_lines_survive_product_deletion(): void
+    {
+        $product = Product::factory()->active()->create(['title' => 'Old Lamp', 'sku' => 'LAMP-1', 'stock' => 3]);
+
+        $this->post(route('cart.store'), ['product_id' => $product->id, 'quantity' => 1]);
+        $this->post(route('checkout.store'), $this->checkoutData());
+
+        $order = Order::query()->sole();
+        $product->forceDelete();
+
+        $this->assertDatabaseHas('order_items', [
+            'order_id' => $order->id,
+            'product_id' => null,
+            'product_title' => 'Old Lamp',
+            'product_sku' => 'LAMP-1',
+        ]);
+
+        $this->get(route('orders.show', $order))->assertInertia(fn (Assert $page) => $page
+            ->where('order.items.0.title', 'Old Lamp')
+        );
+    }
+
+    public function test_categories_with_products_cannot_be_force_deleted(): void
+    {
+        $product = Product::factory()->active()->create();
+
+        $this->expectException(QueryException::class);
+
+        $product->category->forceDelete();
     }
 
     public function test_session_holds_only_product_ids_and_quantities(): void

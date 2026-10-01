@@ -74,6 +74,8 @@ class CheckoutService
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_id' => $product->id,
+                    'product_title' => $product->title,
+                    'product_sku' => $product->sku,
                     'quantity' => $quantity,
                     'price' => $product->price,
                     'discount_price' => $product->discount_price ?? 0,

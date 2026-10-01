@@ -17,7 +17,7 @@ class OrderController extends Controller
 
         abort_unless($isOwner || $isRecent || $request->user()?->isAdmin(), 403);
 
-        $order->load(['items.product', 'orderStatus', 'paymentMethod']);
+        $order->load(['items', 'orderStatus', 'paymentMethod']);
 
         return Inertia::render('orders/show', [
             'order' => [
@@ -31,7 +31,7 @@ class OrderController extends Controller
                 'created_at' => $order->created_at?->toDayDateTimeString(),
                 'items' => $order->items->map(fn ($item) => [
                     'id' => $item->id,
-                    'title' => $item->product?->title ?? 'Product',
+                    'title' => $item->product_title ?? 'Product',
                     'quantity' => $item->quantity,
                     'price' => $item->price,
                     'discount_price' => $item->discount_price,
