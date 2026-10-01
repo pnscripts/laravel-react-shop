@@ -20,6 +20,7 @@ Architecture approved 2026-10-01. Phases 0–5 are implemented; the documents be
 | [upgrades/2026-10-phase-6.md](upgrades/2026-10-phase-6.md) | Upgrade notes for orders, payments, shipping and tax (Phase 6, in progress) |
 | [ecommerce/orders.md](ecommerce/orders.md) | Order numbers, status/payment/fulfillment states, history, OrderWorkflow |
 | [ecommerce/payments.md](ecommerce/payments.md) | Payment methods, gateways, payments and transactions, writing a gateway |
+| [ecommerce/shipping.md](ecommerce/shipping.md) | Shipping zones, methods and carriers, checkout delivery, shipments, writing a carrier |
 | [development/core-modules.md](development/core-modules.md) | Core module layout, permissions, pipelines and settings for developers |
 | [administration/staff-and-roles.md](administration/staff-and-roles.md) | Admin panel, staff accounts, roles and the activity log |
 

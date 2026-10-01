@@ -26,17 +26,18 @@ This is **not** a full marketplace. There is no Stripe (or any card gateway), an
   - Inventory with a stock movement ledger; media library with WebP conversions
   - Orders: numbers, status / payment / fulfillment state machines with history and notes (stock is reserved at checkout, taken when shipped, released on cancel)
   - Customers with address books and order history; customer groups
+  - Payment methods (cash on delivery, bank transfer) with a payment ledger; shipping zones and methods (flat, free, pickup, by weight, by subtotal) with partial shipments and tracking
   - Admin users, roles, store settings, activity log
 - Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)
 - English and Bulgarian storefront with a language switcher, localized URLs (`/bg/...`) and translatable catalog content
-- Manual payment methods only: cash on delivery and bank transfer
+- Built-in payment gateways are manual (cash on delivery, bank transfer); card gateways come as extensions
 - PHPUnit feature/unit tests for models, cart, shop flow, and admin access
 
 ## What is not implemented
 
 - Stripe, PayPal, or any payment gateway
 - REST API
-- Shipping methods, taxes and promotions (Phase 6 and later)
+- Taxes and promotions (Phase 6 and later)
 
 ---
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Account\AddressesController;
 use App\Http\Requests\Checkout\StoreCheckoutRequest;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -19,6 +20,9 @@ use PnShop\Payment\PaymentService;
 use PnShop\Sales\Checkout\CheckoutService;
 use PnShop\Sales\Exceptions\CheckoutException;
 use PnShop\Security\BotTrap;
+use PnShop\Shipping\ShippingQuote;
+use PnShop\Shipping\ShippingRequest;
+use PnShop\Shipping\ShippingService;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CheckoutController extends Controller
@@ -27,6 +31,7 @@ class CheckoutController extends Controller
         private ShoppingCartService $cart,
         private CheckoutService $checkout,
         private PaymentService $payments,
+        private ShippingService $shipping,
     ) {}
 
     public function create(Request $request): Response|RedirectResponse
@@ -44,6 +49,7 @@ class CheckoutController extends Controller
                 ->map(fn (PaymentMethod $method) => ['id' => $method->id, 'name' => $method->name, 'description' => $method->description])
                 ->values(),
             'countries' => AddressesController::countryOptions(),
+            'shippingRequired' => $this->shipping->isRequired(),
             'botTrap' => BotTrap::fields(),
             'savedAddresses' => $user?->addresses->map(fn (CustomerAddress $address) => [
                 'id' => $address->id,
@@ -59,6 +65,35 @@ class CheckoutController extends Controller
                 'last_name' => Str::contains((string) ($user->name ?? ''), ' ') ? Str::after((string) $user?->name, ' ') : '',
                 'phone' => $user->phone ?? '',
             ],
+        ]);
+    }
+
+    /**
+     * Delivery options and totals for the address being entered, as the customer types.
+     * A POST keeps the postcode out of URLs and logs.
+     */
+    public function quote(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'country_code' => ['required', 'string', 'size:2'],
+            'postcode' => ['nullable', 'string', 'max:32'],
+            'shipping_method_id' => ['nullable', 'integer'],
+        ]);
+
+        $address = PostalAddress::fromArray($data);
+        $items = $this->cart->getCartItems();
+        $quotes = $this->shipping->quotes(new ShippingRequest($items, $this->cart->getTotalPrice(), $address->country_code, $address->postcode, $request->user()));
+
+        $selected = $quotes->first(fn (ShippingQuote $quote) => $quote->method->id === (int) ($data['shipping_method_id'] ?? 0)) ?? $quotes->first();
+
+        return response()->json([
+            'options' => $quotes->map(fn (ShippingQuote $quote) => $quote->toArray())->values(),
+            'selected' => $selected?->method->id,
+            'totals' => $this->cart->totals([
+                'shipping_address' => $address,
+                'shipping_method' => $selected?->method,
+                'user' => $request->user(),
+            ])->toArray(),
         ]);
     }
 

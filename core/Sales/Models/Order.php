@@ -20,6 +20,8 @@ use PnShop\Sales\OrderNumber;
 use PnShop\Sales\States\FulfillmentStatus;
 use PnShop\Sales\States\OrderStatus;
 use PnShop\Sales\States\PaymentStatus;
+use PnShop\Shipping\Models\Shipment;
+use PnShop\Shipping\Models\ShippingMethod;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
@@ -30,6 +32,8 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property PaymentStatus $payment_status
  * @property FulfillmentStatus $fulfillment_status
  * @property string|null $locale language the customer used
+ * @property int|null $shipping_method_id
+ * @property string|null $shipping_method_name delivery method name when the order was placed
  * @property string $currency ISO 4217 code the order was placed in
  * @property OrderStockStatus $stock_status
  * @property string|null $address free-text address of orders placed before structured addresses
@@ -59,6 +63,8 @@ class Order extends Model
         'fulfillment_status',
         'locale',
         'payment_method_id',
+        'shipping_method_id',
+        'shipping_method_name',
         'currency',
         'stock_status',
         'subtotal',
@@ -207,6 +213,22 @@ class Order extends Model
             'payment_status' => __($this->payment_status->label()),
             'fulfillment_status' => __($this->fulfillment_status->label()),
         ];
+    }
+
+    /**
+     * @return BelongsTo<ShippingMethod, $this>
+     */
+    public function shippingMethod(): BelongsTo
+    {
+        return $this->belongsTo(ShippingMethod::class)->withTrashed();
+    }
+
+    /**
+     * @return HasMany<Shipment, $this>
+     */
+    public function shipments(): HasMany
+    {
+        return $this->hasMany(Shipment::class)->orderBy('id');
     }
 
     /**

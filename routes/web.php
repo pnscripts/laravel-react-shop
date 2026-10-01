@@ -23,6 +23,9 @@ Route::middleware('throttle:cart')->group(function () {
 });
 
 Route::get('/checkout', [CheckoutController::class, 'create'])->name('checkout.create');
+Route::post('/checkout/quote', [CheckoutController::class, 'quote'])
+    ->middleware('throttle:60,1')
+    ->name('checkout.quote');
 Route::post('/checkout', [CheckoutController::class, 'store'])
     ->middleware(['throttle:checkout', 'bot-trap'])
     ->name('checkout.store');

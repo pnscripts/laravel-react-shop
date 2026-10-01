@@ -53,6 +53,7 @@ class OrderInfolist
                         TextEntry::make('payment_status')->label('Payment status')->badge(),
                         TextEntry::make('fulfillment_status')->label('Fulfillment')->badge(),
                         TextEntry::make('paymentMethod.name')->label('Payment'),
+                        TextEntry::make('shipping_method_name')->label('Delivery')->placeholder('—'),
                         TextEntry::make('created_at')->label('Placed')->dateTime(),
                         TextEntry::make('name')->label('Customer'),
                         TextEntry::make('email')->copyable(),

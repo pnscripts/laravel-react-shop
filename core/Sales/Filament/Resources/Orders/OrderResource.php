@@ -14,6 +14,7 @@ use PnShop\Sales\Filament\Resources\Orders\RelationManagers\HistoryRelationManag
 use PnShop\Sales\Filament\Resources\Orders\Schemas\OrderInfolist;
 use PnShop\Sales\Filament\Resources\Orders\Tables\OrdersTable;
 use PnShop\Sales\Models\Order;
+use PnShop\Shipping\Filament\RelationManagers\ShipmentsRelationManager;
 use UnitEnum;
 
 class OrderResource extends Resource
@@ -40,7 +41,7 @@ class OrderResource extends Resource
 
     public static function getRelations(): array
     {
-        return [PaymentsRelationManager::class, HistoryRelationManager::class];
+        return [ShipmentsRelationManager::class, PaymentsRelationManager::class, HistoryRelationManager::class];
     }
 
     public static function canCreate(): bool

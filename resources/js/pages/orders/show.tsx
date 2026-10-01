@@ -14,6 +14,15 @@ type OrderShow = OrderStates & {
     billing_address: string[] | null;
     payment_method: string | null;
     payment_instructions: string | null;
+    shipping_method: string | null;
+    shipments: {
+        id: number;
+        carrier: string | null;
+        tracking_number: string | null;
+        tracking_url: string | null;
+        shipped_at: string | null;
+        items: number;
+    }[];
     created_at: string | null;
     items: {
         id: number;
@@ -65,10 +74,35 @@ export default function OrderShow({ order }: { order: OrderShow }) {
                     <p>{t('Status: :status', { status: order.status })}</p>
                     <p>{t('Payment status: :status', { status: order.payment_status })}</p>
                     <p>{t('Shipping: :status', { status: order.fulfillment_status })}</p>
+                    {order.shipping_method && <p>{t('Delivery: :method', { method: order.shipping_method })}</p>}
                     <p>{t('Payment: :method', { method: order.payment_method ?? '—' })}</p>
                     {order.created_at && <p>{t('Placed: :date', { date: order.created_at })}</p>}
                 </div>
             </div>
+
+            {order.shipments.length > 0 && (
+                <section className="mb-8 rounded-xl border p-6">
+                    <h2 className="mb-3 font-semibold">{t('Shipments')}</h2>
+                    <ul className="space-y-2 text-sm">
+                        {order.shipments.map((shipment) => (
+                            <li key={shipment.id} className="flex flex-wrap justify-between gap-2">
+                                <span>
+                                    {t(':count items shipped :date', { count: shipment.items, date: shipment.shipped_at ?? '' })}
+                                    {shipment.carrier && ` · ${shipment.carrier}`}
+                                </span>
+                                {shipment.tracking_number &&
+                                    (shipment.tracking_url ? (
+                                        <a href={shipment.tracking_url} target="_blank" rel="noopener noreferrer" className="font-medium underline">
+                                            {t('Track :number', { number: shipment.tracking_number })}
+                                        </a>
+                                    ) : (
+                                        <span>{t('Tracking number: :number', { number: shipment.tracking_number })}</span>
+                                    ))}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
 
             {order.payment_instructions && (
                 <section className="bg-muted/40 mb-8 rounded-xl border p-6">

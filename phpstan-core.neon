@@ -10,4 +10,5 @@ parameters:
         # Contract test kits in core/*/Testing are analysed through the tests that use them.
         - tests/Feature/Payment/BankTransferContractTest.php
         - tests/Feature/Payment/CashOnDeliveryContractTest.php
+        - tests/Feature/Shipping/FlatRateContractTest.php
     level: 7

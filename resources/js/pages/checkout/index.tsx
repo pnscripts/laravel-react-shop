@@ -6,11 +6,12 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useShippingQuote } from '@/hooks/use-shipping-quote';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { type CartSummary, type SharedData } from '@/types';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler, useState } from 'react';
+import { FormEventHandler, useEffect, useState } from 'react';
 
 type PaymentMethod = {
     id: number;
@@ -30,6 +31,7 @@ export default function Checkout({
     savedAddresses,
     defaults,
     botTrap,
+    shippingRequired,
 }: {
     cart: CartSummary;
     paymentMethods: PaymentMethod[];
@@ -37,6 +39,7 @@ export default function Checkout({
     savedAddresses: SavedAddress[];
     defaults: { email: string; first_name: string; last_name: string; phone: string };
     botTrap: BotTrapData;
+    shippingRequired: boolean;
 }) {
     const t = useTranslations();
     const { auth } = usePage<SharedData>().props;
@@ -54,9 +57,21 @@ export default function Checkout({
         billing: defaultBilling ? toAddressData(defaultBilling) : emptyAddress(defaultCountry),
         save_address: savedAddresses.length === 0,
         payment_method_id: paymentMethods[0]?.id ? String(paymentMethods[0].id) : '',
+        shipping_method_id: '',
         ...botTrap,
     });
     const fieldErrors = errors as Record<string, string | undefined>;
+    const delivery = useShippingQuote(data.shipping.country_code, data.shipping.postcode, data.shipping_method_id, cart.totals);
+
+    // Keep the customer's choice; fall back to the server's pick only when the chosen
+    // option is not offered for the address (or nothing is chosen yet).
+    useEffect(() => {
+        if (delivery.options === null || delivery.options.some((option) => String(option.id) === data.shipping_method_id)) {
+            return;
+        }
+
+        setData('shipping_method_id', delivery.selected === null ? '' : String(delivery.selected));
+    }, [delivery.options, delivery.selected, data.shipping_method_id, setData]);
 
     const chooseShipping = (choice: number | 'new') => {
         setShippingChoice(choice);
@@ -159,6 +174,44 @@ export default function Checkout({
                         )}
                     </section>
 
+                    {shippingRequired && (
+                        <section className="grid gap-3">
+                            <h2 className="text-lg font-semibold">{t('Delivery')}</h2>
+                            {delivery.options === null ? (
+                                <p className="text-muted-foreground text-sm">{t('Enter your address to see the delivery options.')}</p>
+                            ) : delivery.options.length === 0 ? (
+                                <p className="text-destructive text-sm">{t('We cannot deliver to this address yet.')}</p>
+                            ) : (
+                                <div className={`grid gap-2 ${delivery.loading ? 'opacity-60' : ''}`}>
+                                    {delivery.options.map((option) => (
+                                        <label
+                                            key={option.id}
+                                            className={`flex cursor-pointer items-start justify-between gap-4 rounded-lg border p-3 text-sm ${String(option.id) === data.shipping_method_id ? 'border-primary ring-primary ring-1' : ''}`}
+                                        >
+                                            <span className="flex items-start gap-3">
+                                                <input
+                                                    type="radio"
+                                                    name="shipping_method_id"
+                                                    className="mt-1"
+                                                    checked={String(option.id) === data.shipping_method_id}
+                                                    onChange={() => setData('shipping_method_id', String(option.id))}
+                                                />
+                                                <span>
+                                                    <span className="block font-medium">{option.name}</span>
+                                                    {option.description && (
+                                                        <span className="text-muted-foreground block whitespace-pre-line">{option.description}</span>
+                                                    )}
+                                                </span>
+                                            </span>
+                                            <span className="font-medium">{option.price.minor === 0 ? t('Free') : option.price.formatted}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            )}
+                            <InputError message={fieldErrors.shipping_method_id} />
+                        </section>
+                    )}
+
                     <section className="grid gap-4">
                         <h2 className="text-lg font-semibold">{t('Billing address')}</h2>
                         <label className="flex items-center gap-2 text-sm">
@@ -217,16 +270,13 @@ export default function Checkout({
                             </li>
                         ))}
                     </ul>
-                    <TotalsBreakdown totals={cart.totals} />
-                    <Button type="submit" className="w-full" disabled={processing}>
+                    <TotalsBreakdown totals={delivery.totals} />
+                    <Button type="submit" className="w-full" disabled={processing || (shippingRequired && data.shipping_method_id === '')}>
                         {t('Place order')}
                     </Button>
                     <Button variant="ghost" className="mt-2 w-full" asChild>
                         <Link href={route('cart.index')}>{t('Back to cart')}</Link>
                     </Button>
-                    <p className="text-muted-foreground mt-4 text-xs">
-                        {t('No card payments. This starter only records cash on delivery or bank transfer.')}
-                    </p>
                 </aside>
             </form>
         </StorefrontLayout>

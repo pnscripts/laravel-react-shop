@@ -11,7 +11,9 @@ use PnShop\Money\MoneyCast;
 
 /**
  * @property string $currency ISO 4217 code, same as the order
+ * @property int $id
  * @property int $quantity
+ * @property int $quantity_fulfilled units already shipped
  * @property Money $price
  * @property Money|null $sale_price
  * @property int|null $product_id
@@ -37,6 +39,7 @@ class OrderItem extends Model
         'product_variant_id',
         'variant_label',
         'quantity',
+        'quantity_fulfilled',
         'currency',
         'price',
         'sale_price',
@@ -48,6 +51,8 @@ class OrderItem extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'quantity' => 'integer',
+        'quantity_fulfilled' => 'integer',
         'price' => MoneyCast::class.':currency',
         'sale_price' => MoneyCast::class.':currency',
     ];

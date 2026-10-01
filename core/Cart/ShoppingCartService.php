@@ -150,11 +150,12 @@ class ShoppingCartService
     }
 
     /**
+     * @param  array<string, mixed>  $context  passed to the totals pipeline (see totals())
      * @return array<string, mixed>
      */
-    public function toArray(): array
+    public function toArray(array $context = []): array
     {
-        $totals = $this->totals();
+        $totals = $this->totals($context);
 
         return [
             'items' => $this->getCartItems()->map(fn (CartItemDTO $item) => [

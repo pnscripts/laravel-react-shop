@@ -12,6 +12,7 @@ use PnShop\Payment\PaymentServiceProvider;
 use PnShop\Sales\SalesServiceProvider;
 use PnShop\Security\SecurityServiceProvider;
 use PnShop\Settings\SettingsServiceProvider;
+use PnShop\Shipping\ShippingServiceProvider;
 use PnShop\System\SystemServiceProvider;
 
 return [
@@ -40,6 +41,7 @@ return [
         SecurityServiceProvider::class,
         SalesServiceProvider::class,
         PaymentServiceProvider::class,
+        ShippingServiceProvider::class,
         AdminServiceProvider::class,
     ],
 

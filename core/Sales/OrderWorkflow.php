@@ -110,9 +110,9 @@ class OrderWorkflow
     {
         return match (true) {
             $to === OrderStatus::Cancelled => OrderStockStatus::Released,
-            $order->status === OrderStatus::Cancelled && $to instanceof OrderStatus => $order->fulfillment_status === FulfillmentStatus::Unfulfilled
-                ? OrderStockStatus::Reserved
-                : OrderStockStatus::Fulfilled,
+            $order->status === OrderStatus::Cancelled && $to instanceof OrderStatus => in_array($order->fulfillment_status, [FulfillmentStatus::Fulfilled, FulfillmentStatus::Returned], true)
+                ? OrderStockStatus::Fulfilled
+                : OrderStockStatus::Reserved,
             $to === FulfillmentStatus::Fulfilled => OrderStockStatus::Fulfilled,
             default => $order->stock_status,
         };
@@ -131,6 +131,10 @@ class OrderWorkflow
         $order->stock_status = $target;
     }
 
+    /**
+     * Move one line's stock. `quantity_fulfilled` says how much of the line already left
+     * the shelf (through shipments), so partial shipments are never taken twice.
+     */
     private function moveItemStock(Order $order, OrderItem $item, OrderStockStatus $from, OrderStockStatus $to): void
     {
         $variant = ProductVariant::withTrashed()->find($item->product_variant_id);
@@ -139,20 +143,41 @@ class OrderWorkflow
             return;
         }
 
-        $quantity = $item->quantity;
+        $shipped = min($item->quantity_fulfilled, $item->quantity);
+        $held = $item->quantity - $shipped;
 
         try {
-            match ([$from, $to]) {
-                [OrderStockStatus::Reserved, OrderStockStatus::Fulfilled] => $this->inventory->commit($variant, $quantity, StockMovementReason::OrderFulfilled, $order),
-                [OrderStockStatus::Reserved, OrderStockStatus::Released] => $this->inventory->release($variant, $quantity),
-                [OrderStockStatus::Fulfilled, OrderStockStatus::Released] => $this->inventory->adjust($variant, $quantity, StockMovementReason::OrderCancelled, $order),
-                [OrderStockStatus::Released, OrderStockStatus::Reserved] => $this->inventory->reserve($variant, $quantity),
-                [OrderStockStatus::Released, OrderStockStatus::Fulfilled] => $this->inventory->adjust($variant, -$quantity, StockMovementReason::OrderReopened, $order),
-                default => null,
-            };
+            switch ([$from, $to]) {
+                case [OrderStockStatus::Reserved, OrderStockStatus::Fulfilled]:
+                    if ($held > 0) {
+                        $this->inventory->commit($variant, $held, StockMovementReason::OrderFulfilled, $order);
+                    }
+                    $item->quantity_fulfilled = $item->quantity;
+                    break;
+                case [OrderStockStatus::Reserved, OrderStockStatus::Released]:
+                    $this->inventory->release($variant, $held);
+                    if ($shipped > 0) {
+                        $this->inventory->adjust($variant, $shipped, StockMovementReason::OrderCancelled, $order);
+                    }
+                    $item->quantity_fulfilled = 0;
+                    break;
+                case [OrderStockStatus::Fulfilled, OrderStockStatus::Released]:
+                    $this->inventory->adjust($variant, $item->quantity, StockMovementReason::OrderCancelled, $order);
+                    $item->quantity_fulfilled = 0;
+                    break;
+                case [OrderStockStatus::Released, OrderStockStatus::Reserved]:
+                    $this->inventory->reserve($variant, $item->quantity);
+                    break;
+                case [OrderStockStatus::Released, OrderStockStatus::Fulfilled]:
+                    $this->inventory->adjust($variant, -$item->quantity, StockMovementReason::OrderReopened, $order);
+                    $item->quantity_fulfilled = $item->quantity;
+                    break;
+            }
         } catch (InsufficientStock) {
             throw new OrderException(__('Not enough stock to reopen this order (:product).', ['product' => (string) $item->product_title]));
         }
+
+        $item->save();
     }
 
     private function record(Order $order, string $field, ?string $from, ?string $to, ?string $note, ?Model $actor): OrderHistory

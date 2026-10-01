@@ -31,6 +31,7 @@ class StoreCheckoutRequest extends FormRequest
             'billing_same_as_shipping' => ['boolean'],
             ...$billing,
             'save_address' => ['boolean'],
+            'shipping_method_id' => ['nullable', 'integer'],
             'payment_method_id' => [
                 'required',
                 'integer',

@@ -27,6 +27,7 @@ final readonly class CartItemDTO
         public ?array $image,
         public ?int $available,
         public int $quantity,
+        public int $weight = 0,
     ) {}
 
     /**
@@ -48,6 +49,7 @@ final readonly class CartItemDTO
             ProductCardPresenter::mainImage($product),
             $variant->available(),
             $quantity,
+            (int) $variant->weight,
         );
     }
 

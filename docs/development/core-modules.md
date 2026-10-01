@@ -21,6 +21,7 @@ core/
 ├── Security/                bot-trap middleware (honeypot, time trap), CaptchaVerifier
 ├── Sales/                   orders, OrderWorkflow (states, history), checkout, admin resources, dashboard widgets
 ├── Payment/                 gateways (PaymentGatewayManager), payment methods, payments, contract test kit
+├── Shipping/                zones, methods, carriers (ShippingCarrierManager), shipments, cart.totals stage, contract test kit
 └── Admin/                   the Filament panel (/admin)
 ```
 

@@ -3,6 +3,8 @@
 namespace PnShop\Sales\Checkout;
 
 use App\Models\User;
+use Brick\Money\Money;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PnShop\Cart\CartItemDTO;
 use PnShop\Cart\ShoppingCartService;
@@ -27,6 +29,9 @@ use PnShop\Sales\OrderWorkflow;
 use PnShop\Sales\States\FulfillmentStatus;
 use PnShop\Sales\States\OrderStatus;
 use PnShop\Sales\States\PaymentStatus;
+use PnShop\Shipping\Models\ShippingMethod;
+use PnShop\Shipping\ShippingRequest;
+use PnShop\Shipping\ShippingService;
 
 class CheckoutService
 {
@@ -36,6 +41,7 @@ class CheckoutService
         private CartCalculator $calculator,
         private OrderWorkflow $workflow,
         private PaymentService $payments,
+        private ShippingService $shipping,
     ) {}
 
     /**
@@ -130,7 +136,14 @@ class CheckoutService
                 $items->push(CartItemDTO::fromVariant($variant, $quantity));
             }
 
-            $totals = $this->calculator->calculate($items, $currency, ['shipping_address' => $shipping, 'billing_address' => $billing, 'user' => $user]);
+            $shippingMethod = $this->shippingMethod($data, $items, $currency, $shipping, $user);
+
+            $totals = $this->calculator->calculate($items, $currency, [
+                'shipping_address' => $shipping,
+                'billing_address' => $billing,
+                'shipping_method' => $shippingMethod,
+                'user' => $user,
+            ]);
 
             $method = PaymentMethod::query()->find($data['payment_method_id']);
 
@@ -139,6 +152,8 @@ class CheckoutService
             }
 
             $order->update([
+                'shipping_method_id' => $shippingMethod?->id,
+                'shipping_method_name' => $shippingMethod?->name,
                 'subtotal' => $totals->subtotal,
                 'total' => $totals->total(),
                 'totals' => array_map(fn (TotalLine $line) => [
@@ -163,6 +178,31 @@ class CheckoutService
         }
 
         return $order->load(['items', 'paymentMethod', 'addresses']);
+    }
+
+    /**
+     * The chosen shipping method, checked against the address and the cart; null when the
+     * store has no shipping methods.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  Collection<int, CartItemDTO>  $items
+     *
+     * @throws CheckoutException
+     */
+    private function shippingMethod(array $data, Collection $items, string $currency, PostalAddress $address, ?User $user): ?ShippingMethod
+    {
+        if (! $this->shipping->isRequired()) {
+            return null;
+        }
+
+        $method = ShippingMethod::query()->find((int) ($data['shipping_method_id'] ?? 0));
+        $subtotal = $items->reduce(fn (Money $total, CartItemDTO $item) => $total->plus($item->getTotalPrice()), Money::zero($currency));
+
+        if ($method === null || $this->shipping->quote($method, new ShippingRequest($items, $subtotal, $address->country_code, $address->postcode, $user)) === null) {
+            throw new CheckoutException(__('Please choose a delivery option for this address.'));
+        }
+
+        return $method;
     }
 
     /**

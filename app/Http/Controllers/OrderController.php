@@ -8,6 +8,7 @@ use Inertia\Response;
 use PnShop\Money\MoneyPresenter;
 use PnShop\Payment\PaymentService;
 use PnShop\Sales\Models\Order;
+use PnShop\Shipping\Models\Shipment;
 
 class OrderController extends Controller
 {
@@ -19,7 +20,7 @@ class OrderController extends Controller
 
         abort_unless($isOwner || $isRecent, 403);
 
-        $order->load(['items', 'paymentMethod', 'shippingAddress', 'billingAddress']);
+        $order->load(['items', 'paymentMethod', 'shippingAddress', 'billingAddress', 'shipments.lines']);
 
         return Inertia::render('orders/show', [
             'order' => [
@@ -33,6 +34,15 @@ class OrderController extends Controller
                 ...$order->presentStates(),
                 'payment_method' => $order->paymentMethod?->name,
                 'payment_instructions' => app(PaymentService::class)->instructions($order),
+                'shipping_method' => $order->shipping_method_name,
+                'shipments' => $order->shipments->map(fn (Shipment $shipment) => [
+                    'id' => $shipment->id,
+                    'carrier' => $shipment->carrier_name,
+                    'tracking_number' => $shipment->tracking_number,
+                    'tracking_url' => $shipment->tracking_url,
+                    'shipped_at' => $shipment->shipped_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LL'),
+                    'items' => $shipment->lines->sum('quantity'),
+                ]),
                 'created_at' => $order->created_at?->timezone(config('app.timezone'))->locale(app()->getLocale())->isoFormat('LLL'),
                 'items' => $order->items->map(fn ($item) => [
                     'id' => $item->id,

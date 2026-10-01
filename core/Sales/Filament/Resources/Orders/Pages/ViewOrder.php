@@ -5,6 +5,7 @@ namespace PnShop\Sales\Filament\Resources\Orders\Pages;
 use Filament\Resources\Pages\ViewRecord;
 use PnShop\Sales\Filament\Actions\OrderStateActions;
 use PnShop\Sales\Filament\Resources\Orders\OrderResource;
+use PnShop\Shipping\Filament\Actions\CreateShipmentAction;
 
 class ViewOrder extends ViewRecord
 {
@@ -17,6 +18,6 @@ class ViewOrder extends ViewRecord
 
     protected function getHeaderActions(): array
     {
-        return OrderStateActions::all();
+        return [CreateShipmentAction::make(), ...OrderStateActions::all()];
     }
 }
