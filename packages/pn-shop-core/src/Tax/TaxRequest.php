@@ -2,7 +2,7 @@
 
 namespace PnShop\Tax;
 
-use App\Models\User;
+use PnShop\Customer\Models\User;
 
 final readonly class TaxRequest
 {

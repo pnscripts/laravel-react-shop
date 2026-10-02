@@ -62,7 +62,7 @@ class SeoServiceProvider extends ModuleServiceProvider
         $this->app->make(Localization::class)->resolveAlternatesUsing(fn (string $locale) => app(Seo::class)->languageLinkFor($locale));
 
         // On full page loads the root template prints the page's meta tags.
-        View::composer('app', function ($view): void {
+        View::composer('pnshop::app', function ($view): void {
             $view->with('seo', app(Seo::class)->resolve(request()));
         });
     }

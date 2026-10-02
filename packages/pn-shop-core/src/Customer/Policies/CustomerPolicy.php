@@ -2,8 +2,8 @@
 
 namespace PnShop\Customer\Policies;
 
-use App\Models\User;
 use PnShop\Acl\Models\AdminUser;
+use PnShop\Customer\Models\User;
 
 /**
  * Staff access to customer accounts. Customers themselves never pass through this policy.

@@ -2,7 +2,6 @@
 
 namespace PnShop\Sales\Checkout;
 
-use App\Models\User;
 use Brick\Money\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +11,7 @@ use PnShop\Cart\Totals\CartCalculator;
 use PnShop\Cart\Totals\TotalLine;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Customer\Models\CustomerAddress;
+use PnShop\Customer\Models\User;
 use PnShop\Customer\PostalAddress;
 use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;

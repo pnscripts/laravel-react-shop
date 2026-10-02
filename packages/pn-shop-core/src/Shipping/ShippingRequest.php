@@ -2,10 +2,10 @@
 
 namespace PnShop\Shipping;
 
-use App\Models\User;
 use Brick\Money\Money;
 use Illuminate\Support\Collection;
 use PnShop\Cart\CartItemDTO;
+use PnShop\Customer\Models\User;
 
 /**
  * What is being shipped and where: the lines, their value and weight, and the destination.

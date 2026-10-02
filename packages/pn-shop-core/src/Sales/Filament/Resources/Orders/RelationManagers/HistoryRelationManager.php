@@ -2,11 +2,11 @@
 
 namespace PnShop\Sales\Filament\Resources\Orders\RelationManagers;
 
-use App\Models\User;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use PnShop\Acl\Models\AdminUser;
+use PnShop\Customer\Models\User;
 use PnShop\Sales\Models\OrderHistory;
 use PnShop\Sales\States\FulfillmentStatus;
 use PnShop\Sales\States\OrderStatus;

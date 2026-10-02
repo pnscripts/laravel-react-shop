@@ -50,7 +50,7 @@ class ThemeServiceProvider extends ModuleServiceProvider
         }
 
         // The root template loads the active theme's bundle (or the built-in one) and its CSS variables.
-        View::composer('app', function ($view): void {
+        View::composer('pnshop::app', function ($view): void {
             $themes = app(ThemeManager::class);
             $theme = $themes->active();
 

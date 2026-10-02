@@ -2,9 +2,9 @@
 
 namespace PnShop\Customer\Factories;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use PnShop\Customer\Models\CustomerAddress;
+use PnShop\Customer\Models\User;
 
 /**
  * @extends Factory<CustomerAddress>

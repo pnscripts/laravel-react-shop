@@ -2,13 +2,13 @@
 
 namespace PnShop\Api\Http\Controllers\Admin;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use PnShop\Api\Http\Resources\OrderPresenter;
 use PnShop\Customer\Models\CustomerAddress;
+use PnShop\Customer\Models\User;
 
 class CustomerController extends AdminController
 {
@@ -25,7 +25,7 @@ class CustomerController extends AdminController
 
         $filter = (array) $request->input('filter', []);
 
-        $customers = $this->updatedSince(User::query(), $request)
+        $customers = $this->updatedSince(User::modelClass()::query(), $request)
             ->when(isset($filter['email']), fn (Builder $query) => $query->where('email', (string) $filter['email']))
             ->when(isset($filter['group_id']), fn (Builder $query) => $query->where('customer_group_id', (int) $filter['group_id']))
             ->withCount('orders')

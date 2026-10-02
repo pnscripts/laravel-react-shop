@@ -4775,7 +4775,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/pn-shop-core",
-                "reference": "2f7ed821159c6d4055a613b873e0fe991f27e66e"
+                "reference": "0dd632a8d8cc885bfbd6a4c2cdf80138777bffc2"
             },
             "require": {
                 "brick/money": "^0.15.2",
@@ -4802,7 +4802,8 @@
             },
             "autoload": {
                 "psr-4": {
-                    "PnShop\\": "src/"
+                    "PnShop\\": "src/",
+                    "PnShop\\Database\\Seeders\\": "database/seeders/"
                 }
             },
             "license": [

@@ -2,7 +2,6 @@
 
 namespace PnShop\Cart;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cookie;
@@ -10,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use PnShop\Cart\Models\Cart;
 use PnShop\Cart\Models\CartLine;
+use PnShop\Customer\Models\User;
 
 /**
  * Finds and changes the current visitor's cart: the customer's cart when signed in,

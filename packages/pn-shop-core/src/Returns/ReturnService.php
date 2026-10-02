@@ -2,7 +2,6 @@
 
 namespace PnShop\Returns;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -10,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use PnShop\Acl\Models\AdminUser;
 use PnShop\Catalog\Models\ProductVariant;
+use PnShop\Customer\Models\User;
 use PnShop\Foundation\NumberSequence;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\StockMovementReason;

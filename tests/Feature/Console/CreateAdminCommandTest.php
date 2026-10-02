@@ -3,12 +3,12 @@
 namespace Tests\Feature\Console;
 
 use App\Models\User;
-use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use PnShop\Acl\Models\AdminUser;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\ProductType;
+use PnShop\Database\Seeders\DatabaseSeeder;
 use Tests\TestCase;
 
 class CreateAdminCommandTest extends TestCase

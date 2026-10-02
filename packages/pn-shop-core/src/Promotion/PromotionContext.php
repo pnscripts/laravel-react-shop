@@ -2,13 +2,13 @@
 
 namespace PnShop\Promotion;
 
-use App\Models\User;
 use Brick\Money\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PnShop\Cart\CartItemDTO;
 use PnShop\Cart\Totals\CartTotals;
 use PnShop\Catalog\Models\Category;
+use PnShop\Customer\Models\User;
 use PnShop\Customer\PostalAddress;
 
 /**

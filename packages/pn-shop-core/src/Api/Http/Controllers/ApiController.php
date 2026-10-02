@@ -2,9 +2,9 @@
 
 namespace PnShop\Api\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Http\Request;
+use PnShop\Customer\Models\User;
 
 /**
  * Base of the Store and Admin API controllers: list endpoints use cursor pagination with

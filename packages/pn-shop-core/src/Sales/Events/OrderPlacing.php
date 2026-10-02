@@ -2,9 +2,9 @@
 
 namespace PnShop\Sales\Events;
 
-use App\Models\User;
 use Illuminate\Foundation\Events\Dispatchable;
 use PnShop\Cart\Totals\CartTotals;
+use PnShop\Customer\Models\User;
 use PnShop\Sales\Models\Order;
 
 /**

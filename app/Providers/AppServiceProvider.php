@@ -2,17 +2,13 @@
 
 namespace App\Providers;
 
-use Illuminate\Cache\RateLimiting\Limit;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Validation\Rules\Password;
 
+/**
+ * The shop's own services. PN Shop itself is registered by pnscripts/pn-shop-core.
+ */
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         if ($this->app->environment('local') && class_exists(\Laravel\Telescope\TelescopeServiceProvider::class)) {
@@ -21,28 +17,8 @@ class AppServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        $this->configureRateLimiting();
-
-        Password::defaults(fn () => $this->app->isProduction()
-            ? Password::min(10)->uncompromised()
-            : Password::min(8));
-    }
-
-    private function configureRateLimiting(): void
-    {
-        RateLimiter::for('cart', fn (Request $request) => Limit::perMinute(60)->by($request->ip()));
-
-        RateLimiter::for('checkout', fn (Request $request) => [
-            Limit::perMinute(5)->by($request->ip()),
-            Limit::perHour(20)->by($request->ip()),
-            Limit::perHour(10)->by('email:'.strtolower((string) $request->input('email'))),
-        ]);
-
-        RateLimiter::for('auth-forms', fn (Request $request) => Limit::perMinute(6)->by($request->ip()));
+        //
     }
 }

@@ -3,18 +3,18 @@
 namespace PnShop\Installer;
 
 use Closure;
-use Database\Seeders\CatalogDemoSeeder;
-use Database\Seeders\PaymentMethodSeeder;
-use Database\Seeders\ProductAttributeSeeder;
-use Database\Seeders\ProductCategorySeeder;
-use Database\Seeders\ProductSeeder;
-use Database\Seeders\ShippingSeeder;
-use Database\Seeders\TaxSeeder;
 use Faker\Factory;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use PnShop\Acl\Models\AdminUser;
 use PnShop\Acl\PermissionSynchronizer;
+use PnShop\Database\Seeders\CatalogDemoSeeder;
+use PnShop\Database\Seeders\PaymentMethodSeeder;
+use PnShop\Database\Seeders\ProductAttributeSeeder;
+use PnShop\Database\Seeders\ProductCategorySeeder;
+use PnShop\Database\Seeders\ProductSeeder;
+use PnShop\Database\Seeders\ShippingSeeder;
+use PnShop\Database\Seeders\TaxSeeder;
 use PnShop\Localization\Localization;
 use PnShop\Localization\Models\Country;
 use PnShop\Localization\Models\Currency;

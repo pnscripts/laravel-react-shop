@@ -2,7 +2,6 @@
 
 namespace PnShop\Sales\Models;
 
-use App\Models\User;
 use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PnShop\Customer\Models\User;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Money\MoneyCast;
 use PnShop\Money\MoneyPresenter;

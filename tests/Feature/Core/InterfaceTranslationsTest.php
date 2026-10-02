@@ -5,6 +5,7 @@ namespace Tests\Feature\Core;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use PnShop\Catalog\Models\Product;
+use PnShop\Foundation\PnShop;
 use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Models\Order;
 use PnShop\Security\BotTrap;
@@ -26,7 +27,7 @@ class InterfaceTranslationsTest extends TestCase
 
     public function test_every_bulgarian_translation_keeps_its_placeholders(): void
     {
-        $translations = json_decode((string) file_get_contents(lang_path('bg.json')), true);
+        $translations = json_decode((string) file_get_contents(PnShop::path('lang/bg.json')), true);
 
         foreach ($translations as $key => $value) {
             preg_match_all('/:[a-z_]+/', $key, $expected);

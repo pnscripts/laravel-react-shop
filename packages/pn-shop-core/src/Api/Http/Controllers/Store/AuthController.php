@@ -2,7 +2,6 @@
 
 namespace PnShop\Api\Http\Controllers\Store;
 
-use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
@@ -16,6 +15,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 use PnShop\Api\Http\Controllers\ApiController;
 use PnShop\Api\Http\Middleware\StoreCustomer;
 use PnShop\Cart\CartRepository;
+use PnShop\Customer\Models\User;
 
 /**
  * Customer accounts for headless storefronts and apps. Signing in returns a bearer token
@@ -43,7 +43,7 @@ class AuthController extends ApiController
             'device_name' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $user = User::create([
+        $user = User::modelClass()::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
@@ -79,7 +79,7 @@ class AuthController extends ApiController
             throw ValidationException::withMessages(['email' => __('auth.throttle', ['seconds' => $seconds, 'minutes' => ceil($seconds / 60)])]);
         }
 
-        $user = User::query()->where('email', $data['email'])->first();
+        $user = User::modelClass()::query()->where('email', $data['email'])->first();
 
         if ($user === null || ! Hash::check($data['password'], $user->password)) {
             RateLimiter::hit($throttleKey);

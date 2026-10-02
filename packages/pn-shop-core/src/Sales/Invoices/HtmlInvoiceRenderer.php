@@ -25,7 +25,7 @@ final class HtmlInvoiceRenderer implements InvoiceRenderer
             $issued = $invoice->issued_at->copy()->setTimezone(config()->string('app.timezone'));
             $issued->setLocale($locale);
 
-            return response(view('invoices.show', [
+            return response(view('pnshop::invoices.show', [
                 'invoice' => $invoice,
                 'money' => $money,
                 'date' => $issued->isoFormat('LL'),

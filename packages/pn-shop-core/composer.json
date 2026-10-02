@@ -2,7 +2,13 @@
     "name": "pnscripts/pn-shop-core",
     "type": "library",
     "description": "The PN Shop platform core: catalog, cart, checkout, orders, payments, shipping, tax, CMS, SEO, promotions, returns, plugins, themes, APIs and the installer.",
-    "keywords": ["pn-shop", "laravel", "e-commerce", "cms", "shop"],
+    "keywords": [
+        "pn-shop",
+        "laravel",
+        "e-commerce",
+        "cms",
+        "shop"
+    ],
     "license": "MIT",
     "homepage": "https://github.com/pnscripts/laravel-react-shop",
     "authors": [
@@ -28,7 +34,8 @@
     },
     "autoload": {
         "psr-4": {
-            "PnShop\\": "src/"
+            "PnShop\\": "src/",
+            "PnShop\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "extra": {

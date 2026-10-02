@@ -2,9 +2,9 @@
 
 namespace PnShop\Cart\Listeners;
 
-use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use PnShop\Cart\CartRepository;
+use PnShop\Customer\Models\User;
 
 class MergeGuestCart
 {

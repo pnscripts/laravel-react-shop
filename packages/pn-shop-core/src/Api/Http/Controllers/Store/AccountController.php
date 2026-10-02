@@ -2,13 +2,13 @@
 
 namespace PnShop\Api\Http\Controllers\Store;
 
-use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PnShop\Api\Http\Controllers\ApiController;
 use PnShop\Api\Http\Resources\OrderPresenter;
 use PnShop\Customer\Models\CustomerAddress;
+use PnShop\Customer\Models\User;
 use PnShop\Customer\PostalAddress;
 use PnShop\Sales\Models\Order;
 

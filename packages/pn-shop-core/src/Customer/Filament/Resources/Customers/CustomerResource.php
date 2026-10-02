@@ -2,7 +2,6 @@
 
 namespace PnShop\Customer\Filament\Resources\Customers;
 
-use App\Models\User;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -18,6 +17,7 @@ use PnShop\Customer\Filament\Resources\Customers\Pages\EditCustomer;
 use PnShop\Customer\Filament\Resources\Customers\Pages\ListCustomers;
 use PnShop\Customer\Filament\Resources\Customers\RelationManagers\AddressesRelationManager;
 use PnShop\Customer\Filament\Resources\Customers\RelationManagers\OrdersRelationManager;
+use PnShop\Customer\Models\User;
 use UnitEnum;
 
 class CustomerResource extends Resource

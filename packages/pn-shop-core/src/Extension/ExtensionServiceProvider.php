@@ -29,6 +29,6 @@ class ExtensionServiceProvider extends ModuleServiceProvider
         }
 
         // Plugins' storefront scripts, loaded by the root template after the app.
-        View::composer('app', fn ($view) => $view->with('pluginScripts', PluginLoader::storefrontScripts()));
+        View::composer('pnshop::app', fn ($view) => $view->with('pluginScripts', PluginLoader::storefrontScripts()));
     }
 }

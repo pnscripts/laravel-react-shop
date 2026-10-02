@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Themes;
 
-use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
@@ -11,6 +10,7 @@ use PnShop\Settings\Settings;
 use PnShop\Settings\SettingsRegistry;
 use PnShop\Settings\SettingsSchema;
 use PnShop\Settings\SettingType;
+use PnShop\Storefront\Http\Middleware\HandleInertiaRequests;
 use PnShop\Theme\Filament\Pages\ManageThemes;
 use PnShop\Theme\ThemeManager;
 use Tests\Feature\Admin\AdminTestCase;
