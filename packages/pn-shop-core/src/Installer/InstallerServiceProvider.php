@@ -15,6 +15,7 @@ use PnShop\Foundation\ModuleServiceProvider;
 use PnShop\Foundation\PnShop;
 use PnShop\Installer\Backup\LocalBackup;
 use PnShop\Installer\Console\InstallCommand;
+use PnShop\Installer\Console\MigrateToPackageCommand;
 use PnShop\Installer\Console\UpdateCommand;
 use PnShop\Installer\Contracts\BackupDriver;
 use PnShop\Installer\Http\Controllers\InstallerController;
@@ -54,7 +55,7 @@ class InstallerServiceProvider extends ModuleServiceProvider
         }
 
         if ($this->app->runningInConsole()) {
-            $this->commands([InstallCommand::class, UpdateCommand::class]);
+            $this->commands([InstallCommand::class, UpdateCommand::class, MigrateToPackageCommand::class]);
         }
 
         AboutCommand::add('PN Shop', fn () => [

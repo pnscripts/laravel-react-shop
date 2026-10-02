@@ -3,6 +3,9 @@
 namespace PnShop\Installer;
 
 use Closure;
+use Composer\InstalledVersions;
+use Composer\Semver\Comparator;
+use Composer\Semver\VersionParser;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\Artisan;
@@ -42,10 +45,14 @@ class Updater
      */
     public function plan(): array
     {
-        $failed = array_values(array_map(
-            fn (array $check) => $check['label'].' — '.$check['detail'],
-            array_filter($this->requirements->check(), fn (array $check) => $check['required'] && ! $check['ok']),
-        ));
+        $from = $this->installation->installedVersion();
+        $failed = [
+            ...array_values(array_map(
+                fn (array $check) => $check['label'].' — '.$check['detail'],
+                array_filter($this->requirements->check(), fn (array $check) => $check['required'] && ! $check['ok']),
+            )),
+            ...$this->codeProblems($from),
+        ];
 
         $incompatible = [];
         $updates = [];
@@ -69,13 +76,66 @@ class Updater
         }
 
         return [
-            'from' => $this->installation->installedVersion(),
+            'from' => $from,
             'to' => PnShop::VERSION,
             'requirements' => $failed,
             'migrations' => $this->pendingMigrations(),
             'incompatible' => $incompatible,
             'plugin_updates' => $updates,
         ];
+    }
+
+    /**
+     * The code on disk is not ready to update to: an older core than the database, or a
+     * composer.lock that asks for another core than the one installed in vendor/.
+     *
+     * @return list<string>
+     */
+    public function codeProblems(?string $from, ?string $lockFile = null): array
+    {
+        $problems = [];
+        $parser = new VersionParser;
+
+        try {
+            if ($from !== null && Comparator::greaterThan($parser->normalize($from), $parser->normalize(PnShop::VERSION))) {
+                $problems[] = "The database is from PN Shop {$from}, newer than this code (".PnShop::VERSION.'). Put the matching code back, or restore the backup made before the update.';
+            }
+        } catch (Throwable) {
+            // An unparsable version in the history is not a reason to block.
+        }
+
+        $locked = $this->lockedCore($lockFile ?? base_path('composer.lock'));
+
+        if ($locked !== null && InstalledVersions::isInstalled(PnShop::PACKAGE)) {
+            $installed = InstalledVersions::getPrettyVersion(PnShop::PACKAGE);
+            $reference = InstalledVersions::getReference(PnShop::PACKAGE);
+
+            if ($locked['version'] !== $installed || ($locked['reference'] !== null && $reference !== null && $locked['reference'] !== $reference)) {
+                $problems[] = 'composer.lock asks for '.PnShop::PACKAGE." {$locked['version']}, but {$installed} is installed. Run `composer install` first.";
+            }
+        }
+
+        return $problems;
+    }
+
+    /**
+     * The core package as composer.lock records it.
+     *
+     * @return array{version: string, reference: string|null}|null
+     */
+    private function lockedCore(string $lockFile): ?array
+    {
+        $lock = json_decode((string) @file_get_contents($lockFile), true);
+
+        foreach (is_array($lock) ? [...(array) ($lock['packages'] ?? []), ...(array) ($lock['packages-dev'] ?? [])] : [] as $package) {
+            if (is_array($package) && ($package['name'] ?? null) === PnShop::PACKAGE && is_string($package['version'] ?? null)) {
+                $reference = $package['dist']['reference'] ?? $package['source']['reference'] ?? null;
+
+                return ['version' => $package['version'], 'reference' => is_string($reference) ? $reference : null];
+            }
+        }
+
+        return null;
     }
 
     /**

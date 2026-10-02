@@ -90,6 +90,9 @@
         ]
     },
     "extra": {
+        "pnshop": {
+            "monorepo": true
+        },
         "laravel": {
             "dont-discover": [
                 "laravel/telescope"

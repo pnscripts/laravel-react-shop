@@ -34,6 +34,9 @@ final class PnShop
      */
     public const VERSION = '1.1.0-dev';
 
+    /** The Composer package that holds the core. */
+    public const PACKAGE = 'pnscripts/pn-shop-core';
+
     /**
      * The core modules, booted in this order. They belong to the package (not the shop's
      * config), so modules added by an update load without editing configuration.

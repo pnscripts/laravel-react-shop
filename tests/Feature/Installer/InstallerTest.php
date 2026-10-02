@@ -11,6 +11,7 @@ use PnShop\Foundation\PnShop;
 use PnShop\Installer\Backup\LocalBackup;
 use PnShop\Installer\EnvironmentFile;
 use PnShop\Installer\Installation;
+use PnShop\Installer\Updater;
 use PnShop\Localization\Localization;
 use PnShop\Settings\Settings;
 use Tests\TestCase;
@@ -156,6 +157,27 @@ class InstallerTest extends TestCase
         $this->assertSame('0.9.0', $latest->from_version);
         $this->assertSame(PnShop::VERSION, $latest->version);
         $this->assertFalse(app()->isDownForMaintenance());
+    }
+
+    public function test_update_refuses_older_code_and_a_core_that_differs_from_composer_lock(): void
+    {
+        AdminUser::factory()->administrator()->create();
+        DB::table('system_versions')->insert(['version' => '9.0.0', 'action' => 'install', 'created_at' => now()]);
+
+        $this->artisan('pnshop:update', ['--dry-run' => true])
+            ->expectsOutputToContain('newer than this code')
+            ->assertFailed();
+
+        $updater = app(Updater::class);
+        $this->assertSame([], $updater->codeProblems(PnShop::VERSION));
+
+        $lock = tempnam(sys_get_temp_dir(), 'lock');
+        File::put($lock, (string) json_encode(['packages' => [['name' => PnShop::PACKAGE, 'version' => '9.9.9', 'dist' => ['reference' => 'abc']]]]));
+        $this->assertStringContainsString('Run `composer install` first', implode(' ', $updater->codeProblems(PnShop::VERSION, $lock)));
+
+        // The repository's own lock matches vendor/.
+        $this->assertSame([], $updater->codeProblems(PnShop::VERSION, base_path('composer.lock')));
+        File::delete($lock);
     }
 
     public function test_update_needs_an_installed_shop(): void
