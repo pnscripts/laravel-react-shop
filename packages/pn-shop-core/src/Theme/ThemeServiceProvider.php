@@ -55,7 +55,7 @@ class ThemeServiceProvider extends ModuleServiceProvider
             $theme = $themes->active();
 
             $view->with([
-                'themeBuild' => $theme->builtin ? null : $theme->buildDirectory(),
+                'themeBuild' => $themes->bundle($theme),
                 'themeEntries' => $theme->entries,
                 'themeCss' => $themes->css(),
             ]);

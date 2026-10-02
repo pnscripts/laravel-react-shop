@@ -20,6 +20,7 @@ use PnShop\Localization\Models\Country;
 use PnShop\Localization\Models\Currency;
 use PnShop\Localization\Models\Language;
 use PnShop\Settings\Settings;
+use PnShop\Theme\ThemeManager;
 use PnShop\Theme\ThemeManifest;
 use RuntimeException;
 
@@ -78,6 +79,10 @@ class Installer
                 Artisan::call('db:seed', ['--class' => $seeder, '--force' => true]);
             }
         }
+
+        $step('Publishing the storefront');
+        $themes = app(ThemeManager::class);
+        $themes->publish($themes->builtin());
 
         $step('Linking public storage');
         if (! is_link(public_path('storage')) && ! is_dir(public_path('storage'))) {

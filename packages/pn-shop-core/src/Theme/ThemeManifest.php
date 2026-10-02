@@ -5,6 +5,7 @@ namespace PnShop\Theme;
 use Composer\Semver\VersionParser;
 use PnShop\Extension\Exceptions\ExtensionException;
 use PnShop\Extension\Manifest;
+use PnShop\Foundation\PnShop;
 use PnShop\Settings\SettingType;
 use Throwable;
 
@@ -25,13 +26,17 @@ use Throwable;
  *       ]
  *     }
  *
- * A theme is either "builtin" (the storefront bundled with PN Shop) or ships a prebuilt
- * bundle in dist/ (a Vite build with manifest.json) that is published to
- * public/themes/<id>/build on activation. No Node is needed on the shop's server.
+ * Every theme ships a prebuilt bundle in dist/ (a Vite build with manifest.json) that is
+ * published under public/ (public/themes/<id>/build on activation). The built-in storefront
+ * ("builtin", only the one in the core package) lives in pn-shop-core's theme/ folder and is
+ * published to public/vendor/pnshop/build. No Node is needed on the shop's server.
  */
 final readonly class ThemeManifest
 {
     public const DEFAULT = 'pnshop/default';
+
+    /** Where the core's prebuilt storefront is published under public/. */
+    public const CORE_BUILD = 'vendor/pnshop/build';
 
     /**
      * @param  list<string>  $entries
@@ -130,7 +135,8 @@ final readonly class ThemeManifest
             name: (string) $string('name'),
             version: (string) $string('version'),
             path: rtrim($directory, '/'),
-            builtin: ($data['builtin'] ?? false) === true,
+            // Only the core package's own storefront can claim to be built in.
+            builtin: ($data['builtin'] ?? false) === true && realpath($directory) === realpath(PnShop::path('theme')),
             parent: $parent,
             description: $string('description'),
             pnshopConstraint: $constraint !== null ? (string) $constraint : null,
@@ -154,6 +160,6 @@ final readonly class ThemeManifest
     /** The bundle's folder under public/, for @vite(). */
     public function buildDirectory(): string
     {
-        return 'themes/'.$this->id.'/build';
+        return $this->builtin ? self::CORE_BUILD : 'themes/'.$this->id.'/build';
     }
 }

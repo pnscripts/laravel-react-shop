@@ -30,8 +30,10 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request): ?string
     {
         // A different theme bundle is a different asset version: browsers reload fully.
-        $theme = app(ThemeManager::class)->active();
-        $manifest = $theme->builtin ? null : public_path($theme->buildDirectory().'/manifest.json');
+        $themes = app(ThemeManager::class);
+        $theme = $themes->active();
+        $bundle = $themes->bundle($theme);
+        $manifest = $bundle !== null ? public_path($bundle.'/manifest.json') : null;
 
         return md5(parent::version($request).'|'.$theme->id.'|'.($manifest !== null && is_file($manifest) ? md5_file($manifest) : ''));
     }

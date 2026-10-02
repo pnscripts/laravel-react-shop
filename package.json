@@ -7,9 +7,10 @@
     "scripts": {
         "build": "vite build",
         "build:ssr": "vite build && vite build --ssr",
+        "build:core": "PNSHOP_CORE_DIST=1 vite build",
         "dev": "vite",
-        "format": "prettier --write resources/ themes/ scripts/",
-        "format:check": "prettier --check resources/ themes/ scripts/",
+        "format": "prettier --write packages/pn-shop-core/resources/ themes/ scripts/",
+        "format:check": "prettier --check packages/pn-shop-core/resources/ themes/ scripts/",
         "lint": "eslint . --fix",
         "lint:check": "eslint .",
         "types": "tsc --noEmit",

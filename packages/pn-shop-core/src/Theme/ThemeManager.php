@@ -37,11 +37,17 @@ class ThemeManager
      */
     public function discover(array &$invalid = []): Collection
     {
-        $themes = collect();
+        $themes = collect([ThemeManifest::DEFAULT => $this->builtin()]);
 
         foreach (glob(self::path().'/*/*', GLOB_ONLYDIR) ?: [] as $directory) {
             try {
                 $theme = ThemeManifest::fromDirectory($directory);
+
+                // The built-in storefront comes from the core package (a 1.0 install may still have its old folder).
+                if ($theme->id === ThemeManifest::DEFAULT) {
+                    continue;
+                }
+
                 $themes->put($theme->id, $theme);
             } catch (ExtensionException $e) {
                 $invalid[$directory] = $e->getMessage();
@@ -67,7 +73,7 @@ class ThemeManager
         $theme = $themes->get($id);
 
         if ($theme === null || $this->problems($theme, $themes) !== []) {
-            $theme = $themes->get(ThemeManifest::DEFAULT) ?? $this->builtinFallback();
+            $theme = $themes->get(ThemeManifest::DEFAULT) ?? $this->builtin();
         }
 
         return $this->active = $theme;
@@ -153,10 +159,13 @@ class ThemeManager
         return $theme;
     }
 
-    /** Copy the theme's prebuilt bundle to public/themes/<id>/build. */
+    /**
+     * Copy the theme's prebuilt bundle to public/ (public/themes/<id>/build, or
+     * public/vendor/pnshop/build for the built-in storefront when the core ships one).
+     */
     public function publish(ThemeManifest $theme): void
     {
-        if ($theme->builtin) {
+        if ($theme->builtin && ! is_file($theme->distPath().'/manifest.json')) {
             return;
         }
 
@@ -245,8 +254,31 @@ class ThemeManager
         return $luminance > 0.179 ? '#111111' : '#ffffff';
     }
 
-    private function builtinFallback(): ThemeManifest
+    /** The storefront that ships with the core package. */
+    public function builtin(): ThemeManifest
     {
-        return new ThemeManifest(ThemeManifest::DEFAULT, 'PN Shop Default', PnShop::VERSION, base_path('themes/pnshop/default'), true);
+        try {
+            return ThemeManifest::fromDirectory(PnShop::path('theme'));
+        } catch (ExtensionException) {
+            return new ThemeManifest(ThemeManifest::DEFAULT, 'PN Shop Default', PnShop::VERSION, PnShop::path('theme'), true);
+        }
+    }
+
+    /**
+     * The folder under public/ whose Vite manifest the storefront loads for the theme, or
+     * null for the project's own build (`npm run dev` / `npm run build`). The built-in
+     * storefront uses the project's build when there is one, otherwise the core's bundle.
+     */
+    public function bundle(ThemeManifest $theme): ?string
+    {
+        if (! $theme->builtin) {
+            return $theme->buildDirectory();
+        }
+
+        if (is_file(public_path('hot')) || is_file(public_path('build/manifest.json'))) {
+            return null;
+        }
+
+        return is_file(public_path(ThemeManifest::CORE_BUILD.'/manifest.json')) ? ThemeManifest::CORE_BUILD : null;
     }
 }

@@ -109,14 +109,14 @@
         "skipLibCheck": true /* Skip type checking all .d.ts files. */,
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./resources/js/*"],
+            "@/*": ["./packages/pn-shop-core/resources/js/*"],
             "ziggy-js": ["./vendor/tightenco/ziggy"]
         },
         "jsx": "react-jsx"
     },
     "include": [
-        "resources/js/**/*.ts",
-        "resources/js/**/*.d.ts",
-        "resources/js/**/*.tsx",
+        "packages/pn-shop-core/resources/js/**/*.ts",
+        "packages/pn-shop-core/resources/js/**/*.d.ts",
+        "packages/pn-shop-core/resources/js/**/*.tsx",
     ]
 }

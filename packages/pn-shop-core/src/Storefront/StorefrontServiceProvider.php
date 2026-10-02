@@ -29,6 +29,9 @@ class StorefrontServiceProvider extends ModuleServiceProvider
         $this->middleware();
         $this->rateLimits();
 
+        // The storefront's pages live in the package (the shop's resources/js/pages may add more).
+        config(['inertia.pages.paths' => array_values(array_unique([...(array) config('inertia.pages.paths', []), PnShop::path('resources/js/pages')]))]);
+
         Password::defaults(fn () => $this->app->isProduction()
             ? Password::min(10)->uncompromised()
             : Password::min(8));

@@ -28,3 +28,5 @@ yarn-error.log
 /public/fonts/filament
 /public/js/filament
 /themes/*/*/dist
+/packages/pn-shop-core/theme/dist
+/public/vendor/pnshop

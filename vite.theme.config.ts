@@ -4,7 +4,7 @@ import laravel from 'laravel-vite-plugin';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import { themeChain, themeOverrides } from './scripts/vite-theme-overrides';
+import { coreRoot, themeChain, themeOverrides } from './scripts/vite-theme-overrides';
 
 /**
  * Builds a theme into themes/<vendor>/<name>/dist: the whole storefront, with the theme's
@@ -13,6 +13,7 @@ import { themeChain, themeOverrides } from './scripts/vite-theme-overrides';
  *     npm run build:theme -- acme/aurora
  */
 const root = import.meta.dirname;
+const core = coreRoot(root);
 const themeId = process.env.PNSHOP_THEME ?? '';
 
 if (!themeId) {
@@ -24,8 +25,12 @@ const themeDirectory = resolve(root, 'themes', themeId);
 const manifest = JSON.parse(readFileSync(resolve(themeDirectory, 'pnshop.json'), 'utf8')) as { entries?: string[] };
 
 export default defineConfig({
+    // Entries and manifest keys stay "resources/js/app.tsx", wherever the core is installed.
+    root: core,
+    envDir: root,
+    publicDir: false,
     plugins: [
-        themeOverrides(root, chain),
+        themeOverrides(core, chain),
         laravel({
             input: manifest.entries ?? ['resources/css/app.css', 'resources/js/app.tsx'],
             // URLs point where the bundle is published (public/themes/<id>/build) ...

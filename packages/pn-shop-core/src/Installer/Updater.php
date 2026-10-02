@@ -155,6 +155,7 @@ class Updater
         $this->extensions->rebuildCache();
 
         $themes = app(ThemeManager::class);
+        $themes->publish($themes->builtin());
         $active = $themes->active();
 
         if (! $active->builtin) {

@@ -5,6 +5,7 @@ namespace Tests\Feature\Themes;
 use Illuminate\Support\Facades\File;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
+use PnShop\Foundation\PnShop;
 use PnShop\Settings\SettingDefinition;
 use PnShop\Settings\Settings;
 use PnShop\Settings\SettingsRegistry;
@@ -13,6 +14,7 @@ use PnShop\Settings\SettingType;
 use PnShop\Storefront\Http\Middleware\HandleInertiaRequests;
 use PnShop\Theme\Filament\Pages\ManageThemes;
 use PnShop\Theme\ThemeManager;
+use PnShop\Theme\ThemeManifest;
 use Tests\Feature\Admin\AdminTestCase;
 
 class ThemesTest extends AdminTestCase
@@ -25,7 +27,6 @@ class ThemesTest extends AdminTestCase
 
         $this->root = sys_get_temp_dir().'/pnshop-themes-'.bin2hex(random_bytes(4));
         File::copyDirectory(base_path('tests/Fixtures/themes'), $this->root.'/themes');
-        File::copyDirectory(base_path('themes/pnshop/default'), $this->root.'/themes/pnshop/default');
         File::ensureDirectoryExists($this->root.'/public');
 
         config(['pnshop.themes.path' => $this->root.'/themes']);
@@ -50,6 +51,41 @@ class ThemesTest extends AdminTestCase
         $this->assertStringContainsString('acme/missing is missing', implode(' ', $themes->problems($themes->find('acme/orphan'))));
         $this->assertSame([], $themes->problems($themes->find('acme/child')));
         $this->assertSame('pnshop/default', $themes->active()->id);
+    }
+
+    public function test_the_built_in_storefront_comes_from_the_core_package(): void
+    {
+        // A 1.0 install keeps its old themes/pnshop/default folder; another theme claims to be built in.
+        File::copyDirectory(PnShop::path('theme'), $this->root.'/themes/pnshop/default');
+        File::ensureDirectoryExists($this->root.'/themes/acme/impostor');
+        File::put($this->root.'/themes/acme/impostor/pnshop.json', (string) json_encode(['id' => 'acme/impostor', 'name' => 'Impostor', 'version' => '1.0.0', 'type' => 'theme', 'builtin' => true]));
+
+        $themes = app(ThemeManager::class)->discover();
+
+        $this->assertSame(PnShop::path('theme'), $themes->get('pnshop/default')?->path);
+        $this->assertTrue($themes->get('pnshop/default')?->builtin);
+        $this->assertFalse($themes->get('acme/impostor')?->builtin);
+        $this->assertSame('vendor/pnshop/build', $themes->get('pnshop/default')?->buildDirectory());
+    }
+
+    public function test_the_storefront_loads_the_core_bundle_unless_the_project_builds_its_own(): void
+    {
+        $themes = app(ThemeManager::class);
+        $default = $themes->builtin();
+        $this->withVite();
+
+        // The core's prebuilt bundle, published (as on install, update and composer update).
+        $shipped = new ThemeManifest(ThemeManifest::DEFAULT, 'PN Shop Default', '1.1.0', $this->root.'/core', true);
+        File::copyDirectory(base_path('tests/Fixtures/themes/acme/child/dist'), $this->root.'/core/dist');
+        $themes->publish($shipped);
+
+        $this->assertFileExists($this->root.'/public/vendor/pnshop/build/manifest.json');
+        $this->assertSame('vendor/pnshop/build', $themes->bundle($default));
+        $this->assertStringContainsString('/vendor/pnshop/build/assets/app-child.js', (string) $this->get('/')->assertOk()->getContent());
+
+        // npm run build in the project (developing the core or the storefront) wins.
+        File::copyDirectory($this->root.'/public/vendor/pnshop/build', $this->root.'/public/build');
+        $this->assertNull($themes->bundle($default));
     }
 
     public function test_activating_a_theme_publishes_it_and_the_storefront_loads_its_bundle(): void

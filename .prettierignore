@@ -1,5 +1,6 @@
-resources/js/components/ui/*
-resources/js/ziggy.js
-resources/views/mail/*
+packages/pn-shop-core/resources/js/components/ui/*
+packages/pn-shop-core/resources/js/ziggy.js
+packages/pn-shop-core/resources/views/mail/*
 themes/*/*/dist
 extensions/*/*/dist
+packages/pn-shop-core/theme/dist
