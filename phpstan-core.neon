@@ -6,7 +6,7 @@ parameters:
     stubFiles:
         - stubs/phpstan/kalnoy-nestedset.stub
     paths:
-        - core/
+        - packages/pn-shop-core/src/
         # Plugins shipped with PN Shop are held to the same standard.
         - extensions/pnshop/
         # Contract test kits in core/*/Testing are analysed through the tests that use them.

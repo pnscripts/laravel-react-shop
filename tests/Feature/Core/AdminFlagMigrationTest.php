@@ -24,7 +24,7 @@ class AdminFlagMigrationTest extends TestCase
             ['name' => 'Buyer', 'email' => 'buyer@example.com', 'password' => $hash, 'is_admin' => false],
         ]);
 
-        $migration = require base_path('core/Acl/database/migrations/2026_10_01_120000_move_admin_flag_users_to_admin_users.php');
+        $migration = require base_path('packages/pn-shop-core/src/Acl/database/migrations/2026_10_01_120000_move_admin_flag_users_to_admin_users.php');
         $migration->up();
 
         $admin = AdminUser::query()->sole();

@@ -22,7 +22,7 @@ class LegacyOrderTotalsTest extends TestCase
         $untouched = Order::factory()->create(['currency' => 'USD', 'subtotal' => '10.00', 'total' => '15.00', 'totals' => [['code' => 'shipping', 'label' => 'Courier', 'amount' => 500, 'included' => false]]]);
         $untouched->items()->create(['product_title' => 'New', 'quantity' => 1, 'currency' => 'USD', 'price' => '10.00']);
 
-        (require base_path('core/Sales/database/migrations/2026_10_05_150000_correct_backfilled_order_totals.php'))->up();
+        (require base_path('packages/pn-shop-core/src/Sales/database/migrations/2026_10_05_150000_correct_backfilled_order_totals.php'))->up();
 
         $order->refresh();
         $this->assertSame('40.00', (string) $order->total->getAmount());
