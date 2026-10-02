@@ -1,6 +1,6 @@
 # Publishing a release
 
-Status: **not set up yet.** Publishing creates public repositories and Packagist entries, so it waits for the owner's approval.
+Status: the read-only repositories [pnscripts/pn-shop-core](https://github.com/pnscripts/pn-shop-core) and [pnscripts/pn-shop](https://github.com/pnscripts/pn-shop) exist (2026-10-02). Packagist registration is done by the owner on packagist.org.
 
 This repository is the development repository. A release produces two Composer packages:
 
@@ -24,11 +24,23 @@ The script:
 3. Points the skeleton's tooling configs at `vendor/pnscripts/pn-shop-core`.
 4. Removes the path repository and the development-repository flag from the skeleton's `composer.json`.
 
-## Proposed publishing
+## Publishing
 
-1. **Repositories:** two read-only GitHub repositories, `pnscripts/pn-shop-core` and `pnscripts/pn-shop`, each holding one tree.
-2. **Workflow:** a release workflow on version tags (`v1.1.0`) runs `build-dist.sh`, commits each tree to its repository and pushes the same tag.
-3. **Packagist:** both repositories are registered there and update on push.
+From a clean checkout of the commit, after `npm ci` and `composer install`, with your own git credentials:
+
+```bash
+scripts/release/publish.sh            # update both repositories' main branches (Composer: dev-main)
+scripts/release/publish.sh v1.1.0     # a release: also tags both repositories
+```
+
+The script:
+
+1. Builds both trees with `build-dist.sh`.
+2. Replaces each repository's contents with its tree, and adds a read-only README and the LICENSE.
+3. Commits with a link to the source commit and pushes `main`.
+4. With a tag, it first checks that `PnShop::VERSION` matches, then pushes the tag to both repositories.
+
+No CI secrets are involved. Packagist picks up new tags through its GitHub integration once each repository is submitted there.
 
 ## Before tagging
 
