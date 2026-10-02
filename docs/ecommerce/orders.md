@@ -1,6 +1,6 @@
 # Orders
 
-Orders live in `core/Sales`. Customers see their orders under *Account → Orders*; staff manage them in Admin → Sales → Orders.
+Orders live in `PnShop\Sales`. Customers see their orders under *Account → Orders*; staff manage them in Admin → Sales → Orders.
 
 ## Order number
 

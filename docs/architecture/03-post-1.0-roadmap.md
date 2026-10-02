@@ -1,6 +1,6 @@
 # PN Shop after 1.0: roadmap proposal
 
-Status: **proposal, awaiting approval** (2026-10-02). Nothing here is built yet.
+Status: **approved** (2026-10-02), decisions P1–P5 as recommended. 1.1 is in progress.
 
 1.0 shipped everything in [02-platform-architecture-proposal.md](02-platform-architecture-proposal.md) §20 except the items it deferred. This document orders those deferred items, together with the follow-ups found while building and reviewing 1.0, into releases. Each phase keeps the 1.0 loop: implement, test (SQLite, MySQL, PostgreSQL), Larastan, lint, build, browser check, review, docs and upgrade notes.
 

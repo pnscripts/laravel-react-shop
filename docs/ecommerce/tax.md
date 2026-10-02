@@ -1,6 +1,6 @@
 # Tax
 
-Tax lives in `core/Tax`. Staff set it up in Admin → Store → *Tax classes* and *Tax zones*, and in Admin → Settings → Tax.
+Tax lives in `PnShop\Tax`. Staff set it up in Admin → Store → *Tax classes* and *Tax zones*, and in Admin → Settings → Tax.
 
 ## Classes, zones and rates
 

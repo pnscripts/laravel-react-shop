@@ -1,6 +1,6 @@
 # Search engines
 
-SEO lives in `core/Seo`. Its settings are in Admin → Settings → Search engines.
+SEO lives in `PnShop\Seo`. Its settings are in Admin → Settings → Search engines.
 
 ## What every page gets
 

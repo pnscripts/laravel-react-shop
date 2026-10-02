@@ -55,7 +55,7 @@ class MigrateToPackageCommand extends Command
         $target = $migration->run(now()->format('Y-m-d-His'));
 
         if ($target !== null) {
-            $this->line("Moved files and the old composer.json are in {$target}.");
+            $this->line("Moved files are in {$target}".($plan['composer'] !== [] ? ', with a copy of the old composer.json.' : '.'));
         }
 
         if ($plan['composer'] !== []) {

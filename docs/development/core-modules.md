@@ -1,12 +1,23 @@
 # Core modules and the extension kernel
 
-PN Shop's platform code lives in `core/` under the `PnShop\` namespace. `app/` remains the merchant's application space: HTTP controllers, the customer `User` model and the starter-kit auth screens.
+PN Shop's platform code is the Composer package `pnscripts/pn-shop-core` (namespace `PnShop\`). In this repository it lives in `packages/pn-shop-core`, which Composer links into `vendor/` through a path repository; shops install it from Packagist. `app/` is the merchant's application space: the customer `User` model (it extends `PnShop\Customer\Models\User`), their own providers, routes and code.
 
 ## Layout
 
 ```
-core/
-├── Foundation/              PnShop (version), PnShopServiceProvider, ModuleServiceProvider
+packages/pn-shop-core/
+├── composer.json            the package; registers PnShopServiceProvider through package discovery
+├── config/pnshop.php        defaults, merged under the shop's config/pnshop.php
+├── database/                base migrations (customers, cache, queue, the original catalog and orders) and seeders
+├── lang/                    interface translations (bg.json)
+├── resources/               the storefront: js/ (React pages, components), css/, views/ (root template, invoices)
+├── routes/                  the storefront's routes (web, auth, account settings)
+├── theme/                   the built-in theme's manifest; dist/ holds the prebuilt storefront in releases
+├── storefront-sdk/          @pnshop/storefront-sdk for plugin authors
+└── src/                     the modules:
+
+src/
+├── Foundation/              PnShop (version, module list), PnShopServiceProvider, ModuleServiceProvider
 │   └── Extension/           Permission, PermissionRegistry, PipelineRegistry
 ├── Settings/                typed, cached settings + admin page
 ├── Localization/            languages, currencies, countries, localized URLs, Translatable
@@ -30,19 +41,22 @@ core/
 ├── Extension/               plugin manifest, discovery, lifecycle (ExtensionManager), boot loader, integrity, zip uploads
 ├── Theme/                   theme manifests, active theme and fallback, publishing, settings as CSS variables
 ├── Api/                     Store API and Admin API (Sanctum tokens, problem+json, idempotency, rate limits, OpenAPI)
-├── Installer/               pnshop:install, web installer (/install), pnshop:update, backups, system_versions
+├── Installer/               pnshop:install, web installer (/install), pnshop:update, pnshop:migrate-to-package, backups
+├── Storefront/              storefront controllers, middleware, form requests, rate limits, route loading
 └── Admin/                   the Filament panel (/admin)
 ```
 
-Modules are listed, in boot order, in `config/pnshop.php`. `PnShopServiceProvider` (registered in `bootstrap/providers.php`) registers the kernel singletons and then every module.
+Modules are listed, in boot order, in `PnShop::MODULES`: they belong to the package, so a module added by an update loads without configuration changes. A shop adds its own module providers with `extra_modules` in `config/pnshop.php`. `PnShopServiceProvider` (found by Laravel's package discovery) registers the kernel singletons and then every module.
+
+The shop's own `routes/web.php` loads after the storefront's routes and before the CMS page fallback, so merchants can add routes there.
 
 A module provider extends `PnShop\Foundation\ModuleServiceProvider`, which:
 
-- loads `core/<Module>/database/migrations` automatically;
+- loads `src/<Module>/database/migrations` automatically;
 - registers the module's `permissions()` with the permission registry;
 - calls `bootModule()` for anything else (policies, settings schemas, listeners).
 
-Admin screens are discovered from `core/<Module>/Filament/{Resources,Pages,Widgets}`. A module needs no panel changes to add screens.
+Admin screens are discovered from `src/<Module>/Filament/{Resources,Pages,Widgets}`. A module needs no panel changes to add screens.
 
 ## Extension kernel
 
@@ -100,7 +114,14 @@ app(\PnShop\Settings\Settings::class)->set('plugin.acme.seo', ['enabled' => fals
 
 ## Static analysis
 
-- `core/` is analysed at Larastan level 7 (`phpstan-core.neon`).
-- The legacy `app/` code stays at level 5 (`phpstan.neon`) until it is replaced.
+- The core package is analysed at Larastan level 7 (`phpstan-core.neon`).
+- The shop's own code (`app/`, `extensions/`) is analysed at level 5 (`phpstan.neon`).
+
+## The storefront build
+
+- **Source:** the storefront's source is in the package (`resources/js`, `resources/css`). Vite builds it with the package as its root, so entries stay `resources/js/app.tsx` wherever the core is installed.
+- **Developing:** `npm run dev` and `npm run build` write the project's own `public/build`, which the storefront prefers whenever it exists.
+- **Releases:** `npm run build:core` writes the prebuilt storefront to `theme/dist` in the package. It is published to `public/vendor/pnshop/build` by `composer update` (the `laravel-assets` tag), `pnshop:install` and `pnshop:update`.
+- **Release trees:** `scripts/release/build-dist.sh <dir>` builds the package and the `pnscripts/pn-shop` skeleton from a commit.
 
 CI runs both.

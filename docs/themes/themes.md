@@ -1,6 +1,6 @@
 # Themes
 
-A theme decides how the storefront looks and behaves in the browser. The admin (Filament) is not themed. Themes live in `core/Theme` (manager) and `themes/<vendor>/<name>/`.
+A theme decides how the storefront looks and behaves in the browser. The admin (Filament) is not themed. Themes live in `PnShop\Theme` (manager) and `themes/<vendor>/<name>/`.
 
 Staff with **appearance.themes.manage** choose the theme in Admin → Appearance → Themes and adjust its settings under *Customize*.
 
@@ -30,7 +30,7 @@ themes/acme/aurora/
 }
 ```
 
-- **The default theme:** `pnshop/default` is the storefront that ships in `resources/` (`"builtin": true`).
+- **The default theme:** `pnshop/default` is the storefront that ships with the core package (`resources/` and `theme/` in `pnscripts/pn-shop-core`). It comes prebuilt and is published to `public/vendor/pnshop/build`. Only the core's own theme can be `"builtin": true`.
 - **Your own theme:** every other theme ships its own prebuilt bundle in `dist/`. Shops never run Node.
 - **Activation:**
   - activating a theme copies `dist/` to `public/themes/<id>/build`;
@@ -49,7 +49,9 @@ themes/acme/aurora/
 
 ## Building a theme (override by path)
 
-A theme only contains the files it changes. Any `themes/<id>/resources/<path>` replaces `resources/<path>` of the storefront; everything else comes from the parent, and in the end from the default theme. Relative imports inside a theme file fall back to the storefront's files.
+A theme only contains the files it changes. Any `themes/<id>/resources/<path>` replaces `resources/<path>` of the storefront (in `vendor/pnscripts/pn-shop-core`); everything else comes from the parent, and in the end from the default theme. Relative imports inside a theme file fall back to the storefront's files, and Tailwind picks up the classes used in the theme's files.
+
+Building needs Node and the project's `npm ci`, on your own machine or in CI. Rebuild your theme after core updates that change the storefront.
 
 ```bash
 npm run build:theme -- acme/aurora      # writes themes/acme/aurora/dist
@@ -58,7 +60,7 @@ php artisan pnshop:theme list
 php artisan pnshop:theme publish acme/aurora   # copy dist/ again after a rebuild
 ```
 
-- **Same props:** pages and components must keep the props of the files they replace. The page keys and props are the same for every theme: `home`, `shop/index`, `shop/show`, `cart/index`, `checkout/index`, `orders/show`, `cms/page`, `account/*`, `auth/*` and `settings/*`. Their TypeScript types are in `resources/js/types`.
+- **Same props:** pages and components must keep the props of the files they replace. The page keys and props are the same for every theme: `home`, `shop/index`, `shop/show`, `cart/index`, `checkout/index`, `orders/show`, `cms/page`, `account/*`, `auth/*` and `settings/*`. Their TypeScript types are in the core's `resources/js/types`.
 - **Example:** `themes/pnshop/aurora` replaces only the product card and sets its own colour and corners.
 - **Server-side rendering:** SSR renders the built-in bundle, so it is switched off while another theme is active.
 

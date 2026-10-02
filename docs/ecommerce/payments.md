@@ -1,6 +1,6 @@
 # Payments
 
-Payments live in `core/Payment`. Staff manage payment methods in Admin → Store → Payment methods, and see each order's payments on its *Payments* tab.
+Payments live in `PnShop\Payment`. Staff manage payment methods in Admin → Store → Payment methods, and see each order's payments on its *Payments* tab.
 
 ## Payment methods and gateways
 

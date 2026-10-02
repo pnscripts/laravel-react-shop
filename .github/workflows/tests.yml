@@ -128,3 +128,58 @@ jobs:
 
       - name: Tests
         run: ./vendor/bin/phpunit
+
+  package:
+    runs-on: ubuntu-latest
+
+    name: release trees and create-project
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: |
+          npm ci
+          composer install --no-interaction --prefer-dist
+
+      - name: Build the core package and the skeleton
+        run: scripts/release/build-dist.sh "$RUNNER_TEMP/dist"
+
+      # Local tagged repositories stand in for GitHub and Packagist.
+      - name: composer create-project from the release trees
+        run: |
+          version=$(sed -n "s/.*VERSION = '\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p" packages/pn-shop-core/src/Foundation/PnShop.php)
+          for package in pn-shop-core pn-shop; do
+            git -C "$RUNNER_TEMP/dist/$package" init -q -b main
+            git -C "$RUNNER_TEMP/dist/$package" add -A
+            git -C "$RUNNER_TEMP/dist/$package" -c user.name=ci -c user.email=ci@example.test commit -qm "$version"
+            git -C "$RUNNER_TEMP/dist/$package" tag "v$version"
+          done
+          export COMPOSER_HOME="$RUNNER_TEMP/composer-home"
+          mkdir -p "$COMPOSER_HOME"
+          echo "{\"repositories\": [{\"type\": \"vcs\", \"url\": \"$RUNNER_TEMP/dist/pn-shop-core\"}, {\"type\": \"vcs\", \"url\": \"$RUNNER_TEMP/dist/pn-shop\"}]}" > "$COMPOSER_HOME/config.json"
+          composer create-project pnscripts/pn-shop "$RUNNER_TEMP/shop" "$version" --no-interaction --prefer-dist
+
+      - name: Install the shop without Node
+        working-directory: ${{ runner.temp }}/shop
+        run: |
+          test -f public/vendor/pnshop/build/manifest.json
+          test ! -d packages
+          php artisan pnshop:install --no-interaction --app-url=http://localhost --store-name=CI --store-email=ci@example.test \
+            --admin-name=CI --admin-email=ci@example.test --generate-password > /dev/null
+          php artisan about --only=pn_shop
+          php artisan pnshop:update --dry-run

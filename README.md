@@ -38,7 +38,7 @@ This is **not** a full marketplace. Card payments come through the included Stri
   - **Store API** (`/api/store/v1`) for headless storefronts and apps: catalog, pages, menus, cart, idempotent checkout, customer accounts.
   - **Admin API** (`/api/admin/v1`) for integrations: staff tokens limited to chosen permissions.
 - Installer (`php artisan pnshop:install` or the web installer at `/install`) and updater (`php artisan pnshop:update` with dry run, backup and plugin compatibility checks); tested on SQLite and MySQL 8
-- Platform modules in `core/` (catalog, inventory, media, customers, cart, localization, money, settings, staff ACL); see [docs/development/core-modules.md](docs/development/core-modules.md)
+- The core as the Composer package `pnscripts/pn-shop-core` (in this repository: `packages/pn-shop-core`), with the storefront prebuilt; shops are thin `pnscripts/pn-shop` projects updated with `composer update` and `php artisan pnshop:update`. See [docs/development/core-modules.md](docs/development/core-modules.md)
 - English and Bulgarian storefront with a language switcher, localized URLs (`/bg/...`) and translatable catalog content
 - Built-in payment gateways are manual (cash on delivery, bank transfer); card gateways come as extensions
 - PHPUnit feature/unit tests for models, cart, shop flow, and admin access
@@ -61,6 +61,16 @@ Multi-store and sales channels in the admin, multi-location inventory screens, B
 
 ## Install
 
+A shop (from 1.1, once `pnscripts/pn-shop` and `pnscripts/pn-shop-core` are published):
+
+```bash
+composer create-project pnscripts/pn-shop shop
+cd shop
+php artisan pnshop:install
+```
+
+From this repository (developing PN Shop itself; the core comes from `packages/pn-shop-core`):
+
 ```bash
 git clone git@github.com:pnscripts/laravel-react-shop.git shop
 cd shop
@@ -68,6 +78,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan pnshop:install
+npm ci && npm run build
 ```
 
 The installer checks the server, sets up the database (SQLite by default, or `--db-connection=mysql …`), creates the tables, store settings and the **first administrator**. There are no default accounts. Without SSH, open the site in a browser to use the same installer at `/install`. See [docs/installation/installation.md](docs/installation/installation.md). Updates: `php artisan pnshop:update` ([docs/installation/updating.md](docs/installation/updating.md)).

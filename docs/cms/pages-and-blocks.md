@@ -1,6 +1,6 @@
 # Pages and content blocks
 
-The CMS lives in `core/Cms`. Staff manage pages in Admin → Content → Pages.
+The CMS lives in `PnShop\Cms`. Staff manage pages in Admin → Content → Pages.
 
 ## Pages
 

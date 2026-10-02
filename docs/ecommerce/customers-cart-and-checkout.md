@@ -1,6 +1,6 @@
 # Customers, cart and checkout
 
-Customer code lives in `core/Customer`, the cart in `core/Cart` (`ShoppingCartService`), checkout in `core/Sales/Checkout` and form protection in `core/Security`.
+Customer code lives in `PnShop\Customer`, the cart in `PnShop\Cart` (`ShoppingCartService`), checkout in `PnShop\Sales\Checkout` and form protection in `PnShop\Security`.
 
 ## Customers
 
@@ -76,7 +76,7 @@ Signed-in customers can save a new address to their address book. It is not save
 
 ## Spam protection
 
-The `bot-trap` route middleware (`core/Security`) protects checkout and registration:
+The `bot-trap` route middleware (`PnShop\Security`) protects checkout and registration:
 
 - **Honeypot:** a hidden `contact_website` field that people never see and bots fill in.
 - **Time trap:** `form_started` is an encrypted timestamp issued with the page. Submissions under `pnshop.security.bot_trap.min_seconds` (default 2), older than 24 hours, or without the timestamp are refused with a friendly message.

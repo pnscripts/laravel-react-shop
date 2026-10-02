@@ -4,3 +4,4 @@ packages/pn-shop-core/resources/views/mail/*
 themes/*/*/dist
 extensions/*/*/dist
 packages/pn-shop-core/theme/dist
+packages/pn-shop-core/resources/upgrade/*.json

@@ -1,6 +1,6 @@
 # Shipping
 
-Shipping lives in `core/Shipping`. Staff set it up in Admin → Store → *Shipping zones* and *Shipping methods*, and ship orders from the order page.
+Shipping lives in `PnShop\Shipping`. Staff set it up in Admin → Store → *Shipping zones* and *Shipping methods*, and ship orders from the order page.
 
 ## Zones
 

@@ -2,6 +2,22 @@
 
 All notable changes to PN Shop. The project follows [semantic versioning](https://semver.org/): breaking changes to plugin and theme contracts come only in major versions and are announced one minor version ahead.
 
+## 1.1.0 (unreleased)
+
+The core becomes a Composer package, so shops update with `composer update` and `php artisan pnshop:update`. The database does not change. See the [upgrade notes](docs/upgrades/2026-10-release-1.1.md).
+
+### Platform
+
+- **Core package:** `pnscripts/pn-shop-core` holds the modules, the storefront (controllers, routes, React source, the prebuilt bundle), the base migrations, seeders, views and translations. The shop project (`pnscripts/pn-shop`) keeps only the merchant's own code, configuration, plugins and themes.
+- **Migration:** `php artisan pnshop:migrate-to-package` moves a 1.0 shop onto the package. It sets the old in-project files aside (it never deletes them), lists the ones the merchant changed, and checks the wiring.
+- **Update checks:** `pnshop:update` refuses to run against a newer database or a `composer.lock` that disagrees with `vendor/`.
+- **Prebuilt storefront:** the default storefront ships prebuilt in the package and is published on install, update and `composer update`. Shops need no Node.
+
+### Fixes
+
+- **`composer create-project`:** it no longer stops at a production `migrate` prompt.
+- **Static analysis:** the storefront controllers pass Larastan level 7.
+
 ## 1.0.0
 
 The first release of PN Shop as a platform: a self-hosted CMS and e-commerce system built on Laravel 13, React 19 and Inertia 3, which grew out of the Laravel React shop starter. Upgrade notes for each step are in [docs/upgrades](docs/upgrades/).

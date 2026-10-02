@@ -18,6 +18,10 @@ cd shop
 php artisan pnshop:install
 ```
 
+The project is a thin skeleton: the core comes from the Composer package `pnscripts/pn-shop-core` (in `vendor/`), with its storefront prebuilt, so no Node is needed. Your own code, configuration, plugins (`extensions/`) and themes (`themes/`) live in the project. Updates come through Composer; see [Updating](updating.md).
+
+A git clone of the PN Shop repository also works. It is meant for developing PN Shop itself: the core comes from `packages/pn-shop-core`, and the storefront is built with `npm ci && npm run build`.
+
 The command does the following:
 
 1. Checks the server.

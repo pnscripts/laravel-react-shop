@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins add features without changing PN Shop's own code. The extension manager lives in `core/Extension`. Staff with **system.extensions.manage** manage plugins in Admin → Extensions; the same actions exist on the command line.
+Plugins add features without changing PN Shop's own code. The extension manager lives in `PnShop\Extension`. Staff with **system.extensions.manage** manage plugins in Admin → Extensions; the same actions exist on the command line.
 
 > **Trust.** A plugin is PHP code that runs with full access to the shop, its database and its files, as in OpenCart, PrestaShop or WordPress. PN Shop cannot sandbox it. Install only plugins from people you trust. Signatures (below) prove who published a plugin and that it was not changed; they say nothing about whether the code is safe.
 
@@ -106,7 +106,7 @@ A plugin can add UI to the storefront with a prebuilt ES module, declared as `"s
 - **Loading:** on enable or update the file's folder is published to `public/extensions/<id>/`, and the module is loaded on every storefront page after the app, with the plugin version as cache buster.
 - **What it uses:** the module uses the shop's own React and Inertia through `window.PnShop`.
 - **Without a bundler:** see `extensions/pnshop/handling-fee/storefront/storefront.js`.
-- **With a bundler:** alias React and Inertia to `@pnshop/storefront-sdk` (`packages/storefront-sdk`).
+- **With a bundler:** alias React and Inertia to `@pnshop/storefront-sdk` (`storefront-sdk/` in the core package: `vendor/pnscripts/pn-shop-core/storefront-sdk`).
 
 ```js
 window.PnShop.registerSlot('cart.after_totals', ({ cart }) => …);   // add UI to a named slot
@@ -190,4 +190,4 @@ Loaded from the plugin folder when present:
   - the invoice renderer (`InvoiceRenderer`) and the CAPTCHA verifier (`CaptchaVerifier`);
   - events: `OrderPlaced`, `OrderStateChanged`, `ShipmentCreated` and `RefundCompleted`.
 - **Overriding core:** plugins should use these extension points and never patch or override core classes.
-- **Testing:** test your gateway or carrier with the contract test kits in `core/Payment/Testing` and `core/Shipping/Testing`.
+- **Testing:** test your gateway or carrier with the contract test kits in `PnShop\Payment\Testing` and `PnShop\Shipping\Testing`.

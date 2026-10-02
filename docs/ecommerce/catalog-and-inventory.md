@@ -1,6 +1,6 @@
 # Catalog and inventory
 
-Everything below lives in `core/Catalog`, `core/Inventory` and `core/Media`.
+Everything below lives in `PnShop\Catalog`, `PnShop\Inventory` and `PnShop\Media`.
 
 ## Products and variants
 
