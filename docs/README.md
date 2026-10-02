@@ -1,6 +1,6 @@
 # PN Shop documentation
 
-Architecture approved 2026-10-01. Phases 0–13 are implemented (1.0). The post-1.0 roadmap was approved on 2026-10-02, and 1.1 (the core as a Composer package) is in progress. The documents below record the plan, research and what has shipped.
+Architecture approved 2026-10-01. Phases 0–13 are implemented (1.0). The post-1.0 roadmap was approved on 2026-10-02, and 1.1 (the core as a Composer package) was released on 2026-10-02. The documents below record the plan, research and what has shipped.
 
 | Document | Purpose |
 |---|---|

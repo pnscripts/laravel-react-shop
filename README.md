@@ -61,7 +61,7 @@ Multi-store and sales channels in the admin, multi-location inventory screens, B
 
 ## Install
 
-A shop (from 1.1, once `pnscripts/pn-shop` and `pnscripts/pn-shop-core` are published):
+A shop:
 
 ```bash
 composer create-project pnscripts/pn-shop shop
