@@ -29,7 +29,7 @@ class PackageMigration
     /**
      * @param  string|null  $shippedFiles  JSON list of the files 1.0 shipped (path => sha256)
      */
-    public function __construct(private string $root, private ?string $shippedFiles = null) {}
+    public function __construct(private string $root, private ?string $shippedFiles = null, private bool $leaveRepository = false) {}
 
     /**
      * What the migration would change.
@@ -40,8 +40,8 @@ class PackageMigration
     {
         $composer = $this->composer();
 
-        if (($composer['extra']['pnshop']['monorepo'] ?? false) === true) {
-            throw new RuntimeException('This is the PN Shop development repository: its core stays in '.self::LOCAL_PACKAGE.'.');
+        if (($composer['extra']['pnshop']['monorepo'] ?? false) === true && ! $this->leaveRepository) {
+            throw new RuntimeException('This is the PN Shop repository (a git clone), whose core stays in '.self::LOCAL_PACKAGE.'. To run the shop on the published package instead (and stop pulling from the repository), use --leave-repository.');
         }
 
         return [
@@ -112,6 +112,15 @@ class PackageMigration
         if (($composer['require'][PnShop::PACKAGE] ?? null) !== $constraint) {
             $composer['require'][PnShop::PACKAGE] = $constraint;
             $changes[] = 'require '.PnShop::PACKAGE." {$constraint}";
+        }
+
+        if (isset($composer['extra']['pnshop'])) {
+            unset($composer['extra']['pnshop']);
+            $changes[] = 'stop treating the project as the PN Shop repository';
+
+            if ($composer['extra'] === []) {
+                unset($composer['extra']);
+            }
         }
 
         $repositories = [];

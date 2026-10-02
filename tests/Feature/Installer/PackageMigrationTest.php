@@ -94,8 +94,16 @@ class PackageMigrationTest extends TestCase
         $composer['extra']['pnshop']['monorepo'] = true;
         File::put($this->root.'/composer.json', (string) json_encode($composer));
 
-        $this->expectException(RuntimeException::class);
-        $this->migration()->plan();
+        try {
+            $this->migration()->plan();
+            $this->fail('The repository was migrated.');
+        } catch (RuntimeException $e) {
+            $this->assertStringContainsString('--leave-repository', $e->getMessage());
+        }
+
+        // A shop that cloned the repository can still leave it.
+        $plan = (new PackageMigration($this->root, $this->root.'/shipped.json', leaveRepository: true))->plan();
+        $this->assertContains('stop treating the project as the PN Shop repository', $plan['composer']);
     }
 
     public function test_the_shipped_list_covers_the_1_0_core_and_storefront(): void
@@ -112,7 +120,7 @@ class PackageMigrationTest extends TestCase
     public function test_the_command_refuses_in_the_development_repository(): void
     {
         $this->artisan('pnshop:migrate-to-package', ['--dry-run' => true])
-            ->expectsOutputToContain('development repository')
+            ->expectsOutputToContain('--leave-repository')
             ->assertFailed();
     }
 }

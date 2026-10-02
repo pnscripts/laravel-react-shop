@@ -11,13 +11,14 @@ class MigrateToPackageCommand extends Command
 {
     protected $signature = 'pnshop:migrate-to-package
         {--dry-run : Only show what would change}
+        {--leave-repository : In a git clone of PN Shop: switch to the published package anyway}
         {--force : Do not ask for confirmation}';
 
     protected $description = 'Move this shop onto the published pnscripts/pn-shop-core package and set aside the files PN Shop 1.0 kept in the project (the database is not touched)';
 
     public function handle(): int
     {
-        $migration = new PackageMigration(base_path());
+        $migration = new PackageMigration(base_path(), leaveRepository: (bool) $this->option('leave-repository'));
 
         try {
             $plan = $migration->plan();
