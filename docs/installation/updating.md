@@ -4,9 +4,12 @@ An update has two parts: replace the code, then let PN Shop update the database 
 
 ```bash
 php artisan pnshop:update --dry-run      # what will happen; changes nothing
-composer update pnscripts/pn-shop-core   # or unpack the new release over the old files (keep .env and storage/)
+git pull --ff-only && composer install --no-dev --optimize-autoloader
 php artisan pnshop:update
 ```
+
+- **With a release archive:** instead of `git pull`, unpack it over the old files, keeping `.env`, `storage/` and your `extensions/` and `themes/`.
+- **Composer package:** the core is not a separate Composer package yet. `pnscripts/pn-shop-core` is planned, so that updates can come through `composer update`.
 
 ## Checking first
 

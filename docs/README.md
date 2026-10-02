@@ -6,6 +6,7 @@ Architecture approved 2026-10-01. Phases 0–13 are implemented (1.0); the docum
 |---|---|
 | [architecture/01-discovery-and-gap-analysis.md](architecture/01-discovery-and-gap-analysis.md) | What exists today, what is missing, what to keep, improve or replace |
 | [architecture/02-platform-architecture-proposal.md](architecture/02-platform-architecture-proposal.md) | Target architecture, decisions D1–D7, implementation phases (approval checkpoint) |
+| [architecture/03-post-1.0-roadmap.md](architecture/03-post-1.0-roadmap.md) | Proposal: releases after 1.0 (core package, pricing/B2B, locations, channels, returns+), awaiting approval |
 | [research/platform-comparison.md](research/platform-comparison.md) | OpenCart, PrestaShop, WooCommerce, Shopware, Magento, Bagisto, Lunar: architecture research |
 | [research/version-modernization.md](research/version-modernization.md) | Current vs latest stable versions, audits, upgrade plan |
 | [research/security-performance-audit.md](research/security-performance-audit.md) | Security and performance findings with file:line and fixes |
