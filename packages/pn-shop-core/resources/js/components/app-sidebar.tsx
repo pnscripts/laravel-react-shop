@@ -33,7 +33,7 @@ const mainNavItems: NavItem[] = [
 const footerNavItems: NavItem[] = [
     {
         title: 'Repository',
-        href: 'https://github.com/pnscripts/laravel-react-shop',
+        href: 'https://github.com/pnscripts/pn-shop-source',
         icon: Folder,
     },
     {

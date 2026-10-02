@@ -1,6 +1,6 @@
-# PN Shop (laravel-react-shop) — Version Modernization Analysis
+# PN Shop (pn-shop-source) — Version Modernization Analysis
 
-Date: 2026-10-01. Repo: `DEV/Projects/pnscripts/products/laravel-react-shop` (branch `main` only; no `develop` branch exists locally or on origin).
+Date: 2026-10-01. Repo: `DEV/Projects/pnscripts/products/pn-shop` (branch `main` only; no `develop` branch exists locally or on origin).
 Method: read-only. `composer show/outdated/audit`, `npm ls/outdated/audit`, Packagist p2 API, `npm view`, GitHub raw/API for `laravel/react-starter-kit@main`, official docs/blogs. Nothing in the repo was modified; `.env` not read.
 
 Legend: **[V]** verified from registry/official source today; **[U]** unverified / inferred.

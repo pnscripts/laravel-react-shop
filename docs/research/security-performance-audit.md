@@ -1,9 +1,9 @@
-# PN Shop (laravel-react-shop): security and performance audit
+# PN Shop (pn-shop-source): security and performance audit
 
 - Date: 2026-10-01
 - Scope: `app/`, `routes/`, `bootstrap/`, `config/{auth,session,app,telescope,filesystems,inertia}`, `database/{migrations,seeders,factories}`, `resources/views`, `resources/js` (pages/components), `public/.htaccess`, `public/build`, `.github/workflows`
 - Mode: read-only. No repository files were modified. `.env` was checked only for key names.
-- Paths below are relative to `/media/petar/c8fc2986-4b79-4d7b-9a8c-e6db653915ac/DEV/Projects/pnscripts/products/laravel-react-shop`.
+- Paths below are relative to `/media/petar/c8fc2986-4b79-4d7b-9a8c-e6db653915ac/DEV/Projects/pnscripts/products/pn-shop`.
 
 ## Results of the commands that were run
 

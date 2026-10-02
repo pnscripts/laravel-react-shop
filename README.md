@@ -1,5 +1,7 @@
 # PN Shop
 
+PN Shop is a [PN Scripts](https://pnscripts.com) product ([product page](https://pnscripts.com/products/pn-shop)). This is its source repository, `pnscripts/pn-shop-source`; releases are published to [`pnscripts/pn-shop`](https://github.com/pnscripts/pn-shop) (project skeleton) and [`pnscripts/pn-shop-core`](https://github.com/pnscripts/pn-shop-core) (core package).
+
 An open-source **Laravel 13 + React/Inertia** e-commerce application, on its way to a full CMS and e-commerce platform. See [docs/](docs/README.md) for the architecture and roadmap.
 
 Today it is a working shop: catalog with variants, a database cart, guest or authenticated checkout with structured addresses, customer accounts with address books, and a Filament admin.
@@ -72,7 +74,7 @@ php artisan pnshop:install
 From this repository (developing PN Shop itself; the core comes from `packages/pn-shop-core`):
 
 ```bash
-git clone git@github.com:pnscripts/laravel-react-shop.git shop
+git clone git@github.com:pnscripts/pn-shop-source.git shop
 cd shop
 composer install
 cp .env.example .env

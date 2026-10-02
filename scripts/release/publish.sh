@@ -55,16 +55,16 @@ publish() {
 
 $about
 
-**This repository is read-only.** It is published from [pnscripts/laravel-react-shop](https://github.com/pnscripts/laravel-react-shop) (\`scripts/release/publish.sh\`); send issues and pull requests there.
+**This repository is read-only.** It is published from [pnscripts/pn-shop-source](https://github.com/pnscripts/pn-shop-source) (\`scripts/release/publish.sh\`); send issues and pull requests there.
 
-Documentation: <https://github.com/pnscripts/laravel-react-shop/tree/main/docs>
+Documentation: <https://github.com/pnscripts/pn-shop-source/tree/main/docs>
 EOF
 
     git -C "$checkout" add -A
     if git -C "$checkout" diff --cached --quiet; then
         echo "$name: no changes."
     else
-        git -C "$checkout" commit -qm "Publish laravel-react-shop@${commit:0:7}${tag:+ ($tag)}" -m "Source: https://github.com/pnscripts/laravel-react-shop/commit/$commit"
+        git -C "$checkout" commit -qm "Publish pn-shop-source@${commit:0:7}${tag:+ ($tag)}" -m "Source: https://github.com/pnscripts/pn-shop-source/commit/$commit"
     fi
 
     git -C "$checkout" push -q origin main

@@ -5,7 +5,7 @@ Companion documents: [02-platform-architecture-proposal.md](02-platform-architec
 
 ## 1. What PN Shop is today
 
-The repository `pnscripts/laravel-react-shop` (product page `pnscripts.com/products/pn-shop`) is the official Laravel React starter kit with a working shop MVP added on top. About 11k lines including the shadcn UI kit; 21 commits; last change upgraded Laravel 12 → 13.
+The repository `pnscripts/pn-shop-source` (formerly `pnscripts/laravel-react-shop`) (product page `pnscripts.com/products/pn-shop`) is the official Laravel React starter kit with a working shop MVP added on top. About 11k lines including the shadcn UI kit; 21 commits; last change upgraded Laravel 12 → 13.
 
 ### 1.1 Technology (locked versions)
 

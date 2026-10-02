@@ -4816,7 +4816,7 @@
                 }
             ],
             "description": "The PN Shop platform core: catalog, cart, checkout, orders, payments, shipping, tax, CMS, SEO, promotions, returns, plugins, themes, APIs and the installer.",
-            "homepage": "https://github.com/pnscripts/laravel-react-shop",
+            "homepage": "https://github.com/pnscripts/pn-shop-source",
             "keywords": [
                 "cms",
                 "e-commerce",
