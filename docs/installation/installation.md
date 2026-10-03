@@ -72,11 +72,12 @@ A shop that already has staff accounts counts as installed. Its first `php artis
 
 ## After installing
 
-- **Scheduler:** add `* * * * * cd /path/to/shop && php artisan schedule:run >> /dev/null 2>&1` to cron. It publishes scheduled pages, prunes old carts and builds sitemaps.
+- **Scheduler:** add `* * * * * cd /path/to/shop && php artisan schedule:run >> /dev/null 2>&1` to cron. It cancels orders left unpaid (hourly) and removes abandoned carts (daily). Scheduled pages and sitemaps need no job.
 - **Queue worker:** run `php artisan queue:work`, kept running by Supervisor or systemd. It sends emails and makes image sizes.
 - **Mail:** set `MAIL_*` in `.env`, then the store email under Admin → Settings.
 - **Payment, shipping and tax:** set them up under Admin → Store.
 - **Production `.env`:** use `APP_ENV=production` and `APP_DEBUG=false`. After every deploy, run `php artisan optimize`.
+- **Going live:** see [deployment](deployment.md) for the web server, the worker, backups and the checklist.
 
 ## Starting over
 

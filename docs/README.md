@@ -8,6 +8,8 @@ PN Shop is a self-hosted CMS and e-commerce platform by PN Scripts. These docume
 |---|---|
 | [installation/installation.md](installation/installation.md) | Installing: requirements, `pnshop:install`, the web installer, after installing |
 | [installation/updating.md](installation/updating.md) | Updating: `composer update` + `pnshop:update`, from 1.0 to 1.1, dry run, backups, plugin compatibility |
+| [installation/deployment.md](installation/deployment.md) | Running a shop on a server: web server, cron, queue worker, caches, backups, go-live checklist |
+| [administration/settings.md](administration/settings.md) | Every setting in Admin → System → Settings, with its default |
 | [security/security.md](security/security.md) | Security model, hardening, production checklist |
 | [administration/staff-and-roles.md](administration/staff-and-roles.md) | Admin panel, staff accounts, roles and the activity log |
 | [ecommerce/catalog-and-inventory.md](ecommerce/catalog-and-inventory.md) | Products, variants, options, categories, brands, attributes, images, inventory |
@@ -28,6 +30,7 @@ PN Shop is a self-hosted CMS and e-commerce platform by PN Scripts. These docume
 |---|---|
 | [development/core-modules.md](development/core-modules.md) | The core package, module layout, permissions, pipelines and settings, the storefront build |
 | [development/localization-and-money.md](development/localization-and-money.md) | Languages, localized URLs, translatable models, interface text, money |
+| [development/testing.md](development/testing.md) | Running the tests, other databases, test conventions, the CI checks |
 | [extensions/plugins.md](extensions/plugins.md) | Plugins: trust model, manifest, lifecycle, CLI, safe mode, signatures, writing a plugin |
 | [themes/themes.md](themes/themes.md) | Themes: manifest, settings as CSS variables, override-by-path builds, activation, slots |
 | [api/README.md](api/README.md) | Store API and Admin API: tokens, errors, pagination, idempotency, endpoints, OpenAPI documents |
