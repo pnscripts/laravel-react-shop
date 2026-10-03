@@ -6,7 +6,7 @@ An open-source **Laravel 13 + React/Inertia** e-commerce application, on its way
 
 Today it is a working shop: catalog with variants, a database cart, guest or authenticated checkout with structured addresses, customer accounts with address books, and a Filament admin.
 
-This is **not** a full marketplace. Card payments come through the included Stripe plugin. There is no public REST API yet.
+This is **not** a full marketplace. Card payments come through the included Stripe plugin. Headless storefronts and integrations use the Store and Admin JSON APIs (see below).
 
 ---
 
