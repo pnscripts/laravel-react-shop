@@ -1,7 +1,7 @@
 # PN Shop — Platform Architecture Proposal (Approval Checkpoint)
 
 Status: **approved 2026-10-01** (D1–D7). Implementation follows §20; see [docs/README.md](../README.md) for what has shipped and the upgrade notes for deviations (customers stay in `users`; existing data is migrated in place instead of a new baseline).
-Inputs: [01-discovery-and-gap-analysis.md](01-discovery-and-gap-analysis.md), [platform-comparison](../research/platform-comparison.md), [version-modernization](../research/version-modernization.md), [security-performance-audit](../research/security-performance-audit.md).
+Inputs: [01-discovery-and-gap-analysis.md](01-discovery-and-gap-analysis.md), [version-modernization](../research/version-modernization.md), [security-performance-audit](../research/security-performance-audit.md).
 
 PN Shop stays a **standalone, self-hosted** Laravel product. It has no dependency on pnscripts.com and no Marketplace code inside it. A future Marketplace client is only a possible extension *source* (§7.6).
 
@@ -21,7 +21,7 @@ These choices shape everything else. Each has a recommendation.
 | D6 | **Storefront rendering** | Keep **Inertia + React** for the default theme (SSR optional). A theme ships a **prebuilt bundle**, so there's no Node in production. | Blade themes. Easier to override, but loses the React product identity. |
 | D7 | **Package / product naming** | Composer `pnscripts/pn-shop` (project) and `pnscripts/pn-shop-core` (later), with app name and docs saying "PN Shop". The repo can keep its URL. | Keep `petar-v-nikolov/laravel-react-shop`. |
 
-**Why Filament for D1:** OpenCart and PrestaShop succeed because a module is drop-in: upload, install, configure, with no toolchain. With a React admin, every third-party admin screen needs a compiled bundle that matches our React/Inertia versions, and an upgrade of either breaks the ecosystem. Filament 5 (current: 5.9, Laravel 11.28+, Livewire ^4.4) lets a plugin register resources, pages, navigation, widgets and render hooks from a PHP class. Its Builder field maps directly onto our page → section → block model. Its assets are precompiled. The storefront, which customers see and theme authors want to own, stays React. The cost is two UI stacks: Livewire/Blade in admin and React in the storefront.
+**Why Filament for D1:** an extension ecosystem works when a module is drop-in: upload, install, configure, with no toolchain. With a React admin, every third-party admin screen needs a compiled bundle that matches our React/Inertia versions, and an upgrade of either breaks the ecosystem. Filament 5 (current: 5.9, Laravel 11.28+, Livewire ^4.4) lets a plugin register resources, pages, navigation, widgets and render hooks from a PHP class. Its Builder field maps directly onto our page → section → block model. Its assets are precompiled. The storefront, which customers see and theme authors want to own, stays React. The cost is two UI stacks: Livewire/Blade in admin and React in the storefront.
 
 ---
 
@@ -130,7 +130,7 @@ No visual drag-and-drop canvas in 1.0. Filament's Builder field gives an ordered
 
 - **products**: type (`simple`, `variable`, `digital`, `virtual`, `grouped` later; types are strategy classes in `ProductTypeRegistry`, plugins can add them), status, brand_id, tax_class_id, `product_translations` (name, slug, descriptions, meta).
 - **product_variants** (D5): sku (unique), barcode/GTIN, weight/dimensions, `requires_shipping`, `is_default`, position; **option values** via `variant_option_values`.
-- **Attributes**, split as PrestaShop splits features from combinations:
+- **Attributes**, split into what defines a variant and what describes a product:
   - *Variant options* (size, colour): `options` + `option_values` + translations. They define variants.
   - *Specification attributes* (material, wattage): `attributes` (type text/number/boolean/select/multiselect, `is_filterable`, `is_comparable`) + `attribute_values` + `product_attribute_values` (typed columns, not EAV-everything). **Attribute sets** decide which attributes a product edit form shows. This replaces today's category-attribute pivot, and the data is imported.
 - **categories**: nested set (`kalnoy/nestedset`), translations, image, SEO, status, position. Products ↔ categories is many-to-many, plus `primary_category_id` for breadcrumbs and canonical URLs.
@@ -250,7 +250,7 @@ All steps are available as artisan commands (`pnshop:plugin:install|enable|disab
 
 ### 7.5 Trust model (documented explicitly)
 
-PHP plugins run **with full application privileges**. This is the same as OpenCart, PrestaShop and WordPress. PN Shop cannot sandbox them, and the docs will say so plainly.
+PHP plugins run **with full application privileges**, as in any in-process PHP plugin system. PN Shop cannot sandbox them, and the docs will say so plainly.
 
 Mitigations:
 - install permission limited to the `system.extensions.manage` permission;

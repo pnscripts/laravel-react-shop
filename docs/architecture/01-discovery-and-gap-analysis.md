@@ -1,7 +1,7 @@
 # PN Shop — Discovery and Gap Analysis
 
 Status: Phase 1–3 output, 2026-10-01. Read-only audit; no application code was changed.
-Companion documents: [02-platform-architecture-proposal.md](02-platform-architecture-proposal.md) · [research/platform-comparison.md](../research/platform-comparison.md) · [research/version-modernization.md](../research/version-modernization.md) · [research/security-performance-audit.md](../research/security-performance-audit.md)
+Companion documents: [02-platform-architecture-proposal.md](02-platform-architecture-proposal.md) · [research/version-modernization.md](../research/version-modernization.md) · [research/security-performance-audit.md](../research/security-performance-audit.md)
 
 ## 1. What PN Shop is today
 

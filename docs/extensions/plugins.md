@@ -2,7 +2,7 @@
 
 Plugins add features without changing PN Shop's own code. The extension manager lives in `PnShop\Extension`. Staff with **system.extensions.manage** manage plugins in Admin → Extensions; the same actions exist on the command line.
 
-> **Trust.** A plugin is PHP code that runs with full access to the shop, its database and its files, as in OpenCart, PrestaShop or WordPress. PN Shop cannot sandbox it. Install only plugins from people you trust. Signatures (below) prove who published a plugin and that it was not changed; they say nothing about whether the code is safe.
+> **Trust.** A plugin is PHP code that runs with full access to the shop, its database and its files. PN Shop cannot sandbox it. Install only plugins from people you trust. Signatures (below) prove who published a plugin and that it was not changed; they say nothing about whether the code is safe.
 
 ## Where plugins come from
 
