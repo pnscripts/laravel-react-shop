@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use PnShop\Sales\Exceptions\OrderException;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\FulfillmentStatus;
 use PnShop\Sales\States\OrderStatus;
 use PnShop\Sales\States\PaymentStatus;
 use PnShop\Settings\Settings;
@@ -14,6 +15,10 @@ use PnShop\Settings\Settings;
  * Cancels orders that were never paid within the time set in Settings → Orders, so
  * abandoned or fake orders do not keep stock reserved. Cancelling goes through the order
  * workflow: the stock is released, open payments are cancelled and the customer is told.
+ *
+ * Only orders that have not shipped at all are cancelled: a cash-on-delivery order is unpaid
+ * until the courier collects the money, and must never be cancelled (and restocked) on the way.
+ * The state is checked again under the order's lock, so a payment that arrives in between wins.
  */
 class CancelUnpaidOrdersCommand extends Command
 {
@@ -34,6 +39,7 @@ class CancelUnpaidOrdersCommand extends Command
         $orders = Order::query()
             ->where('status', OrderStatus::Pending)
             ->whereIn('payment_status', [PaymentStatus::Unpaid, PaymentStatus::Failed])
+            ->where('fulfillment_status', FulfillmentStatus::Unfulfilled)
             ->where('created_at', '<', now()->subHours($hours))
             ->orderBy('id')
             ->lazyById(100);
@@ -49,8 +55,16 @@ class CancelUnpaidOrdersCommand extends Command
             }
 
             try {
-                $workflow->transition($order, OrderStatus::Cancelled, note: __('Cancelled automatically: not paid within :hours hours.', ['hours' => $hours]));
-                $count++;
+                $order = $workflow->transition(
+                    $order,
+                    OrderStatus::Cancelled,
+                    note: __('Cancelled automatically: not paid within :hours hours.', ['hours' => $hours]),
+                    when: fn (Order $locked) => self::cancellable($locked),
+                );
+
+                if ($order->status === OrderStatus::Cancelled) {
+                    $count++;
+                }
             } catch (OrderException $e) {
                 $this->warn("{$order->number}: {$e->getMessage()}");
             }
@@ -59,5 +73,12 @@ class CancelUnpaidOrdersCommand extends Command
         $this->info(($this->option('dry-run') ? 'Would cancel' : 'Cancelled')." {$count} unpaid order(s).");
 
         return self::SUCCESS;
+    }
+
+    private static function cancellable(Order $order): bool
+    {
+        return $order->status === OrderStatus::Pending
+            && in_array($order->payment_status, [PaymentStatus::Unpaid, PaymentStatus::Failed], true)
+            && $order->fulfillment_status === FulfillmentStatus::Unfulfilled;
     }
 }

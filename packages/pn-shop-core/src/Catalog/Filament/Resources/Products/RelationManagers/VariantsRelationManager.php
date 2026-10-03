@@ -21,6 +21,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use PnShop\Catalog\Filament\Resources\Products\Schemas\ProductForm;
 use PnShop\Catalog\Models\Option;
 use PnShop\Catalog\Models\OptionValue;
 use PnShop\Catalog\Models\Product;
@@ -68,6 +69,8 @@ class VariantsRelationManager extends RelationManager
             TextInput::make('barcode')->maxLength(255),
             TextInput::make('weight')->label('Weight (grams)')->integer()->minValue(0),
             TextInput::make('stock')->label('Stock on hand')->integer()->minValue(0)->default(0)
+                ->disabled(fn () => ! ProductForm::canManageStock())
+                ->dehydrated(fn () => ProductForm::canManageStock())
                 ->helperText('Changes are recorded in the stock history.'),
             Toggle::make('is_active')->label('Available')->default(true),
             Toggle::make('track_inventory')->label('Track stock')->default(true),
@@ -151,7 +154,9 @@ class VariantsRelationManager extends RelationManager
             $variant->fill(collect($data)->only(['price', 'sale_price', 'sku', 'barcode', 'weight', 'is_active', 'track_inventory', 'allow_backorder'])->all())->save();
             $variant->optionValues()->sync($valueIds);
 
-            app(InventoryService::class)->setOnHand($variant, (int) ($data['stock'] ?? 0), auth('admin')->user());
+            if (array_key_exists('stock', $data) && ProductForm::canManageStock()) {
+                app(InventoryService::class)->setOnHand($variant, (int) $data['stock'], auth('admin')->user());
+            }
 
             return $variant;
         });

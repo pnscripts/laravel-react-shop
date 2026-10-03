@@ -66,6 +66,11 @@ class PaymentService
             'amount' => $order->grandTotal(),
         ]);
 
+        // Nothing to collect (a 100% discount): the order is paid as placed.
+        if ($order->grandTotal()->isZero()) {
+            return $this->apply($payment, PaymentResult::paid(), 'initiate');
+        }
+
         $gateway = $method?->gatewayInstance();
 
         if ($method === null || $gateway === null) {

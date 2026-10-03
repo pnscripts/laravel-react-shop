@@ -2,7 +2,7 @@
 
 namespace PnShop\Customer\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,11 +12,15 @@ use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use PnShop\Customer\Factories\UserFactory;
 use PnShop\Sales\Models\Order;
+use PnShop\Settings\Settings;
 use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 
 /**
  * A customer account (storefront sign-in). Staff accounts are PnShop\Acl\Models\AdminUser.
+ *
+ * Email verification is required only when Settings → Customers says so; otherwise every
+ * account counts as verified and no verification email is sent.
  *
  * The shop's own App\Models\User extends this class (and is the model configured in
  * auth.providers.users), so merchants can add to it without changing the core.
@@ -30,7 +34,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, LogsActivity, Notifiable;
@@ -75,6 +79,35 @@ class User extends Authenticatable
         static::creating(function (User $user): void {
             $user->customer_group_id ??= CustomerGroup::query()->where('is_default', true)->value('id');
         });
+
+        // A new password (changed, reset or set by staff) ends every API token, and a deleted
+        // account takes its tokens along. Other browser sessions end through AuthenticateSession.
+        static::updated(function (User $user): void {
+            if ($user->wasChanged('password')) {
+                $user->tokens()->delete();
+            }
+        });
+
+        static::deleting(function (User $user): void {
+            $user->tokens()->delete();
+        });
+    }
+
+    public static function verificationRequired(): bool
+    {
+        return (bool) app(Settings::class)->get('customers.require_email_verification');
+    }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return ! self::verificationRequired() || $this->email_verified_at !== null;
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        if (self::verificationRequired()) {
+            parent::sendEmailVerificationNotification();
+        }
     }
 
     /**

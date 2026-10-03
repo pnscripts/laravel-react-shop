@@ -9,17 +9,21 @@ How PN Shop protects the shop, and the settings that matter in production.
 - **Permissions:**
   - Roles carry permission keys. The `administrator` role holds every permission.
   - Staff can only give what they hold themselves: they cannot assign roles or add permissions beyond their own.
-  - Only administrators can change administrator accounts.
+  - Staff who manage accounts can only change (email, password, roles) or delete accounts that hold nothing they do not hold themselves. Only administrators can change administrator accounts.
+  - Stock changes need `catalog.inventory.manage`, in the product and variant forms and in the Admin API's `stock` fields as well as its stock endpoint.
 - **API tokens:** Admin API tokens carry a chosen subset of their owner's permissions, and every call also checks the owner's current permissions.
   - Store API tokens are customer-only.
   - Both APIs use bearer tokens only, never cookies, so there is no CSRF exposure.
+- **New passwords:** changing or resetting a customer's password signs out their other browsers and "remember me" logins and revokes their Store API tokens. Deleting an account revokes its tokens.
+- **Email verification:** off by default. *Settings → Customers → Require a verified email address* sends new customers a link and keeps unverified accounts out of the account pages and Store API ordering.
 - **Content blocks:** custom HTML needs `cms.html_block`, also when restoring an older page revision or saving through the API.
 
 ## Requests
 
 - **Trusted hosts:** once installed, the shop only answers for the host of `APP_URL` and its subdomains, plus `PNSHOP_TRUSTED_HOSTS` (comma-separated). A forged `Host` header cannot put another domain into password-reset emails, signed links or the sitemap. **Set `APP_URL` to the real address.**
 - **Installer:** reachable only while the shop is not installed. If the database cannot be reached, every page (the installer included) answers 503 rather than offering a new installation.
-- **Spam protection:** checkout and registration are protected by a honeypot and a time trap, and checkout, login, cart changes and coupon attempts are rate limited.
+- **Spam protection:** checkout and registration are protected by a honeypot and a time trap, and checkout, login (per email and per IP), cart changes and coupon attempts are rate limited.
+- **Proxies:** rate limits count per visitor IP. Behind a load balancer, Cloudflare or a reverse proxy, set `TRUSTED_PROXIES` (the proxies' IPs or CIDR ranges, comma-separated, or `*`), or every visitor shares the proxy's IP and one busy visitor can block checkout for everyone.
 - **Errors:** API errors never include stack traces or model names, and `APP_DEBUG` must be `false` in production.
 
 ## Orders and payments
@@ -27,6 +31,9 @@ How PN Shop protects the shop, and the settings that matter in production.
 - **Prices:** always read from the database at checkout, under row locks. Stock reservations and promotion usage limits use conditional updates, so they cannot be oversold under load.
 - **Double submits:** the cart is locked and emptied in the checkout transaction, so a double submit cannot place two orders. Refunds of the same order or return are serialized.
 - **Unpaid orders:** cancelled automatically after *Settings → Orders → Cancel unpaid orders after* (default 168 hours; 0 turns it off), which releases their stock. The scheduler must be running.
+  - Orders that have shipped (fully or partly) are never cancelled automatically: a cash-on-delivery order stays unpaid until the money is collected.
+  - The order is checked again under its lock, so a payment that arrives meanwhile wins.
+  - Orders with nothing to pay (for example a 100% discount) are marked paid when placed.
 - **Guest order links:** signed links in emails and in the Store API's checkout response expire after `PNSHOP_ORDER_LINK_DAYS` (default 180).
 - **Stripe:**
   - Webhooks are verified with the signing secret, and amount and currency are checked.
@@ -45,7 +52,7 @@ How PN Shop protects the shop, and the settings that matter in production.
 
 - `APP_ENV=production`, `APP_DEBUG=false`, and `APP_URL` set to the real HTTPS address.
 - The web server serves `public/` only.
-- HTTPS everywhere. Behind a load balancer, configure trusted proxies.
+- HTTPS everywhere. Behind a load balancer or Cloudflare, set `TRUSTED_PROXIES`.
 - The scheduler and a queue worker are running (see [installation](../installation/installation.md)).
 - Plugin zip uploads stay off unless needed. Install only plugins and themes you trust: plugins run PHP on your server, and themes run in your visitors' browsers.
 - Regular backups (`pnshop:update` backs up before updating; schedule your own as well).

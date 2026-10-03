@@ -11,6 +11,10 @@ use PnShop\Customer\Policies\CustomerGroupPolicy;
 use PnShop\Customer\Policies\CustomerPolicy;
 use PnShop\Foundation\Extension\Permission;
 use PnShop\Foundation\ModuleServiceProvider;
+use PnShop\Settings\SettingDefinition;
+use PnShop\Settings\SettingsRegistry;
+use PnShop\Settings\SettingsSchema;
+use PnShop\Settings\SettingType;
 
 /**
  * Customer accounts (the `users` table), customer groups and address books.
@@ -39,5 +43,11 @@ class CustomerServiceProvider extends ModuleServiceProvider
     {
         Gate::policy(User::class, CustomerPolicy::class);
         Gate::policy(CustomerGroup::class, CustomerGroupPolicy::class);
+
+        $this->app->make(SettingsRegistry::class)->register(new SettingsSchema(
+            'customers',
+            'Customers',
+            new SettingDefinition('require_email_verification', SettingType::Boolean, 'Require a verified email address', default: false, help: 'New customers get a link by email and must open it before using their account pages or ordering through the Store API. Turning this on also asks existing customers to verify.'),
+        ));
     }
 }

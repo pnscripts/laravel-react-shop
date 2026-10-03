@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
+use PnShop\Acl\Models\AdminUser;
 use PnShop\Catalog\Factories\ProductFactory;
 use PnShop\Catalog\ProductRelationType;
 use PnShop\Catalog\ProductType;
@@ -373,7 +374,7 @@ class Product extends Model implements TranslatableModel
         $this->pendingVariant = [];
 
         if ($this->pendingStock !== null) {
-            app(InventoryService::class)->setOnHand($variant, $this->pendingStock);
+            app(InventoryService::class)->setOnHand($variant, $this->pendingStock, self::actingStaff());
             $this->pendingStock = null;
         }
 
@@ -392,5 +393,19 @@ class Product extends Model implements TranslatableModel
     protected static function newFactory(): ProductFactory
     {
         return ProductFactory::new();
+    }
+
+    /** The staff member saving the product (panel or Admin API), for the stock history. */
+    private static function actingStaff(): ?AdminUser
+    {
+        foreach (['admin', 'admin-api'] as $guard) {
+            $user = auth($guard)->user();
+
+            if ($user instanceof AdminUser) {
+                return $user;
+            }
+        }
+
+        return null;
     }
 }

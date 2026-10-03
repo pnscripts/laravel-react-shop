@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use PnShop\Api\Http\Controllers\ApiController;
+use PnShop\Api\Http\Problem;
 use PnShop\Api\Http\Resources\OrderPresenter;
 use PnShop\Cart\ShoppingCartService;
 use PnShop\Customer\PostalAddress;
@@ -89,8 +90,13 @@ class CheckoutController extends ApiController
     public function store(Request $request): JsonResponse
     {
         $data = Validator::make($request->all(), CheckoutRules::rules(), [], CheckoutRules::attributes())->validate();
+        $customer = $this->customer($request);
 
-        $order = $this->checkout->place($data, $this->customer($request));
+        if ($customer !== null && ! $customer->hasVerifiedEmail()) {
+            return Problem::response(403, 'email_not_verified', __('Verify your email address before ordering.'));
+        }
+
+        $order = $this->checkout->place($data, $customer);
         $payment = $this->payments->start($order);
 
         $order->load(OrderPresenter::RELATIONS);

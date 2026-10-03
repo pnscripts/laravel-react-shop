@@ -57,6 +57,13 @@ return [
     ],
 
     /*
+    | Proxies (load balancer, Cloudflare, nginx in front of PHP) whose X-Forwarded-*
+    | headers are trusted, so the visitor's real IP is used for rate limits and logs:
+    | comma-separated IPs or CIDR ranges, or * for any proxy. Empty: no proxy trusted.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES', ''),
+
+    /*
     |--------------------------------------------------------------------------
     | Extensions
     |--------------------------------------------------------------------------

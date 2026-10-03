@@ -21,6 +21,7 @@ use PnShop\Promotion\Conditions\SubtotalCondition;
 use PnShop\Promotion\Models\Promotion;
 use PnShop\Promotion\Policies\PromotionPolicy;
 use PnShop\Sales\Events\OrderPlacing;
+use PnShop\Sales\Events\OrderReopening;
 use PnShop\Sales\Events\OrderStateChanged;
 
 /**
@@ -59,6 +60,7 @@ class PromotionServiceProvider extends ModuleServiceProvider
 
         Event::listen(OrderPlacing::class, [Redemptions::class, 'record']);
         Event::listen(OrderStateChanged::class, [Redemptions::class, 'releaseOnCancel']);
+        Event::listen(OrderReopening::class, [Redemptions::class, 'retakeOnReopen']);
 
         Gate::policy(Promotion::class, PromotionPolicy::class);
     }

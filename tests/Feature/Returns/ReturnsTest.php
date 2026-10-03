@@ -142,6 +142,26 @@ class ReturnsTest extends TestCase
         $this->assertSame([$item->id => 2], $returns->eligibility($order->refresh())['items']);
     }
 
+    public function test_receiving_twice_puts_the_goods_back_once(): void
+    {
+        $order = $this->shippedOrder();
+        $returns = app(ReturnService::class);
+        $return = $returns->request($order, [$order->items->sole()->id => 2], ReturnReason::NoLongerNeeded);
+        $returns->approve($return);
+        $onHand = $this->onHand();
+
+        $returns->receive(ReturnRequest::query()->findOrFail($return->id));
+
+        try {
+            // A second click with the page's stale copy of the return.
+            $returns->receive($return);
+            $this->fail('The return was received twice.');
+        } catch (OrderException) {
+        }
+
+        $this->assertSame($onHand + 2, $this->onHand());
+    }
+
     public function test_transitions_are_enforced(): void
     {
         $order = $this->shippedOrder();

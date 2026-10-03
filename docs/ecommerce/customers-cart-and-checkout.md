@@ -8,6 +8,8 @@ Customer code lives in `PnShop\Customer`, the cart in `PnShop\Cart` (`ShoppingCa
 - **Customer groups** (Admin → Customers → Customer groups) segment customers. New accounts join the default group, *Retail*. Groups will drive prices, promotions and tax in later phases.
 - **Address books:** customers keep several addresses under *Account → Addresses* and choose a default for shipping and one for billing. Staff see them on the customer's page in the admin.
 - **The account area** (`/dashboard`, `/account/orders`, `/account/addresses`) lists the customer's orders and addresses.
+- **Email verification** is off by default. With *Settings → Customers → Require a verified email address*, new customers get a verification link, and unverified accounts are sent to the "verify your email" page instead of the account area and cannot order through the Store API (`403 email_not_verified`).
+- **Passwords:** a new or reset password signs the customer out everywhere else and revokes their Store API tokens.
 
 ## Cart
 

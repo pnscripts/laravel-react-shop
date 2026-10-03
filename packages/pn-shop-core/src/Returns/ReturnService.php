@@ -152,7 +152,11 @@ class ReturnService
     public function receive(ReturnRequest $return, array $received = [], bool $restock = true, ?Model $actor = null): ReturnRequest
     {
         return DB::transaction(function () use ($return, $received, $restock, $actor) {
-            $return->load('lines.orderItem');
+            // Under the return's lock and before any stock moves: a second "receive" (double
+            // click, two staff) fails here instead of putting the goods on the shelf twice.
+            ReturnRequest::query()->whereKey($return->getKey())->lockForUpdate()->firstOrFail();
+            $return->refresh()->load('lines.orderItem');
+            $this->assertCanMove($return, ReturnStatus::Received);
 
             foreach ($return->lines as $line) {
                 $quantity = array_key_exists($line->id, $received) ? (int) $received[$line->id] : $line->quantity;
@@ -162,7 +166,7 @@ class ReturnService
                 }
 
                 $line->update(['quantity_received' => $quantity]);
-                $variant = $line->orderItem?->product_variant_id ? ProductVariant::query()->find($line->orderItem->product_variant_id) : null;
+                $variant = $line->orderItem?->product_variant_id ? ProductVariant::withTrashed()->find($line->orderItem->product_variant_id) : null;
 
                 if ($restock && $quantity > 0 && $variant !== null) {
                     $this->inventory->adjust($variant, $quantity, StockMovementReason::Return, $return, $actor instanceof AdminUser ? $actor : null, $return->number);

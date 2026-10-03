@@ -6,8 +6,10 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rules\Password;
@@ -45,13 +47,29 @@ class StorefrontServiceProvider extends ModuleServiceProvider
     {
         EncryptCookies::except(['appearance', 'sidebar_state']);
 
+        self::trustProxies();
+
         // Requests for other hosts are refused once installed (forged Host headers).
         $this->app->make(HttpKernel::class)->prependMiddleware(TrustAppHost::class);
 
         $router = $this->app->make(Router::class);
 
-        foreach ([HandleAppearance::class, HandleInertiaRequests::class, AddLinkHeadersForPreloadedAssets::class] as $middleware) {
+        // AuthenticateSession signs other browsers out when the password changes.
+        foreach ([AuthenticateSession::class, HandleAppearance::class, HandleInertiaRequests::class, AddLinkHeadersForPreloadedAssets::class] as $middleware) {
             $router->pushMiddlewareToGroup('web', $middleware);
+        }
+    }
+
+    /**
+     * The visitor's real IP behind the proxies in pnshop.trusted_proxies, so per-IP rate
+     * limits do not lump every customer together behind a load balancer.
+     */
+    public static function trustProxies(): void
+    {
+        $proxies = trim((string) config('pnshop.trusted_proxies'));
+
+        if ($proxies !== '') {
+            TrustProxies::at($proxies === '*' ? '*' : array_values(array_filter(array_map('trim', explode(',', $proxies)))));
         }
     }
 
@@ -66,5 +84,8 @@ class StorefrontServiceProvider extends ModuleServiceProvider
         ]);
 
         RateLimiter::for('auth-forms', fn (Request $request) => Limit::perMinute(6)->by($request->ip()));
+
+        // Sign-in is also limited per email (LoginRequest); this stops one IP trying many emails.
+        RateLimiter::for('login', fn (Request $request) => Limit::perMinute(20)->by($request->ip()));
     }
 }

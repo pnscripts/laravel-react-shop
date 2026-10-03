@@ -14,6 +14,7 @@ use PnShop\Payment\RefundService;
 use PnShop\Promotion\Models\Coupon;
 use PnShop\Promotion\Models\Promotion;
 use PnShop\Promotion\Models\PromotionRedemption;
+use PnShop\Sales\Exceptions\OrderException;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\OrderWorkflow;
 use PnShop\Sales\States\OrderStatus;
@@ -237,6 +238,38 @@ class PromotionsTest extends TestCase
         $this->assertSame(0, $promotion->refresh()->times_used);
         $this->assertSame(0, PromotionRedemption::query()->count());
         $this->assertSame('45.00', $this->cart()['totals']['total']['amount']);
+    }
+
+    public function test_reopening_a_cancelled_order_takes_its_uses_back_within_the_limit(): void
+    {
+        $promotion = $this->promotion([['type' => 'percent_off', 'data' => ['percent' => 10]]], attributes: ['usage_limit' => 1, 'name' => 'Single use']);
+        $product = $this->product('50.00');
+        $workflow = app(OrderWorkflow::class);
+
+        $this->add($product);
+        $this->post(route('checkout.store'), $this->checkoutData($this->payment->id))->assertSessionMissing('error');
+        $first = Order::query()->sole();
+
+        // Cancelled and reopened while the offer is free again: the use is taken back.
+        $workflow->transition($first, OrderStatus::Cancelled);
+        $workflow->transition($first, OrderStatus::Pending);
+        $this->assertSame(1, $promotion->refresh()->times_used);
+        $this->assertSame(1, PromotionRedemption::query()->count());
+
+        // Cancelled, then someone else uses the offer: reopening would go past the limit.
+        $workflow->transition($first, OrderStatus::Cancelled);
+        $this->add($product);
+        $this->post(route('checkout.store'), $this->checkoutData($this->payment->id))->assertSessionMissing('error');
+
+        try {
+            $workflow->transition($first, OrderStatus::Pending);
+            $this->fail('The order was reopened past the usage limit.');
+        } catch (OrderException $e) {
+            $this->assertStringContainsString('Single use', $e->getMessage());
+        }
+
+        $this->assertSame(OrderStatus::Cancelled, $first->refresh()->status);
+        $this->assertSame(1, $promotion->refresh()->times_used);
     }
 
     public function test_a_promotion_used_up_while_checking_out_aborts_the_order(): void

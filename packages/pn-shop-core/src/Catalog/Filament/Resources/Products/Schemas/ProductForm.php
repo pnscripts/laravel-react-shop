@@ -26,6 +26,12 @@ use PnShop\Seo\Filament\SeoFields;
 
 class ProductForm
 {
+    /** Stock changes need catalog.inventory.manage, not only the right to edit products. */
+    public static function canManageStock(): bool
+    {
+        return (bool) auth('admin')->user()?->can('catalog.inventory.manage');
+    }
+
     public static function configure(Schema $schema): Schema
     {
         $isSimple = fn (Get $get) => ($get('type') instanceof ProductType ? $get('type') : ProductType::tryFrom((string) $get('type'))) !== ProductType::Variable;
@@ -127,6 +133,8 @@ class ProductForm
                             ->integer()
                             ->minValue(0)
                             ->default(0)
+                            ->disabled(fn () => ! self::canManageStock())
+                            ->dehydrated(fn () => self::canManageStock())
                             // `stock` reads as *available*; the form edits what is on the shelf,
                             // which includes units reserved for open orders.
                             ->afterStateHydrated(fn (TextInput $component, ?Product $record) => $record === null ? null : $component->state(

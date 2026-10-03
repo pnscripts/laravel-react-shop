@@ -3,6 +3,7 @@
 namespace Tests\Feature\Security;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Middleware\TrustProxies;
 use Livewire\Livewire;
 use PnShop\Acl\Filament\Resources\AdminUsers\Pages\EditAdminUser;
 use PnShop\Acl\Filament\Resources\AdminUsers\Schemas\AdminUserForm;
@@ -17,6 +18,7 @@ use PnShop\Sales\OrderLinks;
 use PnShop\Sales\OrderWorkflow;
 use PnShop\Sales\States\PaymentStatus;
 use PnShop\Shipping\ShipmentService;
+use PnShop\Storefront\StorefrontServiceProvider;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
@@ -53,6 +55,48 @@ class HardeningTest extends TestCase
             ->assertHasFormErrors(['roles']);
 
         $this->assertFalse($manager->fresh()->isAdministrator());
+    }
+
+    public function test_account_managers_cannot_take_over_more_powerful_staff(): void
+    {
+        $manager = AdminUser::factory()->withPermissions(['system.admin_users.manage'])->create();
+        $powerful = AdminUser::factory()->withPermissions(['system.settings.manage', 'system.extensions.manage'])->create();
+        $peer = AdminUser::factory()->withPermissions(['system.admin_users.manage'])->create();
+        $clerk = AdminUser::factory()->create();
+
+        $this->assertFalse($manager->can('update', $powerful), 'Could reset the password of an account with more permissions.');
+        $this->assertFalse($manager->can('delete', $powerful));
+        $this->assertTrue($manager->can('update', $peer));
+        $this->assertTrue($manager->can('update', $clerk));
+
+        $this->actingAs($manager, 'admin');
+        Livewire::test(EditAdminUser::class, ['record' => $powerful->id])->assertForbidden();
+    }
+
+    public function test_one_ip_cannot_try_many_accounts_on_the_sign_in_form(): void
+    {
+        foreach (range(1, 20) as $attempt) {
+            $this->post('/login', ['email' => "guess{$attempt}@example.test", 'password' => 'wrong-password'])->assertSessionHasErrors('email');
+        }
+
+        $this->post('/login', ['email' => 'guess21@example.test', 'password' => 'wrong-password'])->assertTooManyRequests();
+    }
+
+    public function test_trusted_proxies_give_rate_limits_the_visitors_real_ip(): void
+    {
+        // Test requests come from 127.0.0.1, the "proxy" here.
+        $this->get('/', ['X-Forwarded-For' => '203.0.113.7'])->assertOk();
+        $this->assertSame('127.0.0.1', request()->ip(), 'No proxy is trusted by default.');
+
+        config(['pnshop.trusted_proxies' => '127.0.0.1, 10.0.0.0/8']);
+        StorefrontServiceProvider::trustProxies();
+
+        try {
+            $this->get('/', ['X-Forwarded-For' => '203.0.113.7'])->assertOk();
+            $this->assertSame('203.0.113.7', request()->ip());
+        } finally {
+            TrustProxies::flushState();
+        }
     }
 
     public function test_role_managers_cannot_edit_roles_beyond_their_own_permissions(): void

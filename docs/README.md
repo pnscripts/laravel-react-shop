@@ -22,6 +22,7 @@ Architecture approved 2026-10-01. Phases 0–13 are implemented (1.0). The post-
 | [upgrades/2026-10-phase-12.md](upgrades/2026-10-phase-12.md) | Upgrade notes for the installer and updater (Phase 12) |
 | [upgrades/2026-10-phase-13.md](upgrades/2026-10-phase-13.md) | Upgrade notes for the 1.0 hardening (Phase 13) |
 | [upgrades/2026-10-release-1.1.md](upgrades/2026-10-release-1.1.md) | Upgrade notes for 1.1: the core as the `pnscripts/pn-shop-core` package |
+| [upgrades/2026-10-release-1.1.1.md](upgrades/2026-10-release-1.1.1.md) | Upgrade notes for 1.1.1: fixes from the 1.1 audit |
 | [release/publishing.md](release/publishing.md) | Publishing a release: the core package and the project skeleton |
 | [security/security.md](security/security.md) | Security model, hardening, production checklist |
 | [release/pnscripts-com-product-page.md](release/pnscripts-com-product-page.md) | Copy changes for the PN Shop page on pnscripts.com (for whoever updates that site) |

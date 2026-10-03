@@ -32,7 +32,7 @@ final class PnShop
     /**
      * The PN Shop core version. Extensions declare compatibility against it.
      */
-    public const VERSION = '1.1.0';
+    public const VERSION = '1.1.1';
 
     /** The Composer package that holds the core. */
     public const PACKAGE = 'pnscripts/pn-shop-core';

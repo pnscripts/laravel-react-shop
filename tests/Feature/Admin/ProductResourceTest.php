@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use Livewire\Livewire;
+use PnShop\Acl\Models\AdminUser;
 use PnShop\Catalog\Filament\Resources\Products\Pages\CreateProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\EditProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\ListProducts;
@@ -18,6 +19,21 @@ class ProductResourceTest extends AdminTestCase
         $products = Product::factory()->count(3)->create();
 
         Livewire::test(ListProducts::class)->assertCanSeeTableRecords($products);
+    }
+
+    public function test_only_staff_with_the_inventory_permission_change_stock_in_the_product_form(): void
+    {
+        $product = Product::factory()->active()->create(['stock' => 5]);
+        $this->actingAs(AdminUser::factory()->withPermissions(['catalog.products.view', 'catalog.products.update'])->create(), 'admin');
+
+        Livewire::test(EditProduct::class, ['record' => $product->getRouteKey()])
+            ->assertFormFieldIsDisabled('stock')
+            ->fillForm(['stock' => 99, 'price' => 12, 'sale_price' => null])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(5, (int) $product->defaultVariant()->stockLevels()->sum('on_hand'));
+        $this->assertSame('12.00', (string) $product->fresh()->price->getAmount());
     }
 
     public function test_a_product_can_be_created(): void

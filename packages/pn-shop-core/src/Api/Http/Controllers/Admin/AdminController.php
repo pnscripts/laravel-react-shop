@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use PnShop\Acl\Models\AdminUser;
 use PnShop\Api\Http\Controllers\ApiController;
@@ -19,6 +20,17 @@ use PnShop\Localization\Models\Language;
  */
 abstract class AdminController extends ApiController
 {
+    /**
+     * Setting stock through a product or variant field needs the same permission as the
+     * stock endpoint, not only the right to edit the product.
+     */
+    protected function authorizeStock(Request $request): void
+    {
+        if ($request->has('stock')) {
+            Gate::authorize('catalog.inventory.manage');
+        }
+    }
+
     protected function admin(Request $request): AdminUser
     {
         $admin = $request->user();

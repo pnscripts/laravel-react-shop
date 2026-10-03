@@ -2,6 +2,7 @@
 
 namespace PnShop\Sales;
 
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use PnShop\Catalog\Models\ProductVariant;
@@ -9,6 +10,7 @@ use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\OrderStockStatus;
 use PnShop\Inventory\StockMovementReason;
+use PnShop\Sales\Events\OrderReopening;
 use PnShop\Sales\Events\OrderStateChanged;
 use PnShop\Sales\Exceptions\InvalidOrderTransition;
 use PnShop\Sales\Exceptions\OrderException;
@@ -36,15 +38,23 @@ class OrderWorkflow
     public function __construct(private InventoryService $inventory) {}
 
     /**
+     * @param  (Closure(Order): bool)|null  $when  checked against the locked order first; when it
+     *                                             returns false nothing changes (for jobs that select orders
+     *                                             before locking them, such as the unpaid-order cancellation)
+     *
      * @throws OrderException when the change is not allowed or stock is no longer available.
      */
-    public function transition(Order $order, OrderState $to, ?Model $actor = null, ?string $note = null): Order
+    public function transition(Order $order, OrderState $to, ?Model $actor = null, ?string $note = null, ?Closure $when = null): Order
     {
         /** @var list<array{OrderState, OrderState}> $changes */
         $changes = [];
 
-        DB::transaction(function () use ($order, $to, $actor, $note, &$changes) {
+        DB::transaction(function () use ($order, $to, $actor, $note, $when, &$changes) {
             $locked = Order::query()->with('items')->lockForUpdate()->findOrFail($order->id);
+
+            if ($when !== null && ! $when($locked)) {
+                return;
+            }
 
             $changes[] = $this->apply($locked, $to, $actor, $note);
 
@@ -94,6 +104,11 @@ class OrderWorkflow
 
         if ($order->status === OrderStatus::Cancelled && $to instanceof FulfillmentStatus) {
             throw InvalidOrderTransition::cancelled();
+        }
+
+        // Listeners (coupon usage) can still refuse a reopening, inside this transaction.
+        if ($order->status === OrderStatus::Cancelled && $to === OrderStatus::Pending) {
+            OrderReopening::dispatch($order);
         }
 
         $this->moveStock($order, $this->stockStatusAfter($order, $to));

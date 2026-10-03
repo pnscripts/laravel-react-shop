@@ -72,6 +72,7 @@ class ProductController extends AdminController
     public function store(Request $request): JsonResponse
     {
         Gate::authorize('create', Product::class);
+        $this->authorizeStock($request);
 
         $data = $request->validate($this->rules(null));
         $product = DB::transaction(fn () => $this->save(new Product, $data));
@@ -89,6 +90,7 @@ class ProductController extends AdminController
     public function update(Request $request, Product $product): array
     {
         Gate::authorize('update', $product);
+        $this->authorizeStock($request);
 
         $data = $request->validate($this->rules($product));
 

@@ -2,6 +2,28 @@
 
 All notable changes to PN Shop. The project follows [semantic versioning](https://semver.org/): breaking changes to plugin and theme contracts come only in major versions and are announced one minor version ahead.
 
+## 1.1.1 (2026-10-03)
+
+Fixes from the 1.1 audit. Update with `composer update pnscripts/pn-shop-core` and `php artisan pnshop:update`; one additive migration. See the [upgrade notes](docs/upgrades/2026-10-release-1.1.1.md).
+
+### Fixes
+
+- **Unpaid-order cancellation:**
+  - Shipped orders (such as cash on delivery waiting for the money) are no longer cancelled and restocked.
+  - An order paid while the job runs is no longer cancelled.
+  - Orders with nothing to pay are marked paid when placed.
+- **Staff accounts:** staff who manage accounts can no longer change or delete a more powerful (non-administrator) account.
+- **Sign-in:** a new or reset password signs out the customer's other sessions and revokes their Store API tokens; deleting an account revokes its tokens. The sign-in form also has a per-IP limit.
+- **Stock permission:** stock changes in the product and variant forms and the Admin API's `stock` fields need `catalog.inventory.manage`. Stock set from the product form is recorded with the staff member.
+- **Returns:** receiving a return twice can no longer restock it twice, and items of deleted variants are restocked.
+- **Coupons:** reopening a cancelled order takes its promotion and coupon uses back within the usage limits, or refuses to reopen.
+
+### Added
+
+- **`TRUSTED_PROXIES`:** behind a load balancer, Cloudflare or a reverse proxy, rate limits see the visitor's real IP.
+- **Email verification setting:** *Settings → Customers → Require a verified email address* (off by default).
+- **For plugins:** an `OrderReopening` event, dispatched inside the reopening transaction, and an optional `when` guard on `OrderWorkflow::transition()`.
+
 ## 1.1.0 (2026-10-02)
 
 The core becomes a Composer package, so shops update with `composer update` and `php artisan pnshop:update`. The database does not change. See the [upgrade notes](docs/upgrades/2026-10-release-1.1.md).

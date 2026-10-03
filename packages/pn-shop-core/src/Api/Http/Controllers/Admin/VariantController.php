@@ -58,6 +58,7 @@ class VariantController extends AdminController
     public function store(Request $request, Product $product): JsonResponse
     {
         Gate::authorize('update', $product);
+        $this->authorizeStock($request);
 
         if ($product->type === ProductType::Simple) {
             throw ValidationException::withMessages(['product' => __('A simple product has exactly one variant. Change the product type to "variable" first.')]);
@@ -80,6 +81,7 @@ class VariantController extends AdminController
     public function update(Request $request, ProductVariant $variant): array
     {
         Gate::authorize('update', $variant->product);
+        $this->authorizeStock($request);
 
         $data = $request->validate($this->rules($variant));
 

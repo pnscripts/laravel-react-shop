@@ -7,9 +7,11 @@ use PnShop\Catalog\Models\Product;
 use PnShop\Payment\Models\PaymentMethod;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\OrderWorkflow;
+use PnShop\Sales\States\FulfillmentStatus;
 use PnShop\Sales\States\OrderStatus;
 use PnShop\Sales\States\PaymentStatus;
 use PnShop\Settings\Settings;
+use PnShop\Shipping\ShipmentService;
 use Tests\TestCase;
 
 class CancelUnpaidOrdersTest extends TestCase
@@ -54,5 +56,45 @@ class CancelUnpaidOrdersTest extends TestCase
         $this->artisan('pnshop:orders:cancel-unpaid')->expectsOutputToContain('off')->assertSuccessful();
 
         $this->assertSame(OrderStatus::Pending, $order->refresh()->status);
+    }
+
+    public function test_shipped_orders_waiting_for_cash_on_delivery_are_never_cancelled(): void
+    {
+        $product = Product::factory()->active()->create(['stock' => 5]);
+        $order = $this->order($product);
+        app(ShipmentService::class)->ship($order);
+        $onHand = (int) $product->defaultVariant()->stockLevels()->sum('on_hand');
+
+        $this->travel(1000)->hours();
+        $this->artisan('pnshop:orders:cancel-unpaid')->expectsOutputToContain('Cancelled 0')->assertSuccessful();
+
+        $order->refresh();
+        $this->assertSame(OrderStatus::Pending, $order->status);
+        $this->assertSame(FulfillmentStatus::Fulfilled, $order->fulfillment_status);
+        $this->assertSame($onHand, (int) $product->defaultVariant()->stockLevels()->sum('on_hand'), 'Shipped stock must not come back.');
+    }
+
+    public function test_an_order_paid_after_it_was_selected_is_not_cancelled(): void
+    {
+        $order = $this->order(Product::factory()->active()->create(['stock' => 5]));
+        $workflow = app(OrderWorkflow::class);
+
+        // Paid between the job's query and its lock: the check under the lock sees it.
+        $workflow->transition($order->fresh(), PaymentStatus::Paid);
+        $workflow->transition($order, OrderStatus::Cancelled, when: fn (Order $locked) => $locked->payment_status === PaymentStatus::Unpaid);
+
+        $this->assertSame(OrderStatus::Processing, $order->refresh()->status);
+    }
+
+    public function test_orders_with_nothing_to_pay_are_paid_when_placed(): void
+    {
+        $order = $this->order(Product::factory()->active()->create(['stock' => 5, 'price' => '0.00', 'sale_price' => null]));
+
+        $this->assertTrue($order->grandTotal()->isZero());
+        $this->assertSame(PaymentStatus::Paid, $order->refresh()->payment_status);
+        $this->assertSame(OrderStatus::Processing, $order->status);
+
+        $this->travel(1000)->hours();
+        $this->artisan('pnshop:orders:cancel-unpaid')->expectsOutputToContain('Cancelled 0')->assertSuccessful();
     }
 }

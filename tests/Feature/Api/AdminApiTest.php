@@ -159,6 +159,13 @@ class AdminApiTest extends TestCase
         $headers = $this->token(['catalog.products.update']);
 
         $this->withHeaders($headers)->postJson(self::API.'/variants/'.$product->defaultVariant()->id.'/stock', ['on_hand' => 1])->assertForbidden();
+
+        // The stock fields of the product and variant endpoints need it too.
+        $this->withHeaders($headers)->patchJson(self::API."/products/{$product->id}", ['stock' => 99])->assertForbidden();
+        $this->withHeaders($headers)->patchJson(self::API.'/variants/'.$product->defaultVariant()->id, ['stock' => 99])->assertForbidden();
+        $this->withHeaders($headers)->patchJson(self::API."/products/{$product->id}", ['price' => '9.50'])->assertOk();
+
+        $this->assertNotSame(99, (int) $product->defaultVariant()->stockLevels()->sum('on_hand'));
     }
 
     public function test_order_transitions_go_through_the_workflow(): void
