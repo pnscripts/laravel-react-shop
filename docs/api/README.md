@@ -111,7 +111,7 @@ php artisan pnshop:api-token ops@example.com --name="ERP" --ability=catalog.prod
 | `/categories`, `/brands` (CRUD) | `catalog.categories.manage`, `catalog.brands.manage` |
 | `POST /media` (multipart `file`) | `content.media.manage` |
 | `GET /orders`, `GET /orders/{id}` | `sales.orders.view` |
-| `POST /orders/{id}/transitions`, `/notes`, `/shipments` | `sales.orders.update` |
+| `POST /orders/{id}/transitions`, `/notes`, `/shipments`, `/refunds` | `sales.orders.update` |
 | `GET /customers`, `GET /customers/{id}`, `PATCH /customers/{id}` | `customers.view` / `customers.manage` |
 | `/pages` (CRUD, blocks per language) | `content.pages.manage` (+ `cms.html_block` for HTML blocks) |
 | `GET /returns`, `GET /returns/{id}`, `POST /returns/{id}/transitions` | `sales.returns.manage` |
@@ -121,7 +121,7 @@ php artisan pnshop:api-token ops@example.com --name="ERP" --ability=catalog.prod
 
 The Admin API goes through the same rules as the admin panel:
 
-- **Order states:** changes go through the order workflow, so only allowed transitions are accepted, stock moves, history is written and emails are sent.
+- **Order states:** changes go through the order workflow, so only allowed transitions are accepted, stock moves, history is written and emails are sent. Refunds and shipping are not state changes: `POST /orders/{id}/refunds` (`items`, optional `extra`, `restock`, `reason`) and `POST /orders/{id}/shipments` record them, and a transition to *refunded*, *shipped* or *returned* is refused (422).
 - **Stock:** changes are recorded in the stock history with the staff member who made them.
 - **Settings:** values are validated by their definitions, and secret values are never returned.
 - **Pages:** every save records a revision, and staff without `cms.html_block` cannot add or change HTML blocks.

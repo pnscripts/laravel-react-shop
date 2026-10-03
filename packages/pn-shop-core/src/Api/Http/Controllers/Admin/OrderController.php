@@ -2,6 +2,8 @@
 
 namespace PnShop\Api\Http\Controllers\Admin;
 
+use Brick\Math\RoundingMode;
+use Brick\Money\Money;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,7 +13,9 @@ use Illuminate\Validation\ValidationException;
 use PnShop\Api\Http\Resources\OrderPresenter;
 use PnShop\Money\MoneyPresenter;
 use PnShop\Payment\Models\Payment;
+use PnShop\Payment\RefundService;
 use PnShop\Sales\Exceptions\OrderException;
+use PnShop\Sales\ManualStateChanges;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\Models\OrderHistory;
 use PnShop\Sales\OrderWorkflow;
@@ -94,6 +98,7 @@ class OrderController extends AdminController
      *
      * `field` is status, payment_status or fulfillment_status; `to` must be one of the
      * transitions listed in the order's `transitions`. An optional `note` goes into the history.
+     * Refunds and shipments are not state changes: use the refunds and shipments endpoints.
      *
      * @return array<string, mixed>
      */
@@ -109,6 +114,10 @@ class OrderController extends AdminController
 
         $state = self::STATES[$data['field']]::tryFrom($data['to'])
             ?? throw ValidationException::withMessages(['to' => __('Unknown state.')]);
+
+        if (ManualStateChanges::recordedBy($state) !== null) {
+            throw ValidationException::withMessages(['to' => ManualStateChanges::recordedBy($state)]);
+        }
 
         try {
             $workflow->transition($order, $state, $this->admin($request), $data['note'] ?? null);
@@ -167,6 +176,47 @@ class OrderController extends AdminController
     }
 
     /**
+     * Refund an order
+     *
+     * Returns money through the payment's gateway (or records a manual refund for cash on
+     * delivery and bank transfer). `items` maps order item ids to units; `extra` is an amount
+     * on top, e.g. the shipping. Returned units go back on the shelf when `restock` is true.
+     */
+    public function refund(Request $request, Order $order, RefundService $refunds): JsonResponse
+    {
+        Gate::authorize('update', $order);
+
+        $data = $request->validate([
+            'items' => ['sometimes', 'array'],
+            'items.*' => ['integer', 'min:1'],
+            'extra' => ['nullable', 'numeric', 'min:0'],
+            'restock' => ['sometimes', 'boolean'],
+            'reason' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $quantities = [];
+
+        foreach ((array) ($data['items'] ?? []) as $itemId => $quantity) {
+            $quantities[(int) $itemId] = (int) $quantity;
+        }
+
+        try {
+            $refunds->refund(
+                $order,
+                $quantities,
+                isset($data['extra']) ? Money::of((string) $data['extra'], $order->currency, roundingMode: RoundingMode::HalfUp) : null,
+                (bool) ($data['restock'] ?? false),
+                $data['reason'] ?? null,
+                $this->admin($request),
+            );
+        } catch (OrderException $e) {
+            throw ValidationException::withMessages(['items' => $e->getMessage()]);
+        }
+
+        return response()->json(['data' => $this->detail($order->refresh())], 201);
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function detail(Order $order): array
@@ -179,7 +229,7 @@ class OrderController extends AdminController
             'stock_status' => $order->stock_status->value,
             'updated_at' => $order->updated_at?->toIso8601String(),
             'transitions' => array_map(
-                fn (string $field) => array_map(fn (OrderState $to) => $to->value, $order->{$field}->transitions()),
+                fn (string $field) => array_map(fn (OrderState $to) => $to->value, ManualStateChanges::allowed($order->{$field})),
                 array_combine(array_keys(self::STATES), array_keys(self::STATES)),
             ),
             'payments' => $order->payments->map(fn (Payment $payment) => [

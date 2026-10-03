@@ -94,6 +94,20 @@ class RefundService
             throw new OrderException(__('This payment method cannot refund from the shop. Return the money directly to the customer.'));
         }
 
+        // Recorded first: if anything fails after the provider has returned the money, the
+        // pending refund shows staff what to check instead of the refund going unrecorded.
+        $refund = Refund::query()->create([
+            'order_id' => $order->id,
+            'payment_id' => $payment->id,
+            'currency' => $order->currency,
+            'amount' => $amount,
+            'status' => Refund::PENDING,
+            'restock' => $restock,
+            'reason' => $reason,
+            'actor_type' => $actor?->getMorphClass(),
+            'actor_id' => $actor?->getKey(),
+        ]);
+
         try {
             $result = $gateway->refund($payment, $amount, $method);
         } catch (Throwable $e) {
@@ -101,7 +115,7 @@ class RefundService
             $result = PaymentResult::failed(__('The payment provider did not accept the refund.'));
         }
 
-        $refund = DB::transaction(fn () => $this->record($order, $payment, $lines, $amount, $result, $restock, $reason, $actor));
+        DB::transaction(fn () => $this->record($refund, $order, $payment, $lines, $amount, $result, $reason, $actor));
 
         if ($refund->status === Refund::FAILED) {
             throw new OrderException((string) ($result->message ?: __('The payment provider did not accept the refund.')));
@@ -159,22 +173,15 @@ class RefundService
     /**
      * @param  list<array{OrderItem, int, Money}>  $lines
      */
-    private function record(Order $order, Payment $payment, array $lines, Money $amount, PaymentResult $result, bool $restock, ?string $reason, ?Model $actor): Refund
+    private function record(Refund $refund, Order $order, Payment $payment, array $lines, Money $amount, PaymentResult $result, ?string $reason, ?Model $actor): Refund
     {
         $succeeded = $result->outcome === PaymentOutcome::Refunded;
+        $restock = (bool) $refund->restock;
 
-        $refund = Refund::query()->create([
-            'order_id' => $order->id,
-            'payment_id' => $payment->id,
-            'currency' => $order->currency,
-            'amount' => $amount,
+        $refund->forceFill([
             'status' => $succeeded ? Refund::COMPLETED : Refund::FAILED,
-            'restock' => $restock,
-            'reason' => $reason,
             'reference' => $result->reference,
-            'actor_type' => $actor?->getMorphClass(),
-            'actor_id' => $actor?->getKey(),
-        ]);
+        ])->save();
 
         PaymentTransaction::query()->create([
             'payment_id' => $payment->id,

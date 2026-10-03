@@ -27,6 +27,9 @@ use PnShop\Sales\Models\Order;
  */
 class Refund extends Model
 {
+    /** Saved before the gateway is asked, so a crash after the money moved still leaves a record. */
+    public const PENDING = 'pending';
+
     public const COMPLETED = 'completed';
 
     public const FAILED = 'failed';

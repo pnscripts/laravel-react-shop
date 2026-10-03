@@ -9,7 +9,8 @@ use PnShop\Sales\States\PaymentStatus;
 
 /**
  * Keeps payment rows in line when staff change an order by hand: marking it paid
- * settles its open payments, cancelling it cancels them.
+ * settles its open payments, cancelling it cancels them. A payment confirmed by a gateway
+ * is already recorded on its own row, so it never marks the order's other payments paid.
  */
 class SyncPaymentsWithOrder
 {

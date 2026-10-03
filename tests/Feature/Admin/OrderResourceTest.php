@@ -68,7 +68,8 @@ class OrderResourceTest extends AdminTestCase
         $admin = $this->actingAsAdministrator();
 
         Livewire::test(ViewOrder::class, ['record' => $this->order->getRouteKey()])
-            ->assertActionVisible('changeFulfillment')
+            // Shipping is recorded with "Create shipment", never set by hand.
+            ->assertActionHidden('changeFulfillment')
             ->callAction('changePayment', ['state' => 'paid'])
             ->assertHasNoActionErrors()
             ->callAction('addNote', ['note' => 'Paid by bank transfer'])

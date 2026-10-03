@@ -38,6 +38,7 @@ Route::get('orders/{order}', [OrderController::class, 'show'])->whereNumber('ord
 Route::post('orders/{order}/transitions', [OrderController::class, 'transition'])->whereNumber('order')->middleware('pnshop.idempotent')->name('orders.transition');
 Route::post('orders/{order}/notes', [OrderController::class, 'note'])->whereNumber('order')->middleware('pnshop.idempotent')->name('orders.notes.store');
 Route::post('orders/{order}/shipments', [OrderController::class, 'ship'])->whereNumber('order')->middleware('pnshop.idempotent')->name('orders.shipments.store');
+Route::post('orders/{order}/refunds', [OrderController::class, 'refund'])->whereNumber('order')->middleware('pnshop.idempotent')->name('orders.refunds.store');
 
 Route::get('returns', [ReturnController::class, 'index'])->name('returns.index');
 Route::get('returns/{return}', [ReturnController::class, 'show'])->whereNumber('return')->name('returns.show');

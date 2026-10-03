@@ -19,6 +19,9 @@ An order has three independent states. Each is a small state machine, and the ad
 Rules applied on top of the state machines:
 
 - **Payment:** recording a payment on a *pending* order moves it to *processing*.
+- **Set by hand or by records:** staff set status and "paid" / "failed" by hand (*Update status*, *Update payment status*). Refunds and shipping are never set by hand: *Refund* returns the money and records a refund, *Create shipment* records a shipment and takes the stock, and returned goods come back through a return request. The order's state then follows from those records.
+- **Payments from gateways:** the same answer from a provider (a retried webhook, or the return page and the webhook both arriving) is recorded once, and a paid payment never goes back to failed or pending. Marking an order paid by hand settles its open payments only when no payment is paid yet.
+- **Refunds:** the refund is saved as *pending* before the payment provider is asked, then marked *completed* or *failed*. A refund left *pending* means the provider was asked but the shop could not finish recording it: check the provider's dashboard.
 - **Cancelled orders:** they can't be shipped until they are reopened. Payments and refunds can still be recorded.
 - **Stock:**
   - checkout reserves stock;

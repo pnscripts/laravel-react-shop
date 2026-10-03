@@ -8,6 +8,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use PnShop\Sales\Exceptions\OrderException;
+use PnShop\Sales\ManualStateChanges;
 use PnShop\Sales\Models\Order;
 use PnShop\Sales\OrderWorkflow;
 use PnShop\Sales\States\FulfillmentStatus;
@@ -17,7 +18,8 @@ use PnShop\Sales\States\PaymentStatus;
 
 /**
  * Admin actions that move an order through its state machines, or add a note.
- * Only the transitions allowed from the current state are offered.
+ * Only the transitions allowed from the current state are offered, and not refunds or
+ * shipments: those have their own actions, which keep the money and stock records.
  */
 class OrderStateActions
 {
@@ -45,11 +47,11 @@ class OrderStateActions
             ->label('Update '.strtolower($state::fieldLabel()))
             ->icon($icon)
             ->authorize(fn (Order $record) => auth('admin')->user()?->can('update', $record) ?? false)
-            ->visible(fn (Order $record) => $current($record)->transitions() !== [])
+            ->visible(fn (Order $record) => ManualStateChanges::allowed($current($record)) !== [])
             ->schema([
                 Select::make('state')
                     ->label($state::fieldLabel())
-                    ->options(fn (Order $record) => collect($current($record)->transitions())
+                    ->options(fn (Order $record) => collect(ManualStateChanges::allowed($current($record)))
                         ->mapWithKeys(fn (OrderState $to) => [$to->value => $to->label()])
                         ->all())
                     ->required(),

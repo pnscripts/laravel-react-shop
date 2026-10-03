@@ -90,26 +90,49 @@ class PaymentService
     /**
      * Record what the gateway reported (on start, a return from the provider or a webhook)
      * and move the order's payment state to match.
+     *
+     * Safe to call more than once with the same answer (a retried webhook, the return page
+     * and the webhook both arriving): it is recorded once. A settled payment (paid or
+     * refunded) never goes back to failed, authorized or pending.
      */
     public function apply(Payment $payment, PaymentResult $result, string $type, ?Model $actor = null): PaymentResult
     {
-        DB::transaction(function () use ($payment, $result, $type, $actor) {
-            $this->record($payment, $type, $result->outcome->value, $payment->amount, $result->reference, $result->message, $result->data, $actor);
+        $state = match ($result->outcome) {
+            PaymentOutcome::Paid => PaymentState::Paid,
+            PaymentOutcome::Authorized => PaymentState::Authorized,
+            PaymentOutcome::Failed => PaymentState::Failed,
+            default => null,
+        };
 
-            $state = match ($result->outcome) {
-                PaymentOutcome::Paid => PaymentState::Paid,
-                PaymentOutcome::Authorized => PaymentState::Authorized,
-                PaymentOutcome::Failed => PaymentState::Failed,
-                default => null,
-            };
+        $applied = DB::transaction(function () use ($payment, $result, $type, $actor, $state): bool {
+            $locked = Payment::query()->whereKey($payment->id)->lockForUpdate()->firstOrFail();
+
+            $repeated = $state !== null && $locked->status === $state
+                && ($result->reference === null || $locked->reference === null || $locked->reference === $result->reference);
+            $backwards = $state !== null && $state !== PaymentState::Paid
+                && in_array($locked->status, [PaymentState::Paid, PaymentState::PartiallyRefunded, PaymentState::Refunded], true);
+
+            if ($repeated || $backwards) {
+                return false;
+            }
+
+            $this->record($locked, $type, $result->outcome->value, $locked->amount, $result->reference, $result->message, $result->data, $actor);
 
             // The gateway's id (a session on redirect, a charge when paid) is kept as soon as it is known.
             $changes = array_filter(['status' => $state, 'reference' => $result->reference], fn (mixed $value) => $value !== null);
 
             if ($changes !== []) {
-                $payment->forceFill($changes)->save();
+                $locked->forceFill($changes)->save();
             }
+
+            return true;
         });
+
+        $payment->refresh();
+
+        if (! $applied) {
+            return $result;
+        }
 
         $orderState = match ($result->outcome) {
             PaymentOutcome::Paid => PaymentStatus::Paid,
@@ -128,12 +151,18 @@ class PaymentService
     /**
      * Settle the order's open payments after staff recorded the order as paid; orders
      * without any payment row get one, so the payment ledger always matches the order.
+     * When a payment is already paid (a gateway confirmed it), the ledger matches already
+     * and the order's other open payments (an abandoned attempt) are left alone.
      */
     public function settle(Order $order, ?Model $actor = null): void
     {
+        if ($order->payments()->whereIn('status', [PaymentState::Paid, PaymentState::PartiallyRefunded, PaymentState::Refunded])->exists()) {
+            return;
+        }
+
         $open = $order->payments()->get()->filter(fn (Payment $payment) => $payment->status->isOpen());
 
-        if ($open->isEmpty() && ! $order->payments()->where('status', PaymentState::Paid)->exists()) {
+        if ($open->isEmpty()) {
             $open = collect([Payment::query()->create([
                 'order_id' => $order->id,
                 'payment_method_id' => $order->payment_method_id,

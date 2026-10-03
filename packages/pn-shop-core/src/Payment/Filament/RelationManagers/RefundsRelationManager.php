@@ -29,7 +29,11 @@ class RefundsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('created_at')->label('When')->dateTime(),
                 TextColumn::make('amount')->state(fn (Refund $record) => $record->amount->formatToLocale(app()->getLocale())),
-                TextColumn::make('status')->badge()->color(fn (string $state) => $state === Refund::COMPLETED ? 'success' : 'danger'),
+                TextColumn::make('status')->badge()->color(fn (string $state) => match ($state) {
+                    Refund::COMPLETED => 'success',
+                    Refund::PENDING => 'warning',
+                    default => 'danger',
+                }),
                 TextColumn::make('items')
                     ->state(fn (Refund $record) => $record->lines->map(fn (RefundLine $line) => $line->quantity.' × '.$line->item?->product_title)->all())
                     ->listWithLineBreaks()
