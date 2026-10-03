@@ -16,10 +16,9 @@ use PnShop\Payment\PaymentContext;
 use PnShop\Payment\PaymentOutcome;
 use PnShop\Payment\PaymentService;
 use PnShop\Sales\Checkout\CheckoutService;
+use PnShop\Sales\Checkout\DeliveryQuote;
 use PnShop\Sales\Exceptions\CheckoutException;
 use PnShop\Security\BotTrap;
-use PnShop\Shipping\ShippingQuote;
-use PnShop\Shipping\ShippingRequest;
 use PnShop\Shipping\ShippingService;
 use PnShop\Storefront\Http\Controllers\Account\AddressesController;
 use PnShop\Storefront\Http\Requests\Checkout\StoreCheckoutRequest;
@@ -72,29 +71,9 @@ class CheckoutController extends Controller
      * Delivery options and totals for the address being entered, as the customer types.
      * A POST keeps the postcode out of URLs and logs.
      */
-    public function quote(Request $request): JsonResponse
+    public function quote(Request $request, DeliveryQuote $delivery): JsonResponse
     {
-        $data = $request->validate([
-            'country_code' => ['required', 'string', 'size:2'],
-            'postcode' => ['nullable', 'string', 'max:32'],
-            'shipping_method_id' => ['nullable', 'integer'],
-        ]);
-
-        $address = PostalAddress::fromArray($data);
-        $items = $this->cart->getCartItems();
-        $quotes = $this->shipping->quotes(new ShippingRequest($items, $this->cart->getTotalPrice(), $address->country_code, $address->postcode, $this->customer($request)));
-
-        $selected = $quotes->first(fn (ShippingQuote $quote) => $quote->method->id === (int) ($data['shipping_method_id'] ?? 0)) ?? $quotes->first();
-
-        return response()->json([
-            'options' => $quotes->map(fn (ShippingQuote $quote) => $quote->toArray())->values(),
-            'selected' => $selected?->method->id,
-            'totals' => $this->cart->totals([
-                'shipping_address' => $address,
-                'shipping_method' => $selected?->method,
-                'user' => $this->customer($request),
-            ])->toArray(),
-        ]);
+        return response()->json($delivery->for($request->validate(DeliveryQuote::RULES), $this->customer($request)));
     }
 
     public function store(StoreCheckoutRequest $request): RedirectResponse|SymfonyResponse

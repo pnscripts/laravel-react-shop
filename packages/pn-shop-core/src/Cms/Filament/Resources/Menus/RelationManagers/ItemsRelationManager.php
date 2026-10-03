@@ -53,7 +53,7 @@ class ItemsRelationManager extends RelationManager
                 ->visible(fn (Get $get) => $type($get)?->hasTarget() ?? false)
                 ->required(fn (Get $get) => $type($get)?->hasTarget() ?? false),
             TextInput::make('url')->label('Address')->maxLength(2048)
-                ->rules(['regex:#^(https?://|mailto:|tel:|/)#i'])
+                ->rules(['regex:#^(https?://|mailto:|tel:|/(?![/\\\\]))#i'])
                 ->helperText('A page of this shop (/shop/…) or a full address.')
                 ->visible(fn (Get $get) => $type($get) === MenuItemType::Url)
                 ->required(fn (Get $get) => $type($get) === MenuItemType::Url),

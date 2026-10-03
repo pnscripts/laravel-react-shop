@@ -112,6 +112,13 @@ app(\PnShop\Settings\Settings::class)->set('plugin.acme.seo', ['enabled' => fals
 - Values are stored per `(namespace, key)` in the `settings` table, so extensions cannot write into each other's or core's settings.
 - Unknown keys throw, and values are validated against the definition before they are stored.
 
+## Migrations and their order
+
+Laravel runs every migration (the shop's `database/migrations`, the core package's base and module folders) in one order: by file name, that is by the date in it. Some core migrations carry dates in October 2026 that are later than the day they were written, and they cannot be renamed, because installed shops record migrations by name.
+
+- **Shop and core migrations that use core tables:** date them after the newest core migration (`2026_10_13_*` as of 1.1.2), or a fresh install runs them before the table exists. `php artisan migrate:status` shows the order.
+- **Plugins:** their migrations run separately (on install and update), after the core's, so they are not affected.
+
 ## Static analysis
 
 - The core package is analysed at Larastan level 7 (`phpstan-core.neon`).

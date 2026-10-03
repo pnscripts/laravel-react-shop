@@ -7,6 +7,7 @@ use Composer\Semver\Semver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use PnShop\Acl\PermissionSynchronizer;
@@ -345,6 +346,14 @@ class ExtensionManager
         }
 
         PluginLoader::writeCache($manifests, $raw);
+
+        // Cached routes and admin screens would still list (or miss) the plugin's routes and
+        // pages. They are rebuilt on the next request; re-run `php artisan optimize` when ready.
+        if (app()->routesAreCached()) {
+            Artisan::call('route:clear');
+        }
+
+        Artisan::call('filament:clear-cached-components');
     }
 
     /**

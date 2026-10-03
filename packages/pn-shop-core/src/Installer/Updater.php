@@ -20,6 +20,7 @@ use PnShop\Installer\Contracts\BackupDriver;
 use PnShop\Localization\Localization;
 use PnShop\Settings\Settings;
 use PnShop\Theme\ThemeManager;
+use PnShop\Theme\ThemeManifest;
 use RuntimeException;
 use Throwable;
 
@@ -41,7 +42,7 @@ class Updater
     /**
      * What an update would do, without changing anything.
      *
-     * @return array{from: string|null, to: string, requirements: list<string>, migrations: list<string>, incompatible: array<string, list<string>>, plugin_updates: array<string, string>}
+     * @return array{from: string|null, to: string, requirements: list<string>, migrations: list<string>, incompatible: array<string, list<string>>, plugin_updates: array<string, string>, theme: list<string>}
      */
     public function plan(): array
     {
@@ -82,7 +83,31 @@ class Updater
             'migrations' => $this->pendingMigrations(),
             'incompatible' => $incompatible,
             'plugin_updates' => $updates,
+            'theme' => $this->themeProblems(),
         ];
+    }
+
+    /**
+     * Why the active theme will not be used after the update (the storefront then falls back
+     * to the built-in theme until the theme is rebuilt or updated).
+     *
+     * @return list<string>
+     */
+    private function themeProblems(): array
+    {
+        try {
+            $themes = app(ThemeManager::class);
+            $id = $themes->activeId();
+            $theme = $themes->discover()->get($id);
+
+            if ($theme === null) {
+                return $id === ThemeManifest::DEFAULT ? [] : [__('The active theme :id is missing.', ['id' => $id])];
+            }
+
+            return array_map(fn (string $problem) => "{$id}: {$problem}", $themes->problems($theme));
+        } catch (Throwable) {
+            return [];
+        }
     }
 
     /**

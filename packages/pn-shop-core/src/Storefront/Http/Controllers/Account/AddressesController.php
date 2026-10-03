@@ -4,7 +4,6 @@ namespace PnShop\Storefront\Http\Controllers\Account;
 
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use PnShop\Customer\Models\CustomerAddress;
@@ -35,7 +34,7 @@ class AddressesController extends Controller
         $address = $customer->addresses()->create($data);
 
         if ($customer->addresses()->count() === 1) {
-            $this->makeDefault($address, 'both');
+            $address->makeDefault('both');
         }
 
         return back()->with('success', __('Address saved.'));
@@ -63,7 +62,7 @@ class AddressesController extends Controller
     {
         $this->authorizeOwner($request, $address);
 
-        $this->makeDefault($address, $request->validate(['for' => ['required', 'in:shipping,billing,both']])['for']);
+        $address->makeDefault($request->validate(['for' => ['required', 'in:shipping,billing,both']])['for']);
 
         return back()->with('success', __('Default address updated.'));
     }
@@ -79,18 +78,6 @@ class AddressesController extends Controller
             ->map(fn (Country $country) => ['code' => $country->code, 'name' => $country->name()])
             ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)
             ->all());
-    }
-
-    private function makeDefault(CustomerAddress $address, string $for): void
-    {
-        DB::transaction(function () use ($address, $for) {
-            foreach (['shipping', 'billing'] as $kind) {
-                if ($for === $kind || $for === 'both') {
-                    CustomerAddress::query()->where('user_id', $address->user_id)->update(["is_default_{$kind}" => false]);
-                    $address->forceFill(["is_default_{$kind}" => true])->save();
-                }
-            }
-        });
     }
 
     private function authorizeOwner(Request $request, CustomerAddress $address): void

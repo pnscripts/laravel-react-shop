@@ -21,7 +21,8 @@ class ThemeServiceProvider extends ModuleServiceProvider
 {
     public function register(): void
     {
-        $this->app->singleton(ThemeManager::class);
+        // Scoped: one per request or queued job, so long-running workers see newly added themes.
+        $this->app->scoped(ThemeManager::class);
     }
 
     protected function permissions(): array

@@ -31,6 +31,12 @@ class StorefrontServiceProvider extends ModuleServiceProvider
         $this->middleware();
         $this->rateLimits();
 
+        // Staff and installer route names never reach the storefront's page source (shops whose
+        // config/ziggy.php predates this list included).
+        if (config('ziggy.only') === null) {
+            config(['ziggy.except' => array_values(array_unique([...(array) config('ziggy.except', []), 'filament.*', 'api.admin.*', 'install.*', 'scramble.*']))]);
+        }
+
         // The storefront's pages live in the package (the shop's resources/js/pages may add more).
         config(['inertia.pages.paths' => array_values(array_unique([...(array) config('inertia.pages.paths', []), PnShop::path('resources/js/pages')]))]);
 

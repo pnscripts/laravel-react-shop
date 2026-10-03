@@ -183,11 +183,29 @@ Loaded from the plugin folder when present:
 | `lang` | translations as `acme_store_notice::file.key`, and JSON translations |
 | `src/Filament/{Resources,Pages,Widgets}` | admin screens, discovered like core modules |
 
+- **Admin screens need authorization:** give every resource's model a policy (`Gate::policy()` in `bootPlugin()`), and every custom page a `canAccess()` check against your plugin's permissions. A resource without a policy is open to every staff account.
+- **Commands, scheduled tasks and event listeners:** a plugin is a service provider, so register them in `bootPlugin()`:
+
+  ```php
+  protected function bootPlugin(): void
+  {
+      if ($this->app->runningInConsole()) {
+          $this->commands([SyncStockCommand::class]);
+      }
+
+      $this->callAfterResolving(Schedule::class, fn (Schedule $schedule) => $schedule->command('acme:sync-stock')->hourly());
+
+      Event::listen(OrderPlaced::class, NotifyWarehouse::class);
+  }
+  ```
+
+- **Route and admin caches:** enabling, disabling, updating or removing a plugin clears cached routes and admin components. Run `php artisan optimize` again afterwards on a production server.
+
 - **Extension points:**
   - payment gateways (`PaymentGatewayManager`), shipping carriers (`ShippingCarrierManager`) and the tax provider (`TaxProvider`);
   - CMS blocks (`BlockRegistry`);
   - pipelines `cart.totals` and `seo.meta`;
   - the invoice renderer (`InvoiceRenderer`) and the CAPTCHA verifier (`CaptchaVerifier`);
-  - events: `OrderPlaced`, `OrderStateChanged`, `ShipmentCreated` and `RefundCompleted`.
+  - events: `OrderPlaced`, `OrderStateChanged`, `ShipmentCreated`, `RefundCompleted`, and `OrderReopening` (inside the reopening transaction; throw an `OrderException` to refuse).
 - **Overriding core:** plugins should use these extension points and never patch or override core classes.
 - **Testing:** test your gateway or carrier with the contract test kits in `PnShop\Payment\Testing` and `PnShop\Shipping\Testing`.

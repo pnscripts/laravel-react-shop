@@ -3,10 +3,31 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-    # The base tables are created by the core package's migrations.
+    # Every migration that builds the schema: the shop's, the core package's base tables,
+    # each core module's own, and the bundled plugins'.
     databaseMigrationsPath:
         - database/migrations
         - packages/pn-shop-core/database/migrations
+        - packages/pn-shop-core/src/Acl/database/migrations
+        - packages/pn-shop-core/src/Api/database/migrations
+        - packages/pn-shop-core/src/Cart/database/migrations
+        - packages/pn-shop-core/src/Catalog/database/migrations
+        - packages/pn-shop-core/src/Cms/database/migrations
+        - packages/pn-shop-core/src/Customer/database/migrations
+        - packages/pn-shop-core/src/Extension/database/migrations
+        - packages/pn-shop-core/src/Installer/database/migrations
+        - packages/pn-shop-core/src/Localization/database/migrations
+        - packages/pn-shop-core/src/Media/database/migrations
+        - packages/pn-shop-core/src/Payment/database/migrations
+        - packages/pn-shop-core/src/Promotion/database/migrations
+        - packages/pn-shop-core/src/Returns/database/migrations
+        - packages/pn-shop-core/src/Sales/database/migrations
+        - packages/pn-shop-core/src/Seo/database/migrations
+        - packages/pn-shop-core/src/Settings/database/migrations
+        - packages/pn-shop-core/src/Shipping/database/migrations
+        - packages/pn-shop-core/src/System/database/migrations
+        - packages/pn-shop-core/src/Tax/database/migrations
+        - extensions/pnshop/handling-fee/database/migrations
     stubFiles:
         - stubs/phpstan/kalnoy-nestedset.stub
     paths:

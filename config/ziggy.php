@@ -6,8 +6,10 @@ return [
     'except' => [
         'filament.*',
         'livewire.*',
-        'debugbar.*',
         'telescope*',
+        'api.admin.*',
+        'install.*',
+        'scramble.*',
         'storage.*',
         'ignition.*',
     ],

@@ -4,6 +4,7 @@ namespace Tests\Feature\Catalog;
 
 use Inertia\Testing\AssertableInertia as Assert;
 use Livewire\Livewire;
+use PnShop\Catalog\Exceptions\InvalidVariant;
 use PnShop\Catalog\Filament\Resources\Options\Pages\CreateOption;
 use PnShop\Catalog\Filament\Resources\Products\Pages\EditProduct;
 use PnShop\Catalog\Filament\Resources\Products\RelationManagers\VariantsRelationManager;
@@ -12,6 +13,7 @@ use PnShop\Catalog\Models\Option;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Catalog\ProductType;
+use PnShop\Catalog\VariantService;
 use PnShop\Inventory\Exceptions\InsufficientStock;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\Models\StockMovement;
@@ -207,6 +209,38 @@ class VariantsAndInventoryTest extends AdminTestCase
             ->callTableAction('create', data: ['option_'.$product->options->first()->id => $small->optionValues->first()->id, 'price' => '30.00', 'stock' => 1, 'is_active' => true]);
 
         $this->assertSame(2, $product->variants()->count());
+    }
+
+    public function test_the_admin_keeps_a_default_variant_and_never_deletes_the_last(): void
+    {
+        $this->actingAsAdministrator();
+        [$product, $small] = $this->tShirt();
+        $manager = fn () => Livewire::test(VariantsRelationManager::class, ['ownerRecord' => $product->fresh(), 'pageClass' => EditProduct::class]);
+        $default = $product->variants()->where('is_default', true)->sole();
+        $other = $product->variants()->whereKeyNot($default->id)->sole();
+
+        $manager()->callTableAction('delete', $default);
+        $this->assertTrue($other->fresh()->is_default, 'Deleting the default variant makes another one the default.');
+
+        $manager()->callTableAction('delete', $other->fresh());
+        $this->assertNotNull($other->fresh(), 'The last variant cannot be deleted.');
+        $this->assertSame(1, $product->variants()->count());
+    }
+
+    public function test_generating_variants_is_capped(): void
+    {
+        $product = Product::factory()->active()->create(['type' => ProductType::Variable]);
+
+        foreach (['A', 'B', 'C'] as $index => $name) {
+            $product->options()->attach($this->option(strtolower($name), $name, array_map(fn (int $n) => "{$name}{$n}", range(1, 6))));
+        }
+
+        try {
+            app(VariantService::class)->generate($product);
+            $this->fail('6 × 6 × 6 variants were generated.');
+        } catch (InvalidVariant) {
+            $this->assertSame(1, $product->variants()->count());
+        }
     }
 
     public function test_option_values_can_be_translated(): void

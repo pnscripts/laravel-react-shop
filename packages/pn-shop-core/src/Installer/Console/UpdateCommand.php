@@ -33,6 +33,7 @@ class UpdateCommand extends Command
         $this->report('Plugins to update', array_map(fn (string $id, string $change) => "{$id} {$change}", array_keys($plan['plugin_updates']), $plan['plugin_updates']));
         $this->report('Incompatible plugins', array_map(fn (string $id, array $problems) => "{$id}: ".implode(' ', $problems), array_keys($plan['incompatible']), $plan['incompatible']), warn: true);
         $this->report('Requirements not met', $plan['requirements'], warn: true);
+        $this->report('Theme (the storefront uses the default theme until this is fixed)', $plan['theme'], warn: true);
 
         if ($this->option('dry-run')) {
             $this->info('Dry run: nothing was changed.');

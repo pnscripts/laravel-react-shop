@@ -4,7 +4,6 @@ namespace PnShop\Api\Http\Controllers\Store;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use PnShop\Api\Http\Controllers\ApiController;
 use PnShop\Api\Http\Resources\OrderPresenter;
 use PnShop\Customer\Models\CustomerAddress;
@@ -94,7 +93,7 @@ class AccountController extends ApiController
         $address = $user->addresses()->create($request->validate(PostalAddress::rules()));
 
         if ($user->addresses()->count() === 1) {
-            $this->makeDefault($address, 'both');
+            $address->makeDefault('both');
         }
 
         return response()->json(['data' => OrderPresenter::address($address->refresh())], 201);
@@ -113,7 +112,7 @@ class AccountController extends ApiController
         $model->update($request->validate(PostalAddress::rules()));
 
         if ($request->filled('default')) {
-            $this->makeDefault($model, $request->validate(['default' => ['in:shipping,billing,both']])['default']);
+            $model->makeDefault($request->validate(['default' => ['in:shipping,billing,both']])['default']);
         }
 
         return ['data' => OrderPresenter::address($model->refresh())];
@@ -140,17 +139,5 @@ class AccountController extends ApiController
     private function address(Request $request, int $id): CustomerAddress
     {
         return $this->user($request)->addresses()->whereKey($id)->firstOrFail();
-    }
-
-    private function makeDefault(CustomerAddress $address, string $for): void
-    {
-        DB::transaction(function () use ($address, $for) {
-            foreach (['shipping', 'billing'] as $kind) {
-                if ($for === $kind || $for === 'both') {
-                    CustomerAddress::query()->where('user_id', $address->user_id)->update(["is_default_{$kind}" => false]);
-                    $address->forceFill(["is_default_{$kind}" => true])->save();
-                }
-            }
-        });
     }
 }

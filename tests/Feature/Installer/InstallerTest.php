@@ -14,6 +14,7 @@ use PnShop\Installer\Installation;
 use PnShop\Installer\Updater;
 use PnShop\Localization\Localization;
 use PnShop\Settings\Settings;
+use PnShop\Theme\ThemeManager;
 use Tests\TestCase;
 
 class InstallerTest extends TestCase
@@ -178,6 +179,29 @@ class InstallerTest extends TestCase
         // The repository's own lock matches vendor/.
         $this->assertSame([], $updater->codeProblems(PnShop::VERSION, base_path('composer.lock')));
         File::delete($lock);
+    }
+
+    public function test_update_warns_when_the_active_theme_does_not_support_the_new_version(): void
+    {
+        AdminUser::factory()->administrator()->create();
+        DB::table('system_versions')->insert(['version' => PnShop::VERSION, 'action' => 'install', 'created_at' => now()]);
+
+        $root = sys_get_temp_dir().'/pnshop-themes-'.bin2hex(random_bytes(4));
+        File::copyDirectory(base_path('tests/Fixtures/themes/acme/child'), "{$root}/acme/child");
+        $manifest = json_decode((string) File::get("{$root}/acme/child/pnshop.json"), true);
+        File::put("{$root}/acme/child/pnshop.json", (string) json_encode([...$manifest, 'requires' => ['pnshop' => '^9.0']]));
+        config(['pnshop.themes.path' => $root]);
+        app()->forgetInstance(ThemeManager::class);
+        app(Settings::class)->set('appearance', ['theme' => 'acme/child']);
+
+        try {
+            $this->artisan('pnshop:update', ['--dry-run' => true])
+                ->expectsOutputToContain('uses the default theme until this is fixed')
+                ->expectsOutputToContain('acme/child: Needs PN Shop ^9.0')
+                ->assertSuccessful();
+        } finally {
+            File::deleteDirectory($root);
+        }
     }
 
     public function test_update_needs_an_installed_shop(): void

@@ -14,7 +14,7 @@ class ApiTokenCommand extends Command
         {--name=Integration : Name shown in the admin}
         {--ability=* : Permission key the token may use (repeat the option); omit with --all}
         {--all : The token may do everything the account may do}
-        {--days= : Expire after this many days}';
+        {--days=365 : Expire after this many days (default: a year)}';
 
     protected $description = 'Create an Admin API token for a staff account and print it once';
 
@@ -33,7 +33,7 @@ class ApiTokenCommand extends Command
         $days = $this->option('days');
 
         try {
-            $token = $tokens->issue($admin, (string) $this->option('name'), $abilities, is_numeric($days) ? now()->addDays((int) $days) : null);
+            $token = $tokens->issue($admin, (string) $this->option('name'), $abilities, now()->addDays(is_numeric($days) && (int) $days > 0 ? (int) $days : 365));
         } catch (ValidationException $e) {
             foreach ($e->errors() as $messages) {
                 array_map(fn (string $message) => $this->error($message), $messages);

@@ -5,16 +5,16 @@ namespace PnShop\Api\Http\Controllers\Admin;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use PnShop\Api\Http\Resources\AdminCatalogPresenter;
-use PnShop\Catalog\Models\OptionValue;
+use PnShop\Catalog\Exceptions\InvalidVariant;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Catalog\ProductType;
+use PnShop\Catalog\VariantService;
 use PnShop\Inventory\InventoryService;
 use PnShop\Inventory\StockMovementReason;
 
@@ -24,7 +24,7 @@ use PnShop\Inventory\StockMovementReason;
  */
 class VariantController extends AdminController
 {
-    public function __construct(private InventoryService $inventory) {}
+    public function __construct(private InventoryService $inventory, private VariantService $variants) {}
 
     /**
      * List variants
@@ -65,7 +65,7 @@ class VariantController extends AdminController
         }
 
         $data = $request->validate($this->rules(null));
-        $variant = DB::transaction(fn () => $this->save($product, new ProductVariant(['product_id' => $product->id]), $data, $request));
+        $variant = $this->save($product, new ProductVariant(['product_id' => $product->id]), $data, $request);
 
         return response()->json(['data' => AdminCatalogPresenter::variant($variant)], 201);
     }
@@ -85,7 +85,7 @@ class VariantController extends AdminController
 
         $data = $request->validate($this->rules($variant));
 
-        return ['data' => AdminCatalogPresenter::variant(DB::transaction(fn () => $this->save($variant->product, $variant, $data, $request)))];
+        return ['data' => AdminCatalogPresenter::variant($this->save($variant->product, $variant, $data, $request))];
     }
 
     /**
@@ -169,47 +169,17 @@ class VariantController extends AdminController
      */
     private function save(Product $product, ProductVariant $variant, array $data, Request $request): ProductVariant
     {
-        if (array_key_exists('option_value_ids', $data)) {
-            $valueIds = $this->optionValues($product, $variant, array_values(array_map('intval', $data['option_value_ids'])));
+        try {
+            return $this->variants->save(
+                $product,
+                $variant,
+                $data,
+                array_key_exists('option_value_ids', $data) ? array_values(array_map('intval', (array) $data['option_value_ids'])) : null,
+                array_key_exists('stock', $data) ? (int) $data['stock'] : null,
+                $this->admin($request),
+            );
+        } catch (InvalidVariant $e) {
+            throw ValidationException::withMessages([$e->field => $e->getMessage()]);
         }
-
-        $variant->fill(Arr::except($data, ['option_value_ids', 'stock']))->save();
-
-        if (isset($valueIds)) {
-            $variant->optionValues()->sync($valueIds);
-        }
-
-        if (array_key_exists('stock', $data)) {
-            $this->inventory->setOnHand($variant, (int) $data['stock'], $this->admin($request));
-        }
-
-        return $variant->refresh()->load(['optionValues', 'stockLevels']);
-    }
-
-    /**
-     * One value of each of the product's options, and no other variant with the same values.
-     *
-     * @param  list<int>  $valueIds
-     * @return list<int>
-     */
-    private function optionValues(Product $product, ProductVariant $variant, array $valueIds): array
-    {
-        $optionIds = $product->options()->pluck('options.id')->map(fn (mixed $id) => (int) $id)->sort()->values()->all();
-        $chosen = OptionValue::query()->whereKey($valueIds)->pluck('option_id', 'id');
-
-        if (count($valueIds) !== $chosen->count() || $chosen->map(fn (mixed $id) => (int) $id)->sort()->values()->all() !== $optionIds) {
-            throw ValidationException::withMessages(['option_value_ids' => __('Choose one value of each of the product\'s options.')]);
-        }
-
-        sort($valueIds);
-
-        $duplicate = $product->variants()->whereKeyNot($variant->getKey() ?? 0)->with('optionValues')->get()
-            ->contains(fn (ProductVariant $other) => collect($other->optionValues->modelKeys())->sort()->values()->all() === $valueIds);
-
-        if ($duplicate) {
-            throw ValidationException::withMessages(['option_value_ids' => __('A variant with these options already exists.')]);
-        }
-
-        return $valueIds;
     }
 }

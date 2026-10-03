@@ -2,6 +2,7 @@
 
 namespace PnShop\Foundation;
 
+use Illuminate\Contracts\Foundation\CachesConfiguration;
 use Illuminate\Support\ServiceProvider;
 use PnShop\Extension\PluginLoader;
 use PnShop\Foundation\Extension\PermissionRegistry;
@@ -15,8 +16,7 @@ class PnShopServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        // Defaults for config/pnshop.php; the shop's own copy overrides them key by key.
-        $this->mergeConfigFrom(PnShop::path('config/pnshop.php'), 'pnshop');
+        $this->mergeDefaults();
 
         $this->app->singleton(PermissionRegistry::class);
         $this->app->singleton(PipelineRegistry::class);
@@ -31,6 +31,41 @@ class PnShopServiceProvider extends ServiceProvider
         // Enabled plugins come after the core modules whose registries they use.
         $this->app->singleton(PluginLoader::class);
         $this->app->make(PluginLoader::class)->bootEnabled();
+    }
+
+    /**
+     * The core's config/pnshop.php under the shop's own: the shop's values win, at any depth,
+     * so a default added by an update (for example a new security option) reaches shops whose
+     * config/pnshop.php is a full copy of an older version. Lists are replaced whole.
+     */
+    private function mergeDefaults(): void
+    {
+        if ($this->app instanceof CachesConfiguration && $this->app->configurationIsCached()) {
+            return;
+        }
+
+        $config = $this->app->make('config');
+
+        /** @var array<string, mixed> $defaults */
+        $defaults = require PnShop::path('config/pnshop.php');
+
+        $config->set('pnshop', self::mergeConfig($defaults, (array) $config->get('pnshop', [])));
+    }
+
+    /**
+     * @param  array<mixed>  $defaults
+     * @param  array<mixed>  $values
+     * @return array<mixed>
+     */
+    public static function mergeConfig(array $defaults, array $values): array
+    {
+        foreach ($values as $key => $value) {
+            $defaults[$key] = is_array($value) && ! array_is_list($value) && is_array($defaults[$key] ?? null) && ! array_is_list($defaults[$key])
+                ? self::mergeConfig($defaults[$key], $value)
+                : $value;
+        }
+
+        return $defaults;
     }
 
     public function boot(): void

@@ -54,7 +54,8 @@ class HandleInertiaRequests extends Middleware
             'name' => fn () => app(Settings::class)->get('store.name'),
             'quote' => ['message' => trim($message), 'author' => trim($author)],
             'auth' => [
-                'user' => $request->user(),
+                // Only what pages show; the rest of the account (group, internal fields) stays on the server.
+                'user' => $request->user('web')?->only(['id', 'name', 'email', 'phone', 'avatar', 'email_verified_at', 'created_at', 'updated_at']),
             ],
             'cartCount' => fn () => app(ShoppingCartService::class)->getTotalQuantity(),
             'menus' => fn () => ['header' => Menus::tree('header'), 'footer' => Menus::tree('footer')],

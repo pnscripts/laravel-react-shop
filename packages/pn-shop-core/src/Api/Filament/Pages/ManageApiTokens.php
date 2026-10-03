@@ -95,8 +95,10 @@ class ManageApiTokens extends Page implements HasTable
                         TextInput::make('name')->required()->maxLength(100)->placeholder('ERP sync'),
                         Select::make('expires_in')
                             ->label('Expires')
-                            ->options(['30' => 'In 30 days', '90' => 'In 90 days', '365' => 'In a year', '' => 'Never'])
-                            ->default('90'),
+                            // Tokens always expire, so a forgotten integration cannot keep access for ever.
+                            ->options(['30' => 'In 30 days', '90' => 'In 90 days', '365' => 'In a year'])
+                            ->default('90')
+                            ->required(),
                         Toggle::make('all')
                             ->label('All of my permissions')
                             ->helperText('Also permissions you get later. Prefer choosing only what the integration needs.')

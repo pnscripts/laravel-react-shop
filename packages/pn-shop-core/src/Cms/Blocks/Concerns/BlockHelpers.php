@@ -30,7 +30,7 @@ trait BlockHelpers
         return TextInput::make($name)
             ->label($label)
             ->maxLength(2048)
-            ->rules(['nullable', 'regex:#^(https?://|/)#i'])
+            ->rules(['nullable', 'regex:#^(https?://|/(?![/\\\\]))#i'])
             ->helperText('A page of this shop (/shop) or a full address (https://…).');
     }
 

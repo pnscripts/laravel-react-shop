@@ -3,7 +3,6 @@
 namespace PnShop\Api\Http\Controllers\Store;
 
 use Illuminate\Auth\Events\Lockout;
-use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +15,7 @@ use PnShop\Api\Http\Controllers\ApiController;
 use PnShop\Api\Http\Middleware\StoreCustomer;
 use PnShop\Cart\CartRepository;
 use PnShop\Customer\Models\User;
+use PnShop\Customer\Registration;
 
 /**
  * Customer accounts for headless storefronts and apps. Signing in returns a bearer token
@@ -43,13 +43,7 @@ class AuthController extends ApiController
             'device_name' => ['nullable', 'string', 'max:100'],
         ]);
 
-        $user = User::modelClass()::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-        ]);
-
-        event(new Registered($user));
+        $user = app(Registration::class)->register($data['name'], $data['email'], $data['password']);
 
         return response()->json($this->issue($request, $user, $data['device_name'] ?? null), 201);
     }
@@ -81,7 +75,11 @@ class AuthController extends ApiController
 
         $user = User::modelClass()::query()->where('email', $data['email'])->first();
 
-        if ($user === null || ! Hash::check($data['password'], $user->password)) {
+        // Without an account the password is hashed anyway (about as slow as checking it), so
+        // the response time does not reveal which emails have accounts.
+        $valid = $user !== null ? Hash::check($data['password'], $user->password) : Hash::make($data['password']) === '';
+
+        if ($user === null || ! $valid) {
             RateLimiter::hit($throttleKey);
 
             throw ValidationException::withMessages(['email' => __('auth.failed')]);

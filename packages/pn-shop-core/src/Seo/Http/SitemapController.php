@@ -58,14 +58,18 @@ class SitemapController
     public function show(Request $request, string $file): Response
     {
         abort_unless((bool) $this->settings->get('seo.allow_indexing'), 404);
-        abort_unless(preg_match('/^([a-z]{2,3}(?:-[A-Za-z]{2,4})?)-(pages|categories|products)(?:-(\d+))?$/', $file, $match) === 1, 404);
+        abort_unless(preg_match('/^([a-z]{2,3}(?:-[A-Za-z]{2,4})?)-(pages|categories|products)(?:-([1-9]\d{0,5}))?$/', $file, $match) === 1, 404);
 
         [, $locale, $kind] = $match;
-        $chunk = max(1, (int) ($match[3] ?? 1));
+        $chunk = (int) ($match[3] ?? 1);
 
         abort_unless($this->localization->isSupported($locale), 404);
 
-        $xml = Cache::remember("pnshop.sitemap.{$file}", now()->addHour(), function () use ($request, $locale, $kind, $chunk) {
+        // Only files that exist are built and cached, so made-up numbers cannot fill the cache.
+        $files = $kind === 'products' ? max(1, (int) ceil(Product::query()->active()->count() / self::PER_FILE)) : 1;
+        abort_if($chunk > $files, 404);
+
+        $xml = Cache::remember("pnshop.sitemap.{$locale}-{$kind}-{$chunk}", now()->addHour(), function () use ($request, $locale, $kind, $chunk) {
             $urls = match ($kind) {
                 'pages' => $this->pages($request, $locale),
                 'categories' => $this->records(Category::query()->active(), fn (Model $category, string $slug) => '/shop?category='.rawurlencode($slug), $request, $locale),

@@ -5,6 +5,7 @@ namespace PnShop\Customer\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 use PnShop\Customer\Factories\CustomerAddressFactory;
 use PnShop\Customer\PostalAddress;
 
@@ -58,5 +59,21 @@ class CustomerAddress extends Model
     protected static function newFactory(): CustomerAddressFactory
     {
         return CustomerAddressFactory::new();
+    }
+
+    /**
+     * Make this the customer's default shipping and/or billing address ("shipping",
+     * "billing" or "both"); the previous default loses the flag.
+     */
+    public function makeDefault(string $for): void
+    {
+        DB::transaction(function () use ($for) {
+            foreach (['shipping', 'billing'] as $kind) {
+                if ($for === $kind || $for === 'both') {
+                    self::query()->where('user_id', $this->user_id)->update(["is_default_{$kind}" => false]);
+                    $this->forceFill(["is_default_{$kind}" => true])->save();
+                }
+            }
+        });
     }
 }

@@ -22,6 +22,14 @@ class ThemeManager
 {
     private ?ThemeManifest $active = null;
 
+    /**
+     * Themes found on disk, kept for the rest of the request (the active theme, its
+     * settings and its CSS are all looked up several times per page).
+     *
+     * @var array{themes: Collection<string, ThemeManifest>, invalid: array<string, string>}|null
+     */
+    private ?array $discovered = null;
+
     public function __construct(private Settings $settings) {}
 
     public static function path(): string
@@ -37,6 +45,12 @@ class ThemeManager
      */
     public function discover(array &$invalid = []): Collection
     {
+        if ($this->discovered !== null) {
+            $invalid = $this->discovered['invalid'];
+
+            return $this->discovered['themes'];
+        }
+
         $themes = collect([ThemeManifest::DEFAULT => $this->builtin()]);
 
         foreach (glob(self::path().'/*/*', GLOB_ONLYDIR) ?: [] as $directory) {
@@ -54,7 +68,9 @@ class ThemeManager
             }
         }
 
-        return $themes->sortKeys();
+        $this->discovered = ['themes' => $themes->sortKeys(), 'invalid' => $invalid];
+
+        return $this->discovered['themes'];
     }
 
     public function find(string $id): ThemeManifest
@@ -151,6 +167,7 @@ class ThemeManager
         $this->publish($theme);
         $this->settings->set('appearance', ['theme' => $theme->id]);
         $this->active = null;
+        $this->discovered = null;
 
         activity('extensions')->causedBy($actor)->event('theme_activated')
             ->withProperties(['theme' => $theme->id, 'version' => $theme->version])

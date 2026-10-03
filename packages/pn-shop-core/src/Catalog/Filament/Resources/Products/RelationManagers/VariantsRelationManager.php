@@ -20,14 +20,13 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
+use PnShop\Catalog\Exceptions\InvalidVariant;
 use PnShop\Catalog\Filament\Resources\Products\Schemas\ProductForm;
 use PnShop\Catalog\Models\Option;
-use PnShop\Catalog\Models\OptionValue;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Catalog\ProductType;
-use PnShop\Inventory\InventoryService;
+use PnShop\Catalog\VariantService;
 use PnShop\Inventory\Models\StockLevel;
 
 /**
@@ -103,7 +102,18 @@ class VariantsRelationManager extends RelationManager
                     ->icon(Heroicon::OutlinedSparkles)
                     ->requiresConfirmation()
                     ->modalDescription('Creates one variant for every combination of option values that does not exist yet, priced like the default variant.')
-                    ->action(fn () => $this->generateVariants()),
+                    ->action(function (Action $action): void {
+                        try {
+                            $created = app(VariantService::class)->generate($this->ownerProduct());
+                        } catch (InvalidVariant $e) {
+                            Notification::make()->danger()->title($e->getMessage())->send();
+                            $action->halt();
+
+                            return;
+                        }
+
+                        Notification::make()->success()->title("{$created} variant(s) created.")->send();
+                    }),
                 CreateAction::make()
                     ->using(fn (array $data) => $this->saveVariant(new ProductVariant(['product_id' => $this->getOwnerRecord()->getKey()]), $data)),
             ])
@@ -111,7 +121,17 @@ class VariantsRelationManager extends RelationManager
                 EditAction::make()
                     ->mutateRecordDataUsing(fn (array $data, ProductVariant $record) => $this->fillVariantData($data, $record))
                     ->using(fn (ProductVariant $record, array $data) => $this->saveVariant($record, $data)),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->using(function (ProductVariant $record, DeleteAction $action): bool {
+                        try {
+                            app(VariantService::class)->delete($record);
+                        } catch (InvalidVariant $e) {
+                            Notification::make()->danger()->title($e->getMessage())->send();
+                            $action->halt();
+                        }
+
+                        return true;
+                    }),
             ]);
     }
 
@@ -137,65 +157,30 @@ class VariantsRelationManager extends RelationManager
      */
     private function saveVariant(ProductVariant $variant, array $data): ProductVariant
     {
-        /** @var Product $product */
-        $product = $this->getOwnerRecord();
-        $valueIds = $product->options->map(fn (Option $option) => (int) $data["option_{$option->id}"])->sort()->values()->all();
+        $product = $this->ownerProduct();
+        $valueIds = array_values($product->options->map(fn (Option $option) => (int) $data["option_{$option->id}"])->all());
 
-        $duplicate = $product->variants()->whereKeyNot($variant->getKey() ?? 0)->with('optionValues')->get()
-            ->first(fn (ProductVariant $other) => $other->optionValues->modelKeys() !== [] && collect($other->optionValues->modelKeys())->sort()->values()->all() === $valueIds);
-
-        if ($duplicate !== null) {
-            Notification::make()->danger()->title('A variant with these options already exists.')->send();
+        try {
+            return app(VariantService::class)->save(
+                $product,
+                $variant,
+                $data,
+                $valueIds,
+                array_key_exists('stock', $data) && ProductForm::canManageStock() ? (int) $data['stock'] : null,
+                auth('admin')->user(),
+            );
+        } catch (InvalidVariant $e) {
+            Notification::make()->danger()->title($e->getMessage())->send();
 
             throw new Halt;
         }
-
-        return DB::transaction(function () use ($variant, $data, $valueIds) {
-            $variant->fill(collect($data)->only(['price', 'sale_price', 'sku', 'barcode', 'weight', 'is_active', 'track_inventory', 'allow_backorder'])->all())->save();
-            $variant->optionValues()->sync($valueIds);
-
-            if (array_key_exists('stock', $data) && ProductForm::canManageStock()) {
-                app(InventoryService::class)->setOnHand($variant, (int) $data['stock'], auth('admin')->user());
-            }
-
-            return $variant;
-        });
     }
 
-    private function generateVariants(): void
+    private function ownerProduct(): Product
     {
         /** @var Product $product */
         $product = $this->getOwnerRecord();
-        $product->load(['options.values', 'variants.optionValues']);
 
-        $combinations = [[]];
-
-        foreach ($product->options as $option) {
-            $combinations = collect($combinations)
-                ->flatMap(fn (array $combination) => $option->values->map(fn (OptionValue $value) => [...$combination, $value->id]))
-                ->all();
-        }
-
-        $existing = $product->variants->map(fn (ProductVariant $variant) => collect($variant->optionValues->modelKeys())->sort()->implode('-'));
-        $template = $product->defaultVariant();
-        $created = 0;
-
-        foreach ($combinations as $combination) {
-            sort($combination);
-
-            if ($combination === [] || $existing->contains(implode('-', $combination))) {
-                continue;
-            }
-
-            $variant = ProductVariant::query()->create([
-                'product_id' => $product->id,
-                'price' => $template->price ?? 0,
-                'sale_price' => $template?->sale_price,
-            ]);
-            $variant->optionValues()->sync($combination);
-            $created++;
-        }
-
-        Notification::make()->success()->title("{$created} variant(s) created.")->send();
+        return $product;
     }
 }

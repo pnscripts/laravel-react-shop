@@ -116,12 +116,15 @@ class ManageExtensions extends Page implements HasTable
                 ->action(function (array $data): void {
                     $path = Storage::disk('local')->path((string) $data['archive']);
 
-                    $this->run(function () use ($path) {
-                        $manifest = ZipPackage::extract($path, ExtensionManager::path());
-                        activity('extensions')->causedBy(auth('admin')->user())->event('uploaded')->withProperties(['extension' => $manifest->id, 'version' => $manifest->version])->log("Uploaded {$manifest->id} {$manifest->version}");
-                    }, 'Extension uploaded. Install it from the list.');
-
-                    Storage::disk('local')->delete((string) $data['archive']);
+                    try {
+                        $this->run(function () use ($path) {
+                            $manifest = ZipPackage::extract($path, ExtensionManager::path());
+                            activity('extensions')->causedBy(auth('admin')->user())->event('uploaded')->withProperties(['extension' => $manifest->id, 'version' => $manifest->version])->log("Uploaded {$manifest->id} {$manifest->version}");
+                        }, 'Extension uploaded. Install it from the list.');
+                    } finally {
+                        // The uploaded archive never stays behind, whatever happened.
+                        Storage::disk('local')->delete((string) $data['archive']);
+                    }
                 }),
         ];
     }
