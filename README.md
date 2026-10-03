@@ -1,122 +1,79 @@
 # PN Shop
 
-PN Shop is a [PN Scripts](https://pnscripts.com) product ([product page](https://pnscripts.com/products/pn-shop)). This is its source repository, `pnscripts/pn-shop-source`; releases are published to [`pnscripts/pn-shop`](https://github.com/pnscripts/pn-shop) (project skeleton) and [`pnscripts/pn-shop-core`](https://github.com/pnscripts/pn-shop-core) (core package).
+**PN Shop** is an open-source, self-hosted CMS and e-commerce platform by PN Scripts. It is built on **Laravel 13**, with a **React 19 / Inertia** storefront and a **Filament 5** admin panel. You can extend it with plugins and themes. It is MIT-licensed and free.
 
-An open-source **Laravel 13 + React/Inertia** e-commerce application, on its way to a full CMS and e-commerce platform. See [docs/](docs/README.md) for the architecture and roadmap.
+This is the source repository. Shops are created from the published packages `pnscripts/pn-shop` (the project) and `pnscripts/pn-shop-core` (the core). Documentation is in [docs/](docs/README.md), and the changes per release are in [CHANGELOG.md](CHANGELOG.md).
 
-Today it is a working shop: catalog with variants, a database cart, guest or authenticated checkout with structured addresses, customer accounts with address books, and a Filament admin.
+## What it does
 
-This is **not** a full marketplace. Card payments come through the included Stripe plugin. There is no public REST API yet.
+- **Catalog:** products with variants (size, colour…), each with its own SKU, price, sale price, weight and stock; nested categories, brands, filterable attributes, related products, upsells and cross-sells; a media library with WebP sizes and responsive images.
+- **Inventory:** a stock ledger with reservations at checkout. Stock leaves the shelf when an order ships and comes back on cancellation and returns.
+- **Selling:**
+  - carts kept in the database (they follow customers across devices);
+  - guest and account checkout with structured addresses;
+  - shipping zones and methods (flat, free, pickup, by weight, by subtotal);
+  - tax classes, zones and rates, with prices including or excluding tax;
+  - promotions and coupons with usage limits.
+- **Orders:** numbered orders with separate status, payment and fulfillment states, partial shipments with tracking, refunds, invoices, return requests (RMA), and emails in the customer's language.
+- **Payments:** cash on delivery and bank transfer are built in. Card payments come as plugins; Stripe Checkout is included.
+- **Content and SEO:** pages built from content blocks, with revisions and scheduled publishing; header and footer menus; meta tags, hreflang, JSON-LD, sitemaps and automatic redirects.
+- **Languages and money:** translatable catalog and content, localized URLs (`/bg/…`), and amounts stored as minor units.
+- **Extending:**
+  - plugins (install, update and remove from the admin or the command line, with signatures and a safe mode);
+  - child themes that override storefront files by path;
+  - storefront slots and blocks for plugins;
+  - a **Store API** and an **Admin API** with an OpenAPI description.
+- **Running it:**
+  - a command-line and web installer with no default accounts;
+  - `pnshop:update` with a dry run, backups and plugin checks;
+  - staff roles and permissions, and an activity log.
 
----
+Planned next: price lists and B2B pricing, stock in several locations, and several storefronts on one installation. See the [roadmap](docs/architecture/03-post-1.0-roadmap.md).
 
-## What is implemented
-
-- Public storefront
-  - Home with featured/active products (`GET /`)
-  - Shop index with optional category filter and pagination (`GET /shop`)
-  - Product page by slug (`GET /shop/{slug}`)
-  - Cart kept in the database: survives the session for guests, follows customers across devices, merges on sign-in
-  - Checkout (guest or signed-in): shipping and billing addresses, saved addresses, payment method, totals breakdown
-  - Customer account: orders and address book (`/dashboard`, `/account/orders`, `/account/addresses`)
-  - Honeypot and time-trap spam protection on checkout and registration
-  - Order confirmation (`GET /orders/{order}`) for the owner or the current session
-- Auth from the official Laravel React starter (register, login, password reset, profile)
-- Admin panel at `/admin` (Filament 5) with separate staff accounts, roles and permissions
-  - Dashboard: today's orders, pending orders, latest orders, low stock
-  - Products with variants (options such as size), gallery images, brands, nested categories, filterable attributes, related products/upsells/cross-sells
-  - Inventory with a stock movement ledger; media library with WebP conversions
-  - Orders: numbers, status / payment / fulfillment state machines with history and notes (stock is reserved at checkout, taken when shipped, released on cancel)
-  - Customers with address books and order history; customer groups
-  - CMS pages built from content blocks (with revisions and scheduling), header and footer menus
-  - SEO: meta tags, hreflang, JSON-LD, sitemaps, generated robots.txt, automatic 301 redirects
-  - Plugins: install / enable / update / disable / uninstall from the admin or CLI, safe mode, signatures; storefront slots and blocks for plugins; Stripe and a handling-fee reference plugin included
-  - Themes: prebuilt storefront bundles, child themes that override files by path, theme settings as CSS variables; the Aurora example theme
-  - Promotions built from conditions and discounts (percent, fixed, buy X get Y, free shipping), coupons with bulk codes and usage limits
-  - Return requests (RMA): customers request returns from the order page; staff approve, receive (with restocking) and refund
-  - Payment methods (cash on delivery, bank transfer) with a payment ledger; shipping zones and methods (flat, free, pickup, by weight, by subtotal) with partial shipments and tracking; refunds with restocking; numbered invoices; order emails in the customer's language; tax classes, zones and rates (inclusive or exclusive prices)
-  - Admin users, roles, store settings, activity log
-- JSON APIs ([docs/api](docs/api/README.md)), both with problem+json errors, cursor pagination and OpenAPI documents:
-  - **Store API** (`/api/store/v1`) for headless storefronts and apps: catalog, pages, menus, cart, idempotent checkout, customer accounts.
-  - **Admin API** (`/api/admin/v1`) for integrations: staff tokens limited to chosen permissions.
-- Installer (`php artisan pnshop:install` or the web installer at `/install`) and updater (`php artisan pnshop:update` with dry run, backup and plugin compatibility checks); tested on SQLite and MySQL 8
-- The core as the Composer package `pnscripts/pn-shop-core` (in this repository: `packages/pn-shop-core`), with the storefront prebuilt; shops are thin `pnscripts/pn-shop` projects updated with `composer update` and `php artisan pnshop:update`. See [docs/development/core-modules.md](docs/development/core-modules.md)
-- English and Bulgarian storefront with a language switcher, localized URLs (`/bg/...`) and translatable catalog content
-- Built-in payment gateways are manual (cash on delivery, bank transfer); card gateways come as extensions
-- PHPUnit feature/unit tests for models, cart, shop flow, and admin access
-
-## Not in 1.0
-
-Multi-store and sales channels in the admin, multi-location inventory screens, B2B price lists, a visual page-builder canvas, GraphQL and out-of-process apps are planned after 1.0. See [CHANGELOG.md](CHANGELOG.md) for what 1.0 contains.
-
----
-
-## Stack
-
-- Laravel 13, PHP 8.4+
-- Inertia 3, React 19, TypeScript 5.9, Vite 8
-- Tailwind CSS 4.3, shadcn/Radix UI
-- Node 22.12+ for building assets (24 LTS recommended, see `.nvmrc`)
-- SQLite by default (MySQL/PostgreSQL work if you change `.env`)
-
----
-
-## Install
-
-A shop:
+## Create a shop
 
 ```bash
 composer create-project pnscripts/pn-shop shop
 cd shop
-php artisan pnshop:install
+php artisan pnshop:install          # or open the site in a browser: /install
 ```
 
-From this repository (developing PN Shop itself; the core comes from `packages/pn-shop-core`):
+The installer checks the server, sets up the database (SQLite, MySQL, MariaDB or PostgreSQL), creates the tables and the store settings, and creates the **first administrator**. There are no default accounts. The storefront comes prebuilt, so the server needs no Node.
+
+To update, run `composer update pnscripts/pn-shop-core --with-all-dependencies` and then `php artisan pnshop:update`. Read [installing](docs/installation/installation.md) and [updating](docs/installation/updating.md) before going live, and also the [security checklist](docs/security/security.md#production-checklist).
+
+## Requirements
+
+- PHP 8.4 or newer, with the usual extensions (the installer lists anything missing).
+- MySQL 8, MariaDB 10.6+, PostgreSQL 14+ or SQLite 3.
+- A cron entry for the scheduler and a queue worker.
+- Node 22.12+ (24 recommended) only for building themes or developing the storefront.
+
+## Developing PN Shop
+
+In this repository the core lives in `packages/pn-shop-core`. Composer links it into `vendor/` through a path repository.
 
 ```bash
-git clone git@github.com:pnscripts/pn-shop-source.git shop
-cd shop
+git clone git@github.com:pnscripts/pn-shop-source.git pn-shop
+cd pn-shop
 composer install
-cp .env.example .env
+cp .env.example .env               # set APP_ENV=local and APP_DEBUG=true for development
 php artisan key:generate
-php artisan pnshop:install
-npm ci && npm run build
+php artisan pnshop:install --demo  # with demo categories and products
+npm ci
+composer run dev                   # app server, Vite, queue worker and logs
 ```
 
-The installer checks the server, sets up the database (SQLite by default, or `--db-connection=mysql …`), creates the tables, store settings and the **first administrator**. There are no default accounts. Without SSH, open the site in a browser to use the same installer at `/install`. See [docs/installation/installation.md](docs/installation/installation.md). Updates: `php artisan pnshop:update` ([docs/installation/updating.md](docs/installation/updating.md)).
-
-For development:
+Checks (CI runs them all on every pull request, on SQLite, MySQL and PostgreSQL):
 
 ```bash
-php artisan pnshop:install --demo        # with demo categories and products
-npm install
-composer run dev                          # app server, Vite, queue worker and logs
-```
-
-`.env.example` ships production-safe defaults; for local development set `APP_ENV=local` and `APP_DEBUG=true`. More staff accounts: `php artisan pnshop:create-admin you@example.com`, or Admin → System → Admin users ([docs/administration/staff-and-roles.md](docs/administration/staff-and-roles.md)).
-
----
-
-## Tests and quality checks
-
-```bash
-php artisan test
+./vendor/bin/phpunit
 vendor/bin/pint --test
-vendor/bin/phpstan analyse
-npm run format:check
-npm run lint:check
-npm run types
+vendor/bin/phpstan analyse && vendor/bin/phpstan analyse -c phpstan-core.neon
+npm run format:check && npm run lint:check && npm run types
 ```
 
-CI runs all of these on every pull request, plus `composer audit` and `npm audit`.
-
----
-
-## Telescope
-
-Telescope is a development dependency. It is registered only when `APP_ENV=local`, and `TELESCOPE_ENABLED=false` by default.
-
----
+Start with [core modules](docs/development/core-modules.md) for the architecture, [plugins](docs/extensions/plugins.md) and [themes](docs/themes/themes.md) for extending, and [publishing](docs/release/publishing.md) for releases.
 
 ## License
 

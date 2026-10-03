@@ -15,7 +15,7 @@ use Throwable;
  *       "name": "Store notice",
  *       "version": "1.0.0",
  *       "type": "plugin",
- *       "requires": { "pnshop": "^0.8", "php": ">=8.4", "plugins": { "acme/core": "^1.0" } },
+ *       "requires": { "pnshop": "^1.1", "php": ">=8.4", "plugins": { "acme/core": "^1.0" } },
  *       "provider": "Acme\\StoreNotice\\StoreNoticePlugin",
  *       "autoload": { "psr-4": { "Acme\\StoreNotice\\": "src/" } },
  *       "permissions": [{ "key": "store_notice.manage", "label": "Manage the store notice" }],

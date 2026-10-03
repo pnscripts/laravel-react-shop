@@ -23,7 +23,7 @@ Plugins add features without changing PN Shop's own code. The extension manager 
     "description": "A banner above the storefront.",
     "version": "1.2.0",
     "type": "plugin",
-    "requires": { "pnshop": "^0.8", "php": ">=8.4", "plugins": { "acme/core": "^1.0" } },
+    "requires": { "pnshop": "^1.1", "php": ">=8.4", "plugins": { "acme/core": "^1.0" } },
     "provider": "Acme\\StoreNotice\\StoreNoticePlugin",
     "autoload": { "psr-4": { "Acme\\StoreNotice\\": "src/" } },
     "permissions": [{ "key": "store_notice.manage", "label": "Manage the store notice" }],

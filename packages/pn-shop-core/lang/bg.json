@@ -10,7 +10,6 @@
     "A product in your cart is no longer available. Please review your cart.": "Продукт от количката вече не е наличен. Моля, прегледайте количката си.",
     "A redirect cannot point to itself.": "Пренасочването не може да сочи към себе си.",
     "A reset link will be sent if the account exists.": "Ако профилът съществува, ще изпратим линк за смяна на паролата.",
-    "A simple Laravel + React shop": "Онлайн магазин с Laravel и React",
     "Account holder": "Титуляр на сметката",
     "Active products only. Filter by category if you like.": "Само активни продукти. Можете да филтрирате по категория.",
     "Add address": "Добави адрес",
@@ -38,7 +37,6 @@
     "Bill to": "Получател",
     "Billing address": "Адрес за фактуриране",
     "Brand": "Марка",
-    "Browse active products, add them to your cart, and check out as a guest or a signed-in customer. Payment is cash on delivery or bank transfer.": "Разгледайте продуктите, добавете ги в количката и поръчайте като гост или с профил. Плащането е с наложен платеж или банков превод.",
     "Browse the catalog": "Към каталога",
     "Cancel": "Отказ",
     "Cancelled": "Отказана",
@@ -320,5 +318,7 @@
     "Your return :number: :status": "Вашето връщане :number: :status",
     "Your return has been refunded.": "Сумата за връщането е възстановена.",
     "Your return is approved. Please send the items back with the return number :number on the parcel.": "Връщането е одобрено. Моля, изпратете артикулите обратно с номер на връщане :number върху пратката.",
-    "Your return is closed.": "Връщането е приключено."
+    "Your return is closed.": "Връщането е приключено.",
+    "Welcome to :name": "Добре дошли в :name",
+    "Browse the catalog, add products to your cart and check out as a guest or with your account.": "Разгледайте каталога, добавете продукти в количката и поръчайте като гост или с профила си."
 }

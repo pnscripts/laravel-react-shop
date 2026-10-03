@@ -20,7 +20,7 @@ themes/acme/aurora/
     "version": "1.0.0",
     "type": "theme",
     "parent": "pnshop/default",
-    "requires": { "pnshop": ">=0.9" },
+    "requires": { "pnshop": "^1.1" },
     "settings": [
         { "key": "primary", "type": "color", "label": "Brand colour", "default": "#4f46e5",
           "css_var": "--primary", "contrast_var": "--primary-foreground" },

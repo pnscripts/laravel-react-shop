@@ -1,27 +1,39 @@
-# Product page copy changes for pnscripts.com (PN Shop 1.0)
+# PN Shop on pnscripts.com: what to keep in step
 
-The PN Shop product page on pnscripts.com describes the original starter: the "built in public" roadmap, an `is_admin` flag, and no card payments. Once 1.0 is released (on `main`, tagged), these claims are out of date. This list is for whoever updates that site. **This repository does not change pnscripts.com.**
+This list is for whoever updates the PN Shop product page on pnscripts.com. **This repository does not change pnscripts.com.**
 
-The page's content is seeded from `database/seeders/data/pn_shop_flagship.php` in the pnscripts.com repository, with matching Bulgarian strings in the same file and in `content_translations/bg.json`. Keys are named below. Every English change needs the same change in the Bulgarian copy.
+The page is seeded from `database/seeders/data/pn_shop_flagship.php` in the pnscripts.com repository. Its Bulgarian copy lives in the same file, and older Bulgarian strings live in `content_translations/bg.json`. Every English change needs the same change in Bulgarian.
 
-| Key / section | Now says | Should say (1.0) |
-|---|---|---|
-| `description`, `meta_description` | "catalog, cart, checkout, orders and admin today, growing into a full CMS and e-commerce platform" | "A self-hosted CMS and e-commerce platform on Laravel and React: catalog with variants, CMS pages, promotions, payments, shipping, tax, returns, plugins, themes and APIs." |
-| `solution_summary` | "grows in public, phase by phase, toward a modular platform" | "A modular shop platform on Laravel 13, React 19 and Filament 5, with its own core, plugin system and theme system." |
-| `value_proposition` | "Install it, place a test order… The roadmap in the repository shows each phase as it lands." | "Install it with `php artisan pnshop:install` (or the web installer), add products in the admin and take orders. Updates run with `php artisan pnshop:update`." |
-| `roadmap_summary` | "Built in public toward a 1.0 release: …" | Replace with what 1.0 contains, or with the post-1.0 plans: multi-store, B2B price lists, a visual page builder. |
-| Hero hint (BG `hint`) | "Примерна количка. Все още без картови плащания." ("Sample cart. No card payments yet.") | Remove "no card payments yet": Stripe ships as a plugin. |
-| Feature cards ("The whole purchase flow", "Orders saved…", "Tested and checked in CI") | Describe the starter | Suggested cards: **Catalog and CMS** (variants, inventory, pages from blocks, SEO); **Selling** (Stripe and offline payments, shipping zones, tax, promotions and coupons, returns); **Extensible** (plugins, child themes, Store and Admin APIs); **Tested** (CI on SQLite, MySQL and PostgreSQL). |
-| Roadmap `lead` | "Only the first column is in the release you can install today." | Remove the phased roadmap, or mark every column as released. |
-| FAQ "What can it do today?" | "A catalog with category filtering… a small admin for products and orders." | Summarise the 1.0 feature list (see CHANGELOG.md). |
-| FAQ "Is it a full e-commerce platform?" | "Not yet; that is where it is heading." | "Yes for a single store: catalog, CMS, checkout, payments, shipping, tax, promotions, returns, plugins, themes and APIs. Multi-store and B2B price lists come after 1.0." |
-| FAQ on payments | "Cash on delivery and bank transfer. There is no Stripe, PayPal or other card gateway yet." | "Cash on delivery and bank transfer are built in. Card payments come as plugins; Stripe Checkout is included. Other gateways can be added with the payment gateway contract." |
-| FAQ on the admin/roles ("not in the released code yet") | Roles are "in development" | "A Filament admin with separate staff accounts, roles and permissions, and API tokens limited to chosen permissions." |
-| FAQ "How is the admin protected?" | "With an is_admin flag on the user account." | "Staff accounts are separate from customer accounts, with roles and permissions. There are no default accounts; the installer creates the first administrator." |
-| FAQ requirements | "PHP 8.4…, Node 22.12… to build the assets…, SQLite by default. MySQL and PostgreSQL also work" | "PHP 8.4+ with intl, bcmath and sodium; MySQL 8, MariaDB, PostgreSQL or SQLite. Node is only needed to build themes from source." |
-| FAQ on the Marketplace | Plugins "may be listed once its extension…" | Unchanged in substance. PN Shop has its own plugin and theme format; Marketplace listing remains a separate decision. |
+## State checked on 2026-10-03
 
-Things the page must not claim:
+The English page matches PN Shop 1.1:
+- an open-source CMS and e-commerce platform on Laravel 13, React 19 and Filament 5;
+- MIT and free;
+- the core as the Composer package `pnscripts/pn-shop-core`;
+- `composer create-project pnscripts/pn-shop`, then `pnshop:install`, then `pnshop:update`;
+- Stripe as a plugin.
 
-- **Visual page builder, multi-store, B2B price lists, PayPal:** none of these is in 1.0.
-- **Ties to pnscripts.com:** PN Shop does not depend on pnscripts.com, and the Marketplace stays a separate product.
+It does not compare PN Shop with other shop platforms. That follows the owner decision of 2026-10-03.
+
+## Still to fix on the site
+
+- **Bulgarian copy on a fresh seed:**
+  - `ContentTranslationProvisioner` only fills empty fields, and it takes the PN Shop strings from `content_translations/bg.json`. Those strings are the starter-era copy: a session cart, "a small admin", "В този магазин няма шлюз за карти" ("this shop has no card gateway"), and "Таксува ли карти? Не." ("Does it charge cards? No.").
+  - The up-to-date Bulgarian block in `pn_shop_flagship.php` is applied only by migrations, and those skip a database that has no product yet.
+  - **Fix:** replace those `bg.json` strings with the current Bulgarian copy, or have the seeder apply the flagship block.
+- **Title pair:** `copy/2026_09_30_full_rewrite.php` still has the old title "PN Shop | Laravel 13 + React storefront" as a replacement row. It is low risk, but it is stale.
+
+## Facts worth adding (1.1.1)
+
+- **Security fixes** from an audit of 1.1:
+  - shipped cash-on-delivery orders are no longer auto-cancelled;
+  - staff cannot take over more powerful accounts;
+  - a new password signs out other sessions.
+- **Trusted proxies** (`TRUSTED_PROXIES`) for shops behind a load balancer or Cloudflare.
+- **Optional email verification** for customers.
+
+## Things the page must not claim
+
+- **Not built yet:** a visual page builder, several stores on one installation, B2B price lists, stock in several locations, PayPal. All are planned, none is released.
+- **No dependency on pnscripts.com:** PN Shop does not depend on pnscripts.com, and the Marketplace stays a separate product.
+- **No comparisons:** no comparison with, or reference to, other shop platforms.

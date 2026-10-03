@@ -40,7 +40,7 @@ trap 'rm -rf "$work"' EXIT
 scripts/release/build-dist.sh "$work/dist"
 
 publish() {
-    local name=$1 title=$2 about=$3
+    local name=$1
     local tree="$work/dist/$name" checkout="$work/$name"
 
     git clone -q "git@github.com:$owner/$name.git" "$checkout"
@@ -50,15 +50,8 @@ publish() {
     find "$checkout" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
     cp -a "$tree/." "$checkout/"
     cp "$root/LICENSE" "$checkout/LICENSE"
-    cat > "$checkout/README.md" <<EOF
-# $title
-
-$about
-
-**This repository is read-only.** It is published from [pnscripts/pn-shop-source](https://github.com/pnscripts/pn-shop-source) (\`scripts/release/publish.sh\`); send issues and pull requests there.
-
-Documentation: <https://github.com/pnscripts/pn-shop-source/tree/main/docs>
-EOF
+    # The skeleton's README becomes every new shop's README, so it is written for shop owners.
+    cp "$root/scripts/release/readme/$name.md" "$checkout/README.md"
 
     git -C "$checkout" add -A
     if git -C "$checkout" diff --cached --quiet; then
@@ -76,5 +69,5 @@ EOF
     echo "$name: published${tag:+ $tag}."
 }
 
-publish pn-shop-core "pnscripts/pn-shop-core" "The PN Shop platform core: modules, storefront and installer, as a Composer package. Shops require it through the \`pnscripts/pn-shop\` project."
-publish pn-shop "pnscripts/pn-shop" "A PN Shop project. Create a shop with \`composer create-project pnscripts/pn-shop shop\`, then run \`php artisan pnshop:install\`."
+publish pn-shop-core
+publish pn-shop

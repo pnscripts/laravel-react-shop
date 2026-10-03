@@ -18,7 +18,7 @@ use Throwable;
  *       "version": "1.0.0",
  *       "type": "theme",
  *       "parent": "pnshop/default",
- *       "requires": { "pnshop": "^0.9" },
+ *       "requires": { "pnshop": "^1.1" },
  *       "entries": ["resources/css/app.css", "resources/js/app.tsx"],
  *       "settings": [
  *         { "key": "primary", "type": "color", "label": "Brand colour", "default": "#4f46e5",
