@@ -2,6 +2,49 @@
 
 All notable changes to PN Shop. The project follows [semantic versioning](https://semver.org/): breaking changes to plugin and theme contracts come only in major versions and are announced one minor version ahead.
 
+## 1.1.2 (2026-10-03)
+
+The rest of the fixes from the 1.1 audit: the payment ledger, shared services, performance, documentation. Update with `composer update pnscripts/pn-shop-core` and `php artisan pnshop:update`; one migration adds indexes. See the [upgrade notes](docs/upgrades/2026-10-release-1.1.2.md).
+
+### Fixes
+
+- **Payment ledger:**
+  - Refunds and shipping are no longer set by hand in the admin or the Admin API; they come from refund, shipment and return records.
+  - The same gateway answer (a retried webhook) is recorded once, and a paid payment never goes back to failed or pending.
+  - A gateway payment no longer marks the order's other open payments "paid by staff".
+  - Refunds are saved as pending before the payment provider is asked.
+- **Variants:** the admin can no longer delete a product's last variant or leave it without a default one. "Generate variants" is capped at 200 and runs in one transaction.
+- **Configuration:** new options in the core's `config/pnshop.php` now reach shops whose own copy is older.
+- **Branding:** the customer account area no longer links to the starter kit's repository and documentation, and the fallback home page greets visitors with the store's name.
+- **Hardening:**
+  - pages receive only the account fields they show;
+  - the appearance cookie is checked;
+  - sitemap file numbers are bounded;
+  - Store API sign-in takes as long whether or not an account exists;
+  - staff API tokens always expire;
+  - CMS links refuse protocol-relative addresses;
+  - plugin uploads never stay behind.
+
+### Added
+
+- **Admin API:** `POST /orders/{id}/refunds`.
+- **Updater:** `pnshop:update` warns when the active theme does not support the new version.
+- **Plugins:** enabling, disabling or updating a plugin clears cached routes and admin components.
+- **Documentation:** guides for settings, deployment and testing; the skeleton's README is written for shop owners.
+
+### Performance
+
+- Themes are looked up once per request instead of about four times.
+- Indexes for the lookups PostgreSQL and SQLite did not index: a customer's orders, an order's payments, shipments, refunds and returns, newest-first listings.
+- The storefront's route list leaves out staff and installer routes.
+
+### Development
+
+- **Shared services:** `VariantService`, `DeliveryQuote` and `Registration` replace code copied between the admin, the storefront and the APIs.
+- **Static analysis:** Larastan reads every module's migrations.
+- **CI:** runs on `next` and pins actions by commit SHA.
+- **Dependencies:** Sail and Debugbar removed from the development dependencies (Telescope stays).
+
 ## 1.1.1 (2026-10-03)
 
 Fixes from the 1.1 audit. Update with `composer update pnscripts/pn-shop-core` and `php artisan pnshop:update`; one additive migration. See the [upgrade notes](docs/upgrades/2026-10-release-1.1.1.md).

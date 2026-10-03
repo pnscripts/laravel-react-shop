@@ -41,6 +41,7 @@ PN Shop is a self-hosted CMS and e-commerce platform by PN Scripts. These docume
 
 | Release | Notes |
 |---|---|
+| 1.1.2 | [upgrades/2026-10-release-1.1.2.md](upgrades/2026-10-release-1.1.2.md): the payment ledger, shared services, performance, documentation |
 | 1.1.1 | [upgrades/2026-10-release-1.1.1.md](upgrades/2026-10-release-1.1.1.md): fixes from the 1.1 audit |
 | 1.1.0 | [upgrades/2026-10-release-1.1.md](upgrades/2026-10-release-1.1.md): the core as the `pnscripts/pn-shop-core` package |
 | 1.0.0 | Phase notes: [0–1](upgrades/2026-10-phase-0-1.md) safety fixes and version upgrade, [2](upgrades/2026-10-phase-2.md) core foundation and admin, [3](upgrades/2026-10-phase-3.md) localization and money, [4](upgrades/2026-10-phase-4.md) catalog, [5](upgrades/2026-10-phase-5.md) customers, carts and checkout, [6](upgrades/2026-10-phase-6.md) orders, payments, shipping, tax, [7](upgrades/2026-10-phase-7.md) CMS, menus and SEO, [8](upgrades/2026-10-phase-8.md) extensions, [9](upgrades/2026-10-phase-9.md) themes, [10](upgrades/2026-10-phase-10.md) APIs, [11](upgrades/2026-10-phase-11.md) promotions and returns, [12](upgrades/2026-10-phase-12.md) installer and updater, [13](upgrades/2026-10-phase-13.md) hardening |
