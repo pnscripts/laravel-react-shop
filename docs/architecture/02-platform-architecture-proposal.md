@@ -17,7 +17,7 @@ These choices shape everything else. Each has a recommendation.
 | D2 | **Code organisation** | Core moves into **modules under `core/` with namespace `PnShop\`** (Catalog, Sales, Cms, …). `app/` is left to the merchant. Core is extracted later into the Composer package `pnscripts/pn-shop-core` so updates arrive via Composer. | Keep everything in `app/`, which makes safe core updates impossible later. |
 | D3 | **Database migration path** | **New 1.0 schema baseline**, plus a one-off `pnshop:import-legacy` command that converts starter-kit data (products, categories, orders, users). | Dozens of in-place transforming migrations. Fragile, for an installed base that is effectively zero. |
 | D4 | **Staff vs customers** | **Separate tables and guards**: `admin_users` (guard `admin`, Filament) and `customers` (guard `web`, storefront). | One `users` table plus roles. Simpler, but one bug can turn a customer into staff. |
-| D5 | **Product model** | **Every product has ≥ 1 variant.** SKU, price, stock and weight live on the variant; simple products have exactly one. | Separate code paths for simple vs configurable products (Magento style). |
+| D5 | **Product model** | **Every product has ≥ 1 variant.** SKU, price, stock and weight live on the variant; simple products have exactly one. | Separate code paths for simple and configurable products. |
 | D6 | **Storefront rendering** | Keep **Inertia + React** for the default theme (SSR optional). A theme ships a **prebuilt bundle**, so there's no Node in production. | Blade themes. Easier to override, but loses the React product identity. |
 | D7 | **Package / product naming** | Composer `pnscripts/pn-shop` (project) and `pnscripts/pn-shop-core` (later), with app name and docs saying "PN Shop". The repo can keep its URL. | Keep `petar-v-nikolov/laravel-react-shop`. |
 
@@ -261,7 +261,7 @@ Mitigations:
 - installed-file checksums detect tampering;
 - an audit log records every extension action.
 
-Composer resolution never runs inside a web request. A future out-of-process "app" model (webhooks + scoped API tokens, like Shopware Apps) is enabled by the serialisable events but isn't built in 1.0.
+Composer resolution never runs inside a web request. A future out-of-process "app" model (webhooks + scoped API tokens, apps running outside the shop) is enabled by the serialisable events but isn't built in 1.0.
 
 ### 7.6 Marketplace readiness (not built)
 
