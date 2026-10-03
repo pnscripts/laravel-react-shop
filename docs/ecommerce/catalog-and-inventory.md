@@ -19,8 +19,10 @@ Everything below lives in `PnShop\Catalog`, `PnShop\Inventory` and `PnShop\Media
     ```
   - Load `variants.stockLevels` (see `ProductCardPresenter::RELATIONS`) before reading the shortcuts in lists.
 - **Variable products** choose options on the product form and manage variants in the *Variants* table on the edit page.
-  - *Generate variants* creates every missing combination, priced like the default variant.
+  - *Generate variants* creates every missing combination, priced like the default variant, up to 200 at a time.
   - A combination can exist only once.
+  - A product always keeps one variant; deleting the default variant makes another one the default.
+- **Featured products:** *Featured on the home page* (product form, Visibility) puts the product first in the home page's product list, which shows eight products: featured first, then the newest. A CMS page marked as the homepage replaces that list.
 - **Prices:**
   - Money is stored in minor units.
   - A sale price applies only when it is set and lower than the price (`PnShop\Money\Prices`).
@@ -87,4 +89,13 @@ $inventory->available($variant);                                      // null wh
   - reopening a cancelled order straight to shipped: `order_reopened`;
   - admin edits: `adjustment`;
   - orders placed before Phase 5 recorded `order` at checkout.
-- The dashboard's *Low stock* widget lists tracked variants with 5 or fewer units available.
+- **Low stock:** the dashboard's *Low stock* widget lists tracked variants at or below their *Low stock at* value (variant form), or 5 units when it is empty.
+- **Stock history:** the *Stock history* tab of a product lists every movement of its variants, with the reason, the change, the on-hand count after it and who made it.
+- **Changing stock:** needs the `catalog.inventory.manage` permission, in the product and variant forms and in the Admin API.
+
+## Browsing the shop
+
+- **Search:** the search box on `/shop` (and `q` in the Store API) matches product titles in the visitor's language.
+- **Sorting:** newest (default), price low to high or high to low, or name. Price uses the default variant's price, or its sale price when lower. Name uses the title in the default language.
+- **Filters:** categories at any depth (the rows follow the chosen category's path), brands and filterable attributes. Values of one attribute widen the choice; different attributes narrow it.
+- **Product cards:** they show how many units are left. A product that sells on backorder shows *Available to order* instead of *Out of stock*.

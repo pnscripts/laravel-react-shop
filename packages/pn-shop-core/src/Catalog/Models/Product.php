@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 use PnShop\Acl\Models\AdminUser;
@@ -18,6 +19,7 @@ use PnShop\Catalog\ProductRelationType;
 use PnShop\Catalog\ProductType;
 use PnShop\Foundation\Concerns\HasSlug;
 use PnShop\Inventory\InventoryService;
+use PnShop\Inventory\Models\StockMovement;
 use PnShop\Localization\Concerns\Translatable;
 use PnShop\Localization\Contracts\TranslatableModel;
 use PnShop\Media\Concerns\HasMedia;
@@ -41,6 +43,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int $product_category_id
  * @property int|null $brand_id
  * @property bool $is_active
+ * @property bool $is_featured shown first in the home page's featured products
  * @property string|null $image legacy external image URL
  * @property-read Money|null $price
  * @property-read Money|null $sale_price
@@ -69,6 +72,7 @@ class Product extends Model implements TranslatableModel
         'meta_title',
         'meta_description',
         'is_active',
+        'is_featured',
         'image',
         'price',
         'sale_price',
@@ -94,6 +98,7 @@ class Product extends Model implements TranslatableModel
         return [
             'type' => ProductType::class,
             'is_active' => 'boolean',
+            'is_featured' => 'boolean',
         ];
     }
 
@@ -207,6 +212,16 @@ class Product extends Model implements TranslatableModel
     }
 
     /**
+     * The stock ledger of all the product's variants, newest first.
+     *
+     * @return HasManyThrough<StockMovement, ProductVariant, $this>
+     */
+    public function stockMovements(): HasManyThrough
+    {
+        return $this->hasManyThrough(StockMovement::class, ProductVariant::class)->latest('stock_movements.id');
+    }
+
+    /**
      * The default variant (or the first one), from the loaded `variants` relation when available.
      */
     public function defaultVariant(): ?ProductVariant
@@ -312,25 +327,24 @@ class Product extends Model implements TranslatableModel
     }
 
     /**
-     * @return Collection<int, array{attribute: string, value: string|null}>
+     * The product's specifications for its page: each attribute it has values for, in the
+     * attributes' order, with all its values (a multi-select can have several).
+     *
+     * @return Collection<int, array{attribute: string, value: string}>
      */
     public function getProductAttributesWithValues(): Collection
     {
-        $categoryAttributes = $this->category
-            ->productAttributes()
-            ->with('values')
-            ->get();
+        $this->loadMissing('selectedAttributeValues.productAttribute');
 
-        $selectedValueIds = $this->selectedAttributeValues->pluck('id')->toArray();
-
-        return $categoryAttributes->map(function (ProductAttribute $attribute) use ($selectedValueIds) {
-            $selectedValue = $attribute->values->first(fn (ProductAttributeValue $value) => in_array($value->id, $selectedValueIds));
-
-            return [
-                'attribute' => $attribute->label,
-                'value' => $selectedValue?->value,
-            ];
-        });
+        return $this->selectedAttributeValues
+            ->filter(fn (ProductAttributeValue $value) => $value->productAttribute !== null)
+            ->groupBy('product_attribute_id')
+            ->sortBy(fn (Collection $values) => [$values->first()?->productAttribute?->position, $values->first()?->product_attribute_id])
+            ->map(fn (Collection $values) => [
+                'attribute' => (string) $values->first()?->productAttribute?->label,
+                'value' => $values->sortBy(['position', 'id'])->pluck('value')->implode(', '),
+            ])
+            ->values();
     }
 
     protected static function booted(): void

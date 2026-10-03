@@ -110,6 +110,9 @@ class ProductForm
                         Toggle::make('is_active')
                             ->label('Visible in the store')
                             ->default(true),
+                        Toggle::make('is_featured')
+                            ->label('Featured on the home page')
+                            ->helperText('Featured products come first in the home page\'s product list.'),
                         Select::make('tax_class_id')
                             ->label('Tax class')
                             ->relationship('taxClass', 'name')

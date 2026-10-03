@@ -11,7 +11,8 @@ use PnShop\Catalog\Filament\Resources\Products\ProductResource;
 use PnShop\Catalog\Models\ProductVariant;
 
 /**
- * Tracked, active variants with few units left (on hand minus reserved).
+ * Tracked, active variants with few units left (on hand minus reserved): at or below the
+ * variant's own low-stock threshold, or THRESHOLD when it has none.
  */
 class LowStockProducts extends TableWidget
 {
@@ -39,7 +40,7 @@ class LowStockProducts extends TableWidget
                 ->where('track_inventory', true)
                 ->where('is_active', true)
                 ->whereHas('product', fn (Builder $product) => $product->where('is_active', true))
-                ->whereRaw(self::AVAILABLE_SQL.' <= ?', [self::THRESHOLD])
+                ->whereRaw(self::AVAILABLE_SQL.' <= coalesce(product_variants.low_stock_threshold, ?)', [self::THRESHOLD])
                 ->orderByRaw(self::AVAILABLE_SQL))
             ->defaultPaginationPageOption(5)
             ->columns([

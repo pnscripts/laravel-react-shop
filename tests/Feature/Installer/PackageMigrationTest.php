@@ -46,6 +46,14 @@ class PackageMigrationTest extends TestCase
         parent::tearDown();
     }
 
+    /** ^<major>.<minor> of the running core, e.g. ^1.2. */
+    private static function constraint(): string
+    {
+        [$major, $minor] = explode('.', PnShop::VERSION);
+
+        return "^{$major}.{$minor}";
+    }
+
     private function migration(): PackageMigration
     {
         return new PackageMigration($this->root, $this->root.'/shipped.json');
@@ -56,7 +64,7 @@ class PackageMigrationTest extends TestCase
         $plan = $this->migration()->plan();
 
         $this->assertSame([
-            'require '.PnShop::PACKAGE.' ^1.1',
+            'require '.PnShop::PACKAGE.' '.self::constraint(),
             'remove the path repository packages/pn-shop-core',
             'stop autoloading PnShop\\ from core/',
             'stop autoloading Database\\Seeders\\ from database/seeders/',
@@ -78,7 +86,7 @@ class PackageMigrationTest extends TestCase
         $this->assertFileExists($this->root.'/app/Http/Controllers/Acme/MyController.php', 'Files 1.0 did not ship stay.');
 
         $composer = json_decode((string) File::get($this->root.'/composer.json'), true);
-        $this->assertSame('^1.1', $composer['require'][PnShop::PACKAGE]);
+        $this->assertSame(self::constraint(), $composer['require'][PnShop::PACKAGE]);
         $this->assertSame([['type' => 'composer', 'url' => 'https://repo.acme.test']], $composer['repositories']);
         $this->assertSame(['App\\' => 'app/'], $composer['autoload']['psr-4']);
 

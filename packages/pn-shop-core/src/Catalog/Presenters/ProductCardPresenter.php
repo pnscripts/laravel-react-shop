@@ -32,6 +32,8 @@ final class ProductCardPresenter
             'price_from' => $product->hasVaryingPrices(),
             'image' => self::mainImage($product),
             'stock' => $product->stock,
+            // Can still be ordered with no stock left (a variant sells on backorder).
+            'backorder' => $product->activeVariants()->contains(fn (ProductVariant $variant) => $variant->track_inventory && $variant->allow_backorder),
             'category' => $product->category ? [
                 'id' => $product->category->id,
                 'title' => $product->category->title,

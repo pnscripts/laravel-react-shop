@@ -320,5 +320,13 @@
     "Your return is approved. Please send the items back with the return number :number on the parcel.": "Връщането е одобрено. Моля, изпратете артикулите обратно с номер на връщане :number върху пратката.",
     "Your return is closed.": "Връщането е приключено.",
     "Welcome to :name": "Добре дошли в :name",
-    "Browse the catalog, add products to your cart and check out as a guest or with your account.": "Разгледайте каталога, добавете продукти в количката и поръчайте като гост или с профила си."
+    "Browse the catalog, add products to your cart and check out as a guest or with your account.": "Разгледайте каталога, добавете продукти в количката и поръчайте като гост или с профила си.",
+    "Search: :q": "Търсене: :q",
+    "Search products": "Търсене на продукти",
+    "Sort by": "Подреди по",
+    "No products match \":q\".": "Няма продукти за „:q“.",
+    "Newest": "Най-нови",
+    "Price: low to high": "Цена: възходяща",
+    "Price: high to low": "Цена: низходяща",
+    "Available to order": "Може да се поръча"
 }

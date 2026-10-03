@@ -157,6 +157,7 @@ class VariantController extends AdminController
             'is_active' => ['sometimes', 'boolean'],
             'track_inventory' => ['sometimes', 'boolean'],
             'allow_backorder' => ['sometimes', 'boolean'],
+            'low_stock_threshold' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:10000000'],
             'position' => ['sometimes', 'integer', 'min:0'],
             'option_value_ids' => ['sometimes', 'array'],
             'option_value_ids.*' => ['integer', Rule::exists('option_values', 'id')],

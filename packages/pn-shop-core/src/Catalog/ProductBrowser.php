@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use PnShop\Catalog\Models\Brand;
 use PnShop\Catalog\Models\Category;
 use PnShop\Catalog\Models\Product;
+use PnShop\Catalog\Models\ProductVariant;
 use PnShop\Localization\Localization;
 
 /**
@@ -25,10 +26,19 @@ final class ProductBrowser
         private readonly bool $matchesNothing,
         public readonly array $attributeFilters,
         public readonly string $search,
+        public readonly string $sort = 'newest',
     ) {}
 
+    /** How a listing can be ordered: key => label. */
+    public const SORTS = [
+        'newest' => 'Newest',
+        'price_asc' => 'Price: low to high',
+        'price_desc' => 'Price: high to low',
+        'name' => 'Name',
+    ];
+
     /**
-     * @param  array<string, mixed>  $input  category (slug), brand (slug), filter (attribute id => value ids), q
+     * @param  array<string, mixed>  $input  category (slug), brand (slug), filter (attribute id => value ids), q, sort (one of SORTS)
      */
     public static function fromInput(array $input): self
     {
@@ -49,6 +59,7 @@ final class ProductBrowser
             ($categorySlug !== '' && $category === null) || ($brandSlug !== '' && $brand === null),
             $attributeFilters,
             is_string($input['q'] ?? null) ? trim(mb_substr($input['q'], 0, 100)) : '',
+            is_string($input['sort'] ?? null) && array_key_exists($input['sort'], self::SORTS) ? $input['sort'] : 'newest',
         );
     }
 
@@ -92,5 +103,28 @@ final class ProductBrowser
                     ->when($locale !== app(Localization::class)->defaultLocale(), fn (Builder $query) => $query
                         ->orWhereHas('translations', fn (Builder $translations) => $translations->where('locale', $locale)->whereLike('title', $pattern))));
             });
+    }
+
+    /**
+     * query() in the chosen order. Prices are the default variant's: the sale price when it is
+     * below the price, otherwise the price (what the product card shows "from").
+     *
+     * @return Builder<Product>
+     */
+    public function sorted(): Builder
+    {
+        $query = $this->query();
+        $price = ProductVariant::query()
+            ->selectRaw('CASE WHEN sale_price IS NOT NULL AND sale_price < price THEN sale_price ELSE price END')
+            ->whereColumn('product_variants.product_id', 'products.id')
+            ->where('is_default', true)
+            ->limit(1);
+
+        return match ($this->sort) {
+            'price_asc' => $query->orderBy($price)->orderBy('products.id'),
+            'price_desc' => $query->orderByDesc($price)->orderByDesc('products.id'),
+            'name' => $query->orderBy('products.title')->orderBy('products.id'),
+            default => $query->latest('products.created_at')->orderByDesc('products.id'),
+        };
     }
 }

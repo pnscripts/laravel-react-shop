@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use PnShop\Catalog\Filament\Resources\Products\Pages\CreateProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\EditProduct;
 use PnShop\Catalog\Filament\Resources\Products\Pages\ListProducts;
+use PnShop\Catalog\Filament\Resources\Products\RelationManagers\StockHistoryRelationManager;
 use PnShop\Catalog\Filament\Resources\Products\RelationManagers\VariantsRelationManager;
 use PnShop\Catalog\Filament\Resources\Products\Schemas\ProductForm;
 use PnShop\Catalog\Filament\Resources\Products\Tables\ProductsTable;
@@ -43,7 +44,7 @@ class ProductResource extends Resource
 
     public static function getRelations(): array
     {
-        return [VariantsRelationManager::class];
+        return [VariantsRelationManager::class, StockHistoryRelationManager::class];
     }
 
     public static function getPages(): array

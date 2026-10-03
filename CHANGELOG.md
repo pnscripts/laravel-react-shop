@@ -2,6 +2,22 @@
 
 All notable changes to PN Shop. The project follows [semantic versioning](https://semver.org/): breaking changes to plugin and theme contracts come only in major versions and are announced one minor version ahead.
 
+## 1.2.0 (2026-10-03)
+
+Catalog and storefront gaps found by the audit of 1.1. See the [upgrade notes](docs/upgrades/2026-10-release-1.2.md). The pricing and B2B release moves to 1.3; the [roadmap](docs/architecture/03-post-1.0-roadmap.md) keeps its order.
+
+### Added
+
+- **Shop page:** a search box, sorting (newest, price, name) and category rows at any depth.
+- **Featured products:** shown first on the home page. Set in the product form and the Admin API.
+- **Low stock per variant:** a threshold per variant. The dashboard's low-stock list uses it, with 5 as the default.
+- **Stock history:** a tab on the product edit page listing every stock movement of its variants and who made it.
+
+### Fixes
+
+- **Product page specifications:** they show every attribute the product has values for, with all the values of multi-select attributes.
+- **Product cards:** products sold on backorder show *Available to order* instead of *Out of stock*.
+
 ## 1.1.2 (2026-10-03)
 
 The rest of the fixes from the 1.1 audit: the payment ledger, shared services, performance, documentation. Update with `composer update pnscripts/pn-shop-core` and `php artisan pnshop:update`; one migration adds indexes. See the [upgrade notes](docs/upgrades/2026-10-release-1.1.2.md).

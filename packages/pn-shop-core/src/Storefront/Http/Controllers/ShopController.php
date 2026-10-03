@@ -3,6 +3,7 @@
 namespace PnShop\Storefront\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,14 +21,13 @@ class ShopController extends Controller
 {
     public function index(Request $request): Response
     {
-        $browser = ProductBrowser::fromInput($request->only(['category', 'brand', 'filter']));
+        $browser = ProductBrowser::fromInput($request->only(['category', 'brand', 'filter', 'q', 'sort']));
         $category = $browser->category;
         $brand = $browser->brand;
         $base = $browser->base();
 
-        $products = $browser->query()
+        $products = $browser->sorted()
             ->with(ProductCardPresenter::RELATIONS)
-            ->latest()
             ->paginate(12)
             ->withQueryString()
             ->through(fn (Product $product) => ProductCardPresenter::present($product));
@@ -36,14 +36,10 @@ class ShopController extends Controller
         app(CatalogSeo::class)->listing($request, $category, $brand, $trail);
 
         $categories = Category::query()->active()->defaultOrder()->get(['id', 'title', 'slug', 'parent_id', '_lft', '_rgt']);
-        $link = fn (Category $category): array => ['id' => $category->id, 'title' => $category->title, 'slug' => $category->slug];
 
         return Inertia::render('shop/index', [
             'products' => $products,
-            'categories' => $categories->whereNull('parent_id')->map(fn (Category $root): array => [
-                ...$link($root),
-                'children' => $categories->where('parent_id', $root->id)->map($link)->values()->all(),
-            ])->values()->all(),
+            'categories' => self::tree($categories, null),
             'brands' => Brand::query()->active()->orderBy('name')->get(['id', 'name', 'slug']),
             'facets' => $this->facets($base),
             'filters' => [
@@ -51,7 +47,10 @@ class ShopController extends Controller
                 'category_path' => array_map(fn (Category $item) => $item->slug, $trail),
                 'brand' => $brand?->slug,
                 'attributes' => (object) $browser->attributeFilters,
+                'q' => $browser->search,
+                'sort' => $browser->sort,
             ],
+            'sorts' => collect(ProductBrowser::SORTS)->map(fn (string $label, string $key) => ['key' => $key, 'label' => __($label)])->values()->all(),
         ]);
     }
 
@@ -94,5 +93,21 @@ class ShopController extends Controller
                 'values' => array_values($attribute->values->map(fn (ProductAttributeValue $value) => ['id' => $value->id, 'value' => $value->value])->all()),
             ])
             ->all());
+    }
+
+    /**
+     * Categories as a tree at any depth, for the shop's category rows.
+     *
+     * @param  Collection<int, Category>  $categories
+     * @return list<array{id: int, title: string, slug: string, children: list<array<string, mixed>>}>
+     */
+    private static function tree(Collection $categories, ?int $parentId): array
+    {
+        return array_values($categories->where('parent_id', $parentId)->map(fn (Category $category): array => [
+            'id' => $category->id,
+            'title' => $category->title,
+            'slug' => $category->slug,
+            'children' => self::tree($categories, $category->id),
+        ])->all());
     }
 }

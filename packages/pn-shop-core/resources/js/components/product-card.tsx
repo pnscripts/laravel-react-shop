@@ -45,7 +45,9 @@ export function ProductCard({ product }: { product: ProductCardType }) {
                             ? t('In stock')
                             : product.stock > 0
                               ? t(':count in stock', { count: product.stock })
-                              : t('Out of stock')}
+                              : product.backorder
+                                ? t('Available to order')
+                                : t('Out of stock')}
                     </span>
                 </CardFooter>
             </Link>

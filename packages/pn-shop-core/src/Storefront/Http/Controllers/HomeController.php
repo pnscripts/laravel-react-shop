@@ -23,9 +23,11 @@ class HomeController extends Controller
             return Inertia::render('home', ['products' => [], 'blocks' => $content->render($home), 'title' => $home->title]);
         }
 
+        // Featured products first, then the newest, eight in all.
         $products = Product::query()
             ->active()
             ->with(ProductCardPresenter::RELATIONS)
+            ->orderByDesc('is_featured')
             ->latest()
             ->limit(8)
             ->get()

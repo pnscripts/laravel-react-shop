@@ -4,14 +4,22 @@ import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import StorefrontLayout from '@/layouts/storefront-layout';
 import { type Paginated, type ProductCard as ProductCardType } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { type FormEvent, useState } from 'react';
 
-type CategoryLink = { id: number; title: string; slug: string };
-type Category = CategoryLink & { children: CategoryLink[] };
+type Category = { id: number; title: string; slug: string; children: Category[] };
 type Brand = { id: number; name: string; slug: string };
 type Facet = { id: number; label: string; values: { id: number; value: string }[] };
-type Filters = { category: string | null; category_path: string[]; brand: string | null; attributes: Record<string, number[]> };
-type Params = { category?: string | null; brand?: string | null; attributes?: Record<string, number[]> };
+type Sort = { key: string; label: string };
+type Filters = {
+    category: string | null;
+    category_path: string[];
+    brand: string | null;
+    attributes: Record<string, number[]>;
+    q?: string;
+    sort?: string;
+};
+type Params = { category?: string | null; brand?: string | null; attributes?: Record<string, number[]>; q?: string; sort?: string };
 
 export default function ShopIndex({
     products,
@@ -19,25 +27,47 @@ export default function ShopIndex({
     brands,
     facets,
     filters,
+    sorts = [],
 }: {
     products: Paginated<ProductCardType>;
     categories: Category[];
     brands: Brand[];
     facets: Facet[];
     filters: Filters;
+    sorts?: Sort[];
 }) {
     const t = useTranslations();
-    const activeRoot = categories.find((category) => filters.category_path.includes(category.slug));
+    const [search, setSearch] = useState(filters.q ?? '');
+
+    // One row of categories per level of the chosen category's path: the roots, then the
+    // children of each chosen category on the way down.
+    const rows: Category[][] = [categories];
+    for (const slug of filters.category_path) {
+        const chosen = rows[rows.length - 1].find((category) => category.slug === slug);
+        if (!chosen || chosen.children.length === 0) {
+            break;
+        }
+        rows.push(chosen.children);
+    }
 
     /** Shop URL for the current filters with some of them replaced. */
     const shopUrl = (changes: Params) => {
-        const next = { category: filters.category, brand: filters.brand, attributes: filters.attributes, ...changes };
+        const next = {
+            category: filters.category,
+            brand: filters.brand,
+            attributes: filters.attributes,
+            q: filters.q,
+            sort: filters.sort,
+            ...changes,
+        };
         const filter = Object.fromEntries(Object.entries(next.attributes ?? {}).filter(([, values]) => values.length > 0));
 
         return route('shop.index', {
             ...(next.category ? { category: next.category } : {}),
             ...(next.brand ? { brand: next.brand } : {}),
             ...(Object.keys(filter).length > 0 ? { filter } : {}),
+            ...(next.q ? { q: next.q } : {}),
+            ...(next.sort && next.sort !== 'newest' ? { sort: next.sort } : {}),
         });
     };
     const toggleValue = (attributeId: number, valueId: number) => {
@@ -47,34 +77,78 @@ export default function ShopIndex({
         return shopUrl({ attributes: { ...filters.attributes, [attributeId]: values } });
     };
 
+    const submitSearch = (event: FormEvent) => {
+        event.preventDefault();
+        router.visit(shopUrl({ q: search.trim() }));
+    };
+
     return (
         <StorefrontLayout>
-            <Head title={t('Shop')} />
-            <div className="mb-8">
+            <Head title={filters.q ? t('Search: :q', { q: filters.q }) : t('Shop')} />
+            <div className="mb-6">
                 <h1 className="mb-2 text-3xl font-semibold tracking-tight">{t('Shop')}</h1>
                 <p className="text-muted-foreground">{t('Active products only. Filter by category if you like.')}</p>
             </div>
 
-            <div className="mb-3 flex flex-wrap gap-2">
-                <Button variant={filters.category ? 'outline' : 'default'} size="sm" asChild>
-                    <Link href={shopUrl({ category: null, attributes: {} })}>{t('All')}</Link>
-                </Button>
-                {categories.map((category) => (
-                    <Button key={category.id} variant={activeRoot?.id === category.id ? 'default' : 'outline'} size="sm" asChild>
-                        <Link href={shopUrl({ category: category.slug, attributes: {} })}>{category.title}</Link>
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+                <form role="search" onSubmit={submitSearch} className="flex min-w-0 flex-1 gap-2">
+                    <label htmlFor="shop-search" className="sr-only">
+                        {t('Search products')}
+                    </label>
+                    <input
+                        id="shop-search"
+                        type="search"
+                        value={search}
+                        onChange={(event) => setSearch(event.target.value)}
+                        placeholder={t('Search products')}
+                        maxLength={100}
+                        className="border-input bg-background focus-visible:ring-ring h-9 w-full max-w-sm rounded-md border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                    />
+                    <Button type="submit" size="sm">
+                        {t('Search')}
                     </Button>
-                ))}
+                </form>
+                {sorts.length > 0 && (
+                    <label className="text-muted-foreground flex items-center gap-2 text-sm">
+                        {t('Sort by')}
+                        <select
+                            value={filters.sort ?? 'newest'}
+                            onChange={(event) => router.visit(shopUrl({ sort: event.target.value }), { preserveScroll: true })}
+                            className="border-input bg-background text-foreground h-9 rounded-md border px-2 text-sm"
+                        >
+                            {sorts.map((sort) => (
+                                <option key={sort.key} value={sort.key}>
+                                    {sort.label}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                )}
             </div>
 
-            {activeRoot && activeRoot.children.length > 0 && (
-                <div className="mb-3 flex flex-wrap gap-2 pl-4">
-                    {activeRoot.children.map((child) => (
-                        <Button key={child.id} variant={filters.category === child.slug ? 'secondary' : 'ghost'} size="sm" asChild>
-                            <Link href={shopUrl({ category: child.slug, attributes: {} })}>{child.title}</Link>
+            {rows.map((row, level) => (
+                <div key={level} className={`mb-3 flex flex-wrap gap-2 ${level > 0 ? 'pl-4' : ''}`}>
+                    {level === 0 && (
+                        <Button variant={filters.category ? 'outline' : 'default'} size="sm" asChild>
+                            <Link href={shopUrl({ category: null, attributes: {} })}>{t('All')}</Link>
                         </Button>
-                    ))}
+                    )}
+                    {row.map((category) => {
+                        const active = filters.category_path.includes(category.slug);
+
+                        return (
+                            <Button
+                                key={category.id}
+                                variant={active ? (level === 0 ? 'default' : 'secondary') : level === 0 ? 'outline' : 'ghost'}
+                                size="sm"
+                                asChild
+                            >
+                                <Link href={shopUrl({ category: category.slug, attributes: {} })}>{category.title}</Link>
+                            </Button>
+                        );
+                    })}
                 </div>
-            )}
+            ))}
 
             {brands.length > 0 && (
                 <div className="mb-8 flex flex-wrap items-center gap-2">
@@ -105,7 +179,9 @@ export default function ShopIndex({
             ))}
 
             {products.data.length === 0 ? (
-                <p className="text-muted-foreground">{t('No products match this filter.')}</p>
+                <p className="text-muted-foreground">
+                    {filters.q ? t('No products match ":q".', { q: filters.q }) : t('No products match this filter.')}
+                </p>
             ) : (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {products.data.map((product) => (

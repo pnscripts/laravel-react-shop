@@ -42,7 +42,9 @@ export function ProductCard({ product }: { product: ProductCardType }) {
             <div className="space-y-1 p-4">
                 {product.category && <p className="text-muted-foreground text-xs tracking-wide uppercase">{product.category.title}</p>}
                 <h3 className="line-clamp-2 font-medium">{product.title}</h3>
-                <p className="text-muted-foreground text-xs">{product.stock === null || product.stock > 0 ? t('In stock') : t('Out of stock')}</p>
+                <p className="text-muted-foreground text-xs">
+                    {product.stock === null || product.stock > 0 ? t('In stock') : product.backorder ? t('Available to order') : t('Out of stock')}
+                </p>
             </div>
         </Link>
     );

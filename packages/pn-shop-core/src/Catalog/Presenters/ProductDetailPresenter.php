@@ -25,7 +25,7 @@ final class ProductDetailPresenter
         return $product->load([
             'category:id,title,slug,parent_id,_lft,_rgt',
             'brand:id,name,slug',
-            'selectedAttributeValues',
+            'selectedAttributeValues.productAttribute',
             'media',
             'options.values',
             'variants' => fn ($variants) => $variants->where('is_active', true)->with(['optionValues', 'stockLevels']),
@@ -67,9 +67,7 @@ final class ProductDetailPresenter
                 'slug' => $product->category->slug,
             ] : null,
             'breadcrumbs' => array_map(fn (Category $category) => ['title' => $category->title, 'slug' => $category->slug], $trail),
-            'attributes' => $product->category
-                ? $product->getProductAttributesWithValues()
-                : [],
+            'attributes' => $product->getProductAttributesWithValues(),
             'options' => $product->options->map(fn (Option $option) => [
                 'id' => $option->id,
                 'name' => $option->name,

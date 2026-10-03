@@ -90,6 +90,8 @@ export interface ProductCard {
     price_from: boolean;
     image: ProductImage | null;
     stock: number | null;
+    /** True when the product can still be ordered with no stock left. */
+    backorder?: boolean;
     category: {
         id: number;
         title: string;

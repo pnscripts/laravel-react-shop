@@ -48,6 +48,10 @@ class ProductsTable
                 IconColumn::make('is_active')
                     ->label('Visible')
                     ->boolean(),
+                IconColumn::make('is_featured')
+                    ->label('Featured')
+                    ->boolean()
+                    ->toggleable(),
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
@@ -55,6 +59,7 @@ class ProductsTable
             ])
             ->filters([
                 TernaryFilter::make('is_active')->label('Visible'),
+                TernaryFilter::make('is_featured')->label('Featured'),
                 SelectFilter::make('product_category_id')
                     ->label('Category')
                     ->relationship('category', 'title'),

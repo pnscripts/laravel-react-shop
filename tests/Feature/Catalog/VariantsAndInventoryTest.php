@@ -7,6 +7,7 @@ use Livewire\Livewire;
 use PnShop\Catalog\Exceptions\InvalidVariant;
 use PnShop\Catalog\Filament\Resources\Options\Pages\CreateOption;
 use PnShop\Catalog\Filament\Resources\Products\Pages\EditProduct;
+use PnShop\Catalog\Filament\Resources\Products\RelationManagers\StockHistoryRelationManager;
 use PnShop\Catalog\Filament\Resources\Products\RelationManagers\VariantsRelationManager;
 use PnShop\Catalog\Filament\Widgets\LowStockProducts;
 use PnShop\Catalog\Models\Option;
@@ -268,6 +269,30 @@ class VariantsAndInventoryTest extends AdminTestCase
         [, $small, $medium] = $this->tShirt();
 
         Livewire::test(LowStockProducts::class)->assertCanSeeTableRecords([$small, $medium]);
+    }
+
+    public function test_a_variant_can_have_its_own_low_stock_threshold(): void
+    {
+        $this->actingAsAdministrator();
+        [, $small, $medium] = $this->tShirt();
+
+        // S has 3 left: low by default (5), not with a threshold of 2. M (1 left) stays low.
+        $small->update(['low_stock_threshold' => 2]);
+
+        Livewire::test(LowStockProducts::class)
+            ->assertCanSeeTableRecords([$medium])
+            ->assertCanNotSeeTableRecords([$small]);
+    }
+
+    public function test_the_product_shows_its_stock_history(): void
+    {
+        $this->actingAsAdministrator();
+        [$product, $small] = $this->tShirt();
+        app(InventoryService::class)->adjust($small, -1, StockMovementReason::Adjustment, null, null, 'Damaged in the store');
+
+        Livewire::test(StockHistoryRelationManager::class, ['ownerRecord' => $product, 'pageClass' => EditProduct::class])
+            ->assertCanSeeTableRecords($product->stockMovements()->get())
+            ->assertSee('Damaged in the store');
     }
 
     /**

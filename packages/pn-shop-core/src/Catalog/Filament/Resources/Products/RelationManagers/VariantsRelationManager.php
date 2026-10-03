@@ -22,6 +22,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use PnShop\Catalog\Exceptions\InvalidVariant;
 use PnShop\Catalog\Filament\Resources\Products\Schemas\ProductForm;
+use PnShop\Catalog\Filament\Widgets\LowStockProducts;
 use PnShop\Catalog\Models\Option;
 use PnShop\Catalog\Models\Product;
 use PnShop\Catalog\Models\ProductVariant;
@@ -74,6 +75,9 @@ class VariantsRelationManager extends RelationManager
             Toggle::make('is_active')->label('Available')->default(true),
             Toggle::make('track_inventory')->label('Track stock')->default(true),
             Toggle::make('allow_backorder')->label('Sell when out of stock'),
+            TextInput::make('low_stock_threshold')->label('Low stock at')->integer()->minValue(0)
+                ->placeholder((string) LowStockProducts::THRESHOLD)
+                ->helperText('The dashboard lists the variant when this many units or fewer are left. Empty: '.LowStockProducts::THRESHOLD.'.'),
         ]);
     }
 

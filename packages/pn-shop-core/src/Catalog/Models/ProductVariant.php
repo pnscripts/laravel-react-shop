@@ -29,6 +29,7 @@ use Spatie\Activitylog\Support\LogOptions;
  * @property int|null $weight grams
  * @property bool $track_inventory
  * @property bool $allow_backorder
+ * @property int|null $low_stock_threshold units left at or below which the variant counts as low on stock (null: the default)
  * @property bool $is_default
  * @property bool $is_active
  * @property int $position
@@ -40,7 +41,7 @@ class ProductVariant extends Model
     use LogsActivity, SoftDeletes;
 
     /** @var list<string> */
-    protected $fillable = ['product_id', 'sku', 'barcode', 'price', 'sale_price', 'weight', 'track_inventory', 'allow_backorder', 'is_default', 'is_active', 'position'];
+    protected $fillable = ['product_id', 'sku', 'barcode', 'price', 'sale_price', 'weight', 'track_inventory', 'allow_backorder', 'low_stock_threshold', 'is_default', 'is_active', 'position'];
 
     /**
      * @return array<string, string>
@@ -53,6 +54,7 @@ class ProductVariant extends Model
             'weight' => 'integer',
             'track_inventory' => 'boolean',
             'allow_backorder' => 'boolean',
+            'low_stock_threshold' => 'integer',
             'is_default' => 'boolean',
             'is_active' => 'boolean',
             'position' => 'integer',

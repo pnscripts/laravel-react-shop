@@ -20,7 +20,7 @@ class VariantService
     public const MAX_GENERATED = 200;
 
     /** The variant fields that can be set directly. */
-    public const ATTRIBUTES = ['price', 'sale_price', 'sku', 'barcode', 'weight', 'is_active', 'track_inventory', 'allow_backorder', 'position'];
+    public const ATTRIBUTES = ['price', 'sale_price', 'sku', 'barcode', 'weight', 'is_active', 'track_inventory', 'allow_backorder', 'low_stock_threshold', 'position'];
 
     public function __construct(private InventoryService $inventory) {}
 

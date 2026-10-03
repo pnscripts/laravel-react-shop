@@ -23,7 +23,7 @@ class ProductController extends AdminController
     /**
      * List products
      *
-     * Filters: `filter[is_active]`, `filter[category_id]`, `filter[brand_id]`, `filter[sku]`
+     * Filters: `filter[is_active]`, `filter[is_featured]`, `filter[category_id]`, `filter[brand_id]`, `filter[sku]`
      * (any variant), `filter[updated_since]` (ISO 8601) and `q` (title). Sort: `id`, `updated_at`
      * (prefix `-` for descending).
      *
@@ -39,6 +39,7 @@ class ProductController extends AdminController
         $products = $this->updatedSince(Product::query(), $request)
             ->with(AdminCatalogPresenter::PRODUCT_RELATIONS)
             ->when(isset($filter['is_active']), fn (Builder $query) => $query->where('is_active', filter_var($filter['is_active'], FILTER_VALIDATE_BOOLEAN)))
+            ->when(isset($filter['is_featured']), fn (Builder $query) => $query->where('is_featured', filter_var($filter['is_featured'], FILTER_VALIDATE_BOOLEAN)))
             ->when(isset($filter['category_id']), fn (Builder $query) => $query->whereHas('categories', fn (Builder $categories) => $categories->whereKey((int) $filter['category_id'])))
             ->when(isset($filter['brand_id']), fn (Builder $query) => $query->where('brand_id', (int) $filter['brand_id']))
             ->when(isset($filter['sku']), fn (Builder $query) => $query->whereHas('variants', fn (Builder $variants) => $variants->where('sku', (string) $filter['sku'])))
@@ -128,6 +129,7 @@ class ProductController extends AdminController
             'meta_title' => ['sometimes', 'nullable', 'string', 'max:255'],
             'meta_description' => ['sometimes', 'nullable', 'string', 'max:500'],
             'is_active' => ['sometimes', 'boolean'],
+            'is_featured' => ['sometimes', 'boolean'],
             'category_id' => [...$sometimes, 'required', 'integer', Rule::exists('product_categories', 'id')->whereNull('deleted_at')],
             'category_ids' => ['sometimes', 'array'],
             'category_ids.*' => ['integer', Rule::exists('product_categories', 'id')->whereNull('deleted_at')],
